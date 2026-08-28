@@ -406,6 +406,7 @@ function getUniformValueGetterAndSetter(stage, uniforms, name) {
   if (
     typeof currentValue === "string" ||
     currentValue instanceof HTMLCanvasElement ||
+    currentValue instanceof OffscreenCanvas ||
     currentValue instanceof HTMLImageElement ||
     currentValue instanceof HTMLVideoElement ||
     currentValue instanceof ImageData
@@ -441,6 +442,7 @@ function getUniformValueGetterAndSetter(stage, uniforms, name) {
       if (
         typeof value === "string" ||
         value instanceof HTMLCanvasElement ||
+        value instanceof OffscreenCanvas ||
         value instanceof HTMLImageElement ||
         value instanceof HTMLVideoElement ||
         value instanceof ImageData
@@ -502,6 +504,7 @@ function createUniformMap(stage) {
       value instanceof Texture ||
       value instanceof HTMLImageElement ||
       value instanceof HTMLCanvasElement ||
+      value instanceof OffscreenCanvas ||
       value instanceof HTMLVideoElement
     ) {
       uniformMap[`${name}Dimensions`] = getUniformMapDimensionsFunction(

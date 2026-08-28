@@ -3,6 +3,8 @@ import Cartesian3 from "../../Core/Cartesian3.js";
 import defined from "../../Core/defined.js";
 import Frozen from "../../Core/Frozen.js";
 import getTimestamp from "../../Core/getTimestamp.js";
+import getCanvasClientHeight from "../../Core/getCanvasClientHeight.js";
+import getCanvasClientWidth from "../../Core/getCanvasClientWidth.js";
 import CesiumMath from "../../Core/Math.js";
 import ScreenSpaceEventHandler from "../../Core/ScreenSpaceEventHandler.js";
 import ScreenSpaceEventType from "../../Core/ScreenSpaceEventType.js";
@@ -298,7 +300,8 @@ class ScreenSpaceZoomCameraController {
       (now - this._lastUpdateTime) * TimeConstants.SECONDS_PER_MILLISECOND;
 
     const { canvas } = scene;
-    const { clientWidth, clientHeight } = canvas;
+    const clientWidth = getCanvasClientWidth(canvas);
+    const clientHeight = getCanvasClientHeight(canvas);
     if (dt === 0 || clientWidth === 0 || clientHeight === 0) {
       this._lastUpdateTime = getTimestamp();
       this._scrollDelta = 0.0;

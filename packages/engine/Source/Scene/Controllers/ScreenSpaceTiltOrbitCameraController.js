@@ -5,6 +5,8 @@ import defined from "../../Core/defined.js";
 import Ellipsoid from "../../Core/Ellipsoid.js";
 import Frozen from "../../Core/Frozen.js";
 import getTimestamp from "../../Core/getTimestamp.js";
+import getCanvasClientHeight from "../../Core/getCanvasClientHeight.js";
+import getCanvasClientWidth from "../../Core/getCanvasClientWidth.js";
 import KeyboardEventModifier from "../../Core/KeyboardEventModifier.js";
 import CesiumMath from "../../Core/Math.js";
 import Matrix3 from "../../Core/Matrix3.js";
@@ -574,7 +576,8 @@ class ScreenSpaceTiltOrbitCameraController {
       TimeConstants.SECONDS_PER_MILLISECOND;
 
     const { canvas } = scene;
-    const { clientWidth, clientHeight } = canvas;
+    const clientWidth = getCanvasClientWidth(canvas);
+    const clientHeight = getCanvasClientHeight(canvas);
     if (dt === 0 || clientWidth === 0 || clientHeight === 0) {
       // Reset for next frame
       this._lastUpdateTime = getTimestamp();

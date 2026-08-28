@@ -1,5 +1,9 @@
 /**
- * Union of all numeric typed array types.
+ * A canvas that can be used as a WebGL render target.
+ * @typedef {HTMLCanvasElement|OffscreenCanvas} CanvasLike
+ */
+
+/**
  * @typedef {Float64Array|Float32Array|Uint32Array|Uint16Array|Uint8Array|Int32Array|Int16Array|Int8Array} TypedArray
  */
 

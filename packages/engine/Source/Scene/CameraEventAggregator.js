@@ -1,5 +1,6 @@
 import Cartesian2 from "../Core/Cartesian2.js";
 import defined from "../Core/defined.js";
+import getCanvasClientWidth from "../Core/getCanvasClientWidth.js";
 import destroyObject from "../Core/destroyObject.js";
 import DeveloperError from "../Core/DeveloperError.js";
 import KeyboardEventModifier from "../Core/KeyboardEventModifier.js";
@@ -137,9 +138,9 @@ function listenToPinch(aggregator, modifier, canvas) {
           angle += TwoPI;
         }
         movement.angleAndHeight.endPosition.x =
-          (-angle * canvas.clientWidth) / 12;
+          (-angle * getCanvasClientWidth(canvas)) / 12;
         movement.angleAndHeight.startPosition.x =
-          (-prevAngle * canvas.clientWidth) / 12;
+          (-prevAngle * getCanvasClientWidth(canvas)) / 12;
       }
     },
     ScreenSpaceEventType.PINCH_MOVE,

@@ -11,6 +11,8 @@ import Event from "../Core/Event.js";
 import EventHelper from "../Core/EventHelper.js";
 import FeatureDetection from "../Core/FeatureDetection.js";
 import formatError from "../Core/formatError.js";
+import getCanvasClientHeight from "../Core/getCanvasClientHeight.js";
+import getCanvasClientWidth from "../Core/getCanvasClientWidth.js";
 import HeadingPitchRange from "../Core/HeadingPitchRange.js";
 import Matrix4 from "../Core/Matrix4.js";
 import BoundingSphereState from "../DataSources/BoundingSphereState.js";
@@ -102,8 +104,8 @@ function configurePixelRatio(widget) {
 
 function configureCanvasSize(widget) {
   const canvas = widget._canvas;
-  let width = canvas.clientWidth;
-  let height = canvas.clientHeight;
+  let width = getCanvasClientWidth(canvas);
+  let height = getCanvasClientHeight(canvas);
   const pixelRatio = configurePixelRatio(widget);
 
   widget._canvasClientWidth = width;
@@ -516,7 +518,7 @@ Object.defineProperties(CesiumWidget.prototype, {
    * Gets the canvas.
    * @memberof CesiumWidget.prototype
    *
-   * @type {HTMLCanvasElement}
+   * @type {HTMLCanvasElement|OffscreenCanvas}
    * @readonly
    */
   canvas: {
@@ -1054,8 +1056,8 @@ CesiumWidget.prototype.resize = function () {
   const canvas = this._canvas;
   if (
     !this._forceResize &&
-    this._canvasClientWidth === canvas.clientWidth &&
-    this._canvasClientHeight === canvas.clientHeight &&
+    this._canvasClientWidth === getCanvasClientWidth(canvas) &&
+    this._canvasClientHeight === getCanvasClientHeight(canvas) &&
     this._lastDevicePixelRatio === window.devicePixelRatio
   ) {
     return;

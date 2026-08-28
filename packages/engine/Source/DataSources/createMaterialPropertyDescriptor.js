@@ -14,7 +14,9 @@ function createMaterialProperty(value) {
     typeof value === "string" ||
     value instanceof Resource ||
     value instanceof HTMLCanvasElement ||
-    value instanceof HTMLVideoElement
+    value instanceof OffscreenCanvas ||
+    value instanceof HTMLVideoElement ||
+    value instanceof ImageBitmap
   ) {
     const result = new ImageMaterialProperty();
     result.image = value;

@@ -12,6 +12,8 @@ import Ellipsoid from "../Core/Ellipsoid.js";
 import EllipsoidGeodesic from "../Core/EllipsoidGeodesic.js";
 import Event from "../Core/Event.js";
 import getTimestamp from "../Core/getTimestamp.js";
+import getCanvasClientHeight from "../Core/getCanvasClientHeight.js";
+import getCanvasClientWidth from "../Core/getCanvasClientWidth.js";
 import HeadingPitchRange from "../Core/HeadingPitchRange.js";
 import HeadingPitchRoll from "../Core/HeadingPitchRoll.js";
 import Intersect from "../Core/Intersect.js";
@@ -2973,7 +2975,10 @@ Camera.prototype.pickEllipsoid = function (windowPosition, ellipsoid, result) {
   //>>includeEnd('debug');
 
   const canvas = this._scene.canvas;
-  if (canvas.clientWidth === 0 || canvas.clientHeight === 0) {
+  if (
+    getCanvasClientWidth(canvas) === 0 ||
+    getCanvasClientHeight(canvas) === 0
+  ) {
     return undefined;
   }
 
@@ -3006,8 +3011,8 @@ const pickPerspXDir = new Cartesian3();
 const pickPerspYDir = new Cartesian3();
 function getPickRayPerspective(camera, windowPosition, result) {
   const canvas = camera._scene.canvas;
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
+  const width = getCanvasClientWidth(canvas);
+  const height = getCanvasClientHeight(canvas);
 
   const tanPhi = Math.tan(camera.frustum.fovy * 0.5);
   const tanTheta = camera.frustum.aspectRatio * tanPhi;
@@ -3047,8 +3052,8 @@ const scratchDirection = new Cartesian3();
 
 function getPickRayOrthographic(camera, windowPosition, result) {
   const canvas = camera._scene.canvas;
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
+  const width = getCanvasClientWidth(canvas);
+  const height = getCanvasClientHeight(canvas);
 
   let frustum = camera.frustum;
   const offCenterFrustum = frustum.offCenterFrustum;
@@ -3104,7 +3109,7 @@ Camera.prototype.getPickRay = function (windowPosition, result) {
   }
 
   const canvas = this._scene.canvas;
-  if (canvas.clientWidth <= 0 || canvas.clientHeight <= 0) {
+  if (getCanvasClientWidth(canvas) <= 0 || getCanvasClientHeight(canvas) <= 0) {
     return undefined;
   }
 
@@ -3897,8 +3902,8 @@ Camera.prototype.computeViewRectangle = function (ellipsoid, result) {
   }
 
   const canvas = this._scene.canvas;
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
+  const width = getCanvasClientWidth(canvas);
+  const height = getCanvasClientHeight(canvas);
 
   let successfulPickCount = 0;
 
