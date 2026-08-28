@@ -32,6 +32,29 @@ function supportsTransferControlToOffscreen() {
   );
 }
 
+function getWidgetCanvasDimensions(widget) {
+  const canvas = widget._canvas;
+  let width = getCanvasClientWidth(canvas);
+  let height = getCanvasClientHeight(canvas);
+
+  if (width === 0 || height === 0) {
+    const containerRect = widget._container.getBoundingClientRect();
+    width = containerRect.width;
+    height = containerRect.height;
+  }
+
+  if (width === 0 || height === 0) {
+    const elementRect = widget._element.getBoundingClientRect();
+    width = elementRect.width;
+    height = elementRect.height;
+  }
+
+  return {
+    width: Math.max(1, Math.floor(width)),
+    height: Math.max(1, Math.floor(height)),
+  };
+}
+
 function getTouchDistance(pointA, pointB) {
   const dx = pointA.x - pointB.x;
   const dy = pointA.y - pointB.y;
@@ -165,6 +188,7 @@ function installInputHandler(widget) {
  * @param {ContextOptions} [options.contextOptions] Context and WebGL creation properties passed to {@link Scene}.
  * @param {number} [options.pixelRatio] The pixel ratio to use when sizing the canvas buffer. Defaults to <code>window.devicePixelRatio</code>.
  * @param {boolean} [options.useWorldImagery=true] If true, add Cesium ion world imagery to the scene.
+ * @param {boolean} [options.useOpenStreetMapImagery=false] If true, add OpenStreetMap imagery instead of ion world imagery.
  * @param {boolean} [options.useWorldTerrain=false] If true, add Cesium ion world terrain to the scene.
  * @param {number[]} [options.backgroundColor] An RGBA color in bytes, e.g. <code>[100, 149, 237, 255]</code>, applied to {@link Scene#backgroundColor} in the worker.
  * @param {string} [options.ionAccessToken=Ion.defaultAccessToken] The Cesium ion access token used in the worker.
@@ -208,16 +232,6 @@ function OffscreenCesiumWidget(container, options) {
   canvas.style.width = "100%";
   canvas.style.height = "100%";
 
-  const containerRect = container.getBoundingClientRect();
-  let width = getCanvasClientWidth(canvas);
-  let height = getCanvasClientHeight(canvas);
-  if (width === 0) {
-    width = containerRect.width || 300;
-  }
-  if (height === 0) {
-    height = containerRect.height || 150;
-  }
-
   const offscreen = canvas.transferControlToOffscreen();
   const pixelRatio = options.pixelRatio ?? window.devicePixelRatio;
 
@@ -228,6 +242,8 @@ function OffscreenCesiumWidget(container, options) {
   this._pickRequestId = 0;
   this._pickRequests = {};
   this._destroyed = false;
+
+  const dimensions = getWidgetCanvasDimensions(this);
 
   let resolveReady;
   let rejectReady;
@@ -263,12 +279,13 @@ function OffscreenCesiumWidget(container, options) {
     {
       type: OffscreenEngineMessageType.INIT,
       canvas: offscreen,
-      width: width,
-      height: height,
+      width: dimensions.width,
+      height: dimensions.height,
       pixelRatio: pixelRatio,
       baseUrl: baseUrl,
       contextOptions: options.contextOptions,
       useWorldImagery: options.useWorldImagery ?? true,
+      useOpenStreetMapImagery: options.useOpenStreetMapImagery ?? false,
       useWorldTerrain: options.useWorldTerrain ?? false,
       backgroundColor: options.backgroundColor,
       ionAccessToken: options.ionAccessToken ?? Ion.defaultAccessToken,
@@ -377,14 +394,12 @@ OffscreenCesiumWidget.prototype.resize = function () {
     return;
   }
 
-  const canvas = this._canvas;
-  const width = getCanvasClientWidth(canvas);
-  const height = getCanvasClientHeight(canvas);
+  const dimensions = getWidgetCanvasDimensions(this);
 
   this._worker.postMessage({
     type: OffscreenEngineMessageType.RESIZE,
-    width: width,
-    height: height,
+    width: dimensions.width,
+    height: dimensions.height,
     pixelRatio: this._pixelRatio,
   });
 };

@@ -2,11 +2,13 @@ import Cartesian2 from "../Core/Cartesian2.js";
 import Cartesian3 from "../Core/Cartesian3.js";
 import Color from "../Core/Color.js";
 import defined from "../Core/defined.js";
+import Ellipsoid from "../Core/Ellipsoid.js";
 import Ion from "../Core/Ion.js";
 import OffscreenEngineMessageType from "../Core/OffscreenCanvasEngineProtocol.js";
 import Globe from "../Scene/Globe.js";
 import ImageryLayer from "../Scene/ImageryLayer.js";
 import Moon from "../Scene/Moon.js";
+import OpenStreetMapImageryProvider from "../Scene/OpenStreetMapImageryProvider.js";
 import Scene from "../Scene/Scene.js";
 import SkyAtmosphere from "../Scene/SkyAtmosphere.js";
 import SkyBox from "../Scene/SkyBox.js";
@@ -62,20 +64,37 @@ function serializePick(picked) {
   };
 }
 
-function configureSceneEnvironment(useGlobe) {
-  if (!useGlobe) {
-    return;
-  }
+function configureSceneEnvironment() {
+  const ellipsoid = Ellipsoid.WGS84;
 
-  scene.globe = new Globe();
+  scene.globe = new Globe(ellipsoid);
+  scene.globe.enableLighting = false;
   scene.skyBox = SkyBox.createEarthSkyBox();
   scene.sun = new Sun();
   scene.moon = new Moon();
-  scene.skyAtmosphere = new SkyAtmosphere();
+  scene.moon.show = false;
+  scene.skyAtmosphere = new SkyAtmosphere(ellipsoid);
   scene.camera.constrainedAxis = Cartesian3.UNIT_Z;
   scene.camera.setView({
-    destination: Cartesian3.fromDegrees(-98.0, 40.0, 15000000.0),
+    destination: Cartesian3.fromDegrees(-98.0, 40.0, 20000000.0),
   });
+}
+
+function addImagery(data) {
+  if (data.useOpenStreetMapImagery === true) {
+    scene.imageryLayers.add(
+      new ImageryLayer(
+        new OpenStreetMapImageryProvider({
+          url: "https://tile.openstreetmap.org/",
+        }),
+      ),
+    );
+    return;
+  }
+
+  if (data.useWorldImagery !== false) {
+    scene.imageryLayers.add(ImageryLayer.fromWorldImagery());
+  }
 }
 
 function handleInit(data) {
@@ -103,11 +122,8 @@ function handleInit(data) {
     data.useWorldImagery !== false || data.useWorldTerrain === true;
 
   if (useGlobe) {
-    configureSceneEnvironment(true);
-
-    if (data.useWorldImagery !== false) {
-      scene.imageryLayers.add(ImageryLayer.fromWorldImagery());
-    }
+    configureSceneEnvironment();
+    addImagery(data);
 
     if (data.useWorldTerrain === true) {
       scene.terrain = Terrain.fromWorldTerrain();

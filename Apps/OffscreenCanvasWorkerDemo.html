@@ -33,17 +33,17 @@
       }
       #statusBar {
         position: absolute;
-        top: 0;
         left: 0;
         right: 0;
+        bottom: 0;
         z-index: 10;
         display: flex;
         gap: 8px;
         align-items: center;
-        padding: 10px 12px;
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
         background: rgba(0, 0, 0, 0.72);
         color: #fff;
-        font-size: 14px;
+        font-size: 13px;
         box-sizing: border-box;
         pointer-events: none;
       }
@@ -67,14 +67,25 @@
     </style>
   </head>
   <body>
+    <div id="cesiumContainer"></div>
     <div id="statusBar">
       <div id="statusText">Starting worker globe…</div>
       <button id="pickButton" disabled>Pick center</button>
     </div>
-    <div id="cesiumContainer"></div>
     <script>
       const statusText = document.getElementById("statusText");
       const pickButton = document.getElementById("pickButton");
+
+      async function updatePixelStatus(widget) {
+        const canvas = widget.canvas;
+        const pixel = await widget.samplePixel(
+          Math.floor(canvas.clientWidth / 2),
+          Math.floor(canvas.clientHeight / 2),
+        );
+        if (Array.isArray(pixel)) {
+          statusText.textContent = `Rendering · center rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]}) · drag/pinch to move`;
+        }
+      }
 
       const supportsOffscreen =
         typeof HTMLCanvasElement !== "undefined" &&
@@ -88,18 +99,35 @@
         const widget = new window.Cesium.OffscreenCesiumWidget(
           "cesiumContainer",
           {
-            useWorldImagery: true,
+            useWorldImagery: false,
+            useOpenStreetMapImagery: true,
             useWorldTerrain: false,
             enableInputs: true,
+            pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+            contextOptions: {
+              webgl: {
+                preserveDrawingBuffer: true,
+                powerPreference: "high-performance",
+              },
+            },
           },
         );
 
         widget.readyPromise
-          .then(function () {
-            widget.resize();
+          .then(async function () {
+            requestAnimationFrame(function () {
+              widget.resize();
+            });
             statusText.textContent =
-              "Drag to orbit · pinch to zoom · worker OffscreenCanvas";
+              "Loading map tiles · drag to orbit · pinch to zoom";
             pickButton.disabled = false;
+
+            setTimeout(function () {
+              updatePixelStatus(widget);
+            }, 2000);
+            setTimeout(function () {
+              updatePixelStatus(widget);
+            }, 5000);
           })
           .catch(function (error) {
             statusText.textContent = `Worker init failed: ${error.message || error}`;
@@ -111,10 +139,9 @@
             canvas.clientWidth / 2,
             canvas.clientHeight / 2,
           );
-          const message = picked
+          statusText.textContent = picked
             ? `Picked object id: ${picked.id}`
             : "Nothing picked at center";
-          statusText.textContent = message;
         });
 
         window.addEventListener("resize", function () {
