@@ -6,6 +6,7 @@ import FeatureDetection from "../Core/FeatureDetection.js";
 import Frozen from "../Core/Frozen.js";
 import getCanvasClientHeight from "../Core/getCanvasClientHeight.js";
 import getCanvasClientWidth from "../Core/getCanvasClientWidth.js";
+import Ion from "../Core/Ion.js";
 import OffscreenEngineMessageType from "../Core/OffscreenCanvasEngineProtocol.js";
 import RuntimeError from "../Core/RuntimeError.js";
 import getElement from "../DataSources/getElement.js";
@@ -31,6 +32,126 @@ function supportsTransferControlToOffscreen() {
   );
 }
 
+function getTouchDistance(pointA, pointB) {
+  const dx = pointA.x - pointB.x;
+  const dy = pointA.y - pointB.y;
+  return Math.hypot(dx, dy);
+}
+
+function installInputHandler(widget) {
+  const canvas = widget._canvas;
+  const worker = widget._worker;
+  canvas.style.touchAction = "none";
+
+  let activePointerId;
+  let lastX;
+  let lastY;
+  let lastPinchDistance;
+  const activePointers = new Map();
+
+  function postCameraDrag(deltaX, deltaY) {
+    worker.postMessage({
+      type: OffscreenEngineMessageType.CAMERA_DRAG,
+      deltaX: deltaX,
+      deltaY: deltaY,
+    });
+  }
+
+  function postCameraZoom(delta) {
+    worker.postMessage({
+      type: OffscreenEngineMessageType.CAMERA_ZOOM,
+      delta: delta,
+    });
+  }
+
+  function onPointerDown(event) {
+    activePointers.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    if (activePointers.size === 1) {
+      activePointerId = event.pointerId;
+      lastX = event.clientX;
+      lastY = event.clientY;
+    } else if (activePointers.size === 2) {
+      activePointerId = undefined;
+      const points = [...activePointers.values()];
+      lastPinchDistance = getTouchDistance(points[0], points[1]);
+    }
+
+    if (canvas.setPointerCapture) {
+      canvas.setPointerCapture(event.pointerId);
+    }
+  }
+
+  function onPointerMove(event) {
+    if (!activePointers.has(event.pointerId)) {
+      return;
+    }
+
+    activePointers.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    if (activePointers.size === 2) {
+      const points = [...activePointers.values()];
+      const distance = getTouchDistance(points[0], points[1]);
+      if (defined(lastPinchDistance)) {
+        postCameraZoom(lastPinchDistance - distance);
+      }
+      lastPinchDistance = distance;
+      return;
+    }
+
+    if (event.pointerId !== activePointerId) {
+      return;
+    }
+
+    const deltaX = event.clientX - lastX;
+    const deltaY = event.clientY - lastY;
+    lastX = event.clientX;
+    lastY = event.clientY;
+
+    if (deltaX !== 0 || deltaY !== 0) {
+      postCameraDrag(deltaX, deltaY);
+    }
+  }
+
+  function onPointerUp(event) {
+    activePointers.delete(event.pointerId);
+    if (event.pointerId === activePointerId) {
+      activePointerId = undefined;
+    }
+    if (activePointers.size < 2) {
+      lastPinchDistance = undefined;
+    }
+    if (canvas.releasePointerCapture) {
+      canvas.releasePointerCapture(event.pointerId);
+    }
+  }
+
+  function onWheel(event) {
+    event.preventDefault();
+    postCameraZoom(event.deltaY);
+  }
+
+  canvas.addEventListener("pointerdown", onPointerDown);
+  canvas.addEventListener("pointermove", onPointerMove);
+  canvas.addEventListener("pointerup", onPointerUp);
+  canvas.addEventListener("pointercancel", onPointerUp);
+  canvas.addEventListener("wheel", onWheel, { passive: false });
+
+  return function () {
+    canvas.removeEventListener("pointerdown", onPointerDown);
+    canvas.removeEventListener("pointermove", onPointerMove);
+    canvas.removeEventListener("pointerup", onPointerUp);
+    canvas.removeEventListener("pointercancel", onPointerUp);
+    canvas.removeEventListener("wheel", onWheel);
+  };
+}
+
 /**
  * A widget that renders Cesium in a Web Worker using {@link https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas|OffscreenCanvas}.
  * The main thread owns a display {@link HTMLCanvasElement} for presentation and input,
@@ -46,6 +167,8 @@ function supportsTransferControlToOffscreen() {
  * @param {boolean} [options.useWorldImagery=true] If true, add Cesium ion world imagery to the scene.
  * @param {boolean} [options.useWorldTerrain=false] If true, add Cesium ion world terrain to the scene.
  * @param {number[]} [options.backgroundColor] An RGBA color in bytes, e.g. <code>[100, 149, 237, 255]</code>, applied to {@link Scene#backgroundColor} in the worker.
+ * @param {string} [options.ionAccessToken=Ion.defaultAccessToken] The Cesium ion access token used in the worker.
+ * @param {boolean} [options.enableInputs=true] If true, forward pointer and wheel input from the display canvas to the worker camera.
  *
  * @exception {DeveloperError} container is required.
  * @exception {RuntimeError} transferControlToOffscreen or ESM web workers are not supported.
@@ -148,12 +271,17 @@ function OffscreenCesiumWidget(container, options) {
       useWorldImagery: options.useWorldImagery ?? true,
       useWorldTerrain: options.useWorldTerrain ?? false,
       backgroundColor: options.backgroundColor,
+      ionAccessToken: options.ionAccessToken ?? Ion.defaultAccessToken,
     },
     [offscreen],
   );
 
   this._resolveReady = resolveReady;
   this._rejectReady = rejectReady;
+
+  if (options.enableInputs !== false) {
+    this._removeInputHandler = installInputHandler(this);
+  }
 
   if (typeof ResizeObserver !== "undefined") {
     this._resizeObserver = new ResizeObserver(() => {
@@ -350,6 +478,11 @@ OffscreenCesiumWidget.prototype.destroy = function () {
   if (defined(this._resizeListener) && defined(window.removeEventListener)) {
     window.removeEventListener("resize", this._resizeListener, false);
     this._resizeListener = undefined;
+  }
+
+  if (defined(this._removeInputHandler)) {
+    this._removeInputHandler();
+    this._removeInputHandler = undefined;
   }
 
   if (defined(this._worker)) {
