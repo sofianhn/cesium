@@ -8,6 +8,7 @@
 
 - Added `getCanvasClientWidth` and `getCanvasClientHeight` helpers for canvas dimension queries that work with both `HTMLCanvasElement` and `OffscreenCanvas`.
 - Added `Scene#resize` for explicitly sizing `OffscreenCanvas` render targets, `ContextOptions.glContext` for injecting an existing WebGL context, and off-DOM scene initialization without a canvas parent element.
+- Added `OffscreenCesiumWidget` to render Cesium in a Web Worker using `transferControlToOffscreen`, with a `cesiumEngineWorker` bootstrap and message protocol.
 - Added two sandcastles for a 3D native vector data showcase and a large river data with semantic-based LOD
 - Added support for draping clamped vector tile polygons and polylines onto 3D Tiles, with a new `heightReference` option and matching read-only property on `BufferPrimitiveCollection`, inherited by `BufferPolygonCollection` and `BufferPolylineCollection`. [#13653](https://github.com/CesiumGS/cesium/pull/13653)
 - Added a `heightReference` option to `MVTDataProvider.fromUrl`, draping Mapbox Vector Tiles content onto terrain, 3D Tiles, or both. [#13727](https://github.com/CesiumGS/cesium/pull/13727)
