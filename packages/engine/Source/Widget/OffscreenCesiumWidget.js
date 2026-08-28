@@ -395,6 +395,19 @@ OffscreenCesiumWidget.prototype.resize = function () {
   }
 
   const dimensions = getWidgetCanvasDimensions(this);
+  const bufferWidth = Math.max(
+    1,
+    Math.floor(dimensions.width * this._pixelRatio),
+  );
+  const bufferHeight = Math.max(
+    1,
+    Math.floor(dimensions.height * this._pixelRatio),
+  );
+
+  // Keep the display canvas buffer size in sync for browsers (notably Safari on iOS)
+  // that use it when compositing transferred OffscreenCanvas frames.
+  this._canvas.width = bufferWidth;
+  this._canvas.height = bufferHeight;
 
   this._worker.postMessage({
     type: OffscreenEngineMessageType.RESIZE,

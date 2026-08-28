@@ -97,6 +97,18 @@ function addImagery(data) {
   }
 }
 
+function shouldUseGlobe(data) {
+  if (data.useGlobe === false) {
+    return false;
+  }
+
+  return (
+    data.useWorldImagery !== false ||
+    data.useOpenStreetMapImagery === true ||
+    data.useWorldTerrain === true
+  );
+}
+
 function handleInit(data) {
   if (defined(data.baseUrl)) {
     self.CESIUM_BASE_URL = data.baseUrl;
@@ -118,10 +130,7 @@ function handleInit(data) {
 
   scene.resize(data.width, data.height, data.pixelRatio);
 
-  const useGlobe =
-    data.useWorldImagery !== false || data.useWorldTerrain === true;
-
-  if (useGlobe) {
+  if (shouldUseGlobe(data)) {
     configureSceneEnvironment();
     addImagery(data);
 

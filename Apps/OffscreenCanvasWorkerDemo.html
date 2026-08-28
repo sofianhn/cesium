@@ -83,7 +83,13 @@
           Math.floor(canvas.clientHeight / 2),
         );
         if (Array.isArray(pixel)) {
-          statusText.textContent = `Rendering · center rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]}) · drag/pinch to move`;
+          const sum = pixel[0] + pixel[1] + pixel[2];
+          statusText.textContent =
+            sum > 10
+              ? `Rendering · center rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]}) · drag/pinch to move`
+              : `Worker running but frame is black rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+        } else {
+          statusText.textContent = "Worker running · could not sample pixel";
         }
       }
 
