@@ -71,6 +71,10 @@ import SceneTransitioner from "./SceneTransitioner.js";
 import ScreenSpaceCameraController from "./ScreenSpaceCameraController.js";
 import ShadowMap from "./ShadowMap.js";
 import SharedContext from "../Renderer/SharedContext.js";
+import {
+  clearOffscreenCanvasClientDimensions,
+  setOffscreenCanvasClientDimensions,
+} from "../Core/offscreenCanvasClientDimensions.js";
 import Snapping from "./Snapping.js";
 import SpecularEnvironmentCubeMap from "./SpecularEnvironmentCubeMap.js";
 import StencilConstants from "./StencilConstants.js";
@@ -153,6 +157,7 @@ function Scene(options) {
   const context = this._context;
 
   const hasCreditContainer = defined(creditContainer);
+  const canvasParent = canvas.parentNode;
   if (!hasCreditContainer) {
     creditContainer = document.createElement("div");
     creditContainer.style.position = "absolute";
@@ -161,10 +166,12 @@ function Scene(options) {
     creditContainer.style.color = "#ffffff";
     creditContainer.style["font-size"] = "10px";
     creditContainer.style["padding-right"] = "5px";
-    canvas.parentNode.appendChild(creditContainer);
+    if (defined(canvasParent)) {
+      canvasParent.appendChild(creditContainer);
+    }
   }
   if (!defined(creditViewport)) {
-    creditViewport = canvas.parentNode;
+    creditViewport = defined(canvasParent) ? canvasParent : creditContainer;
   }
 
   this._id = createGuid();
@@ -175,7 +182,7 @@ function Scene(options) {
     this._jobScheduler,
   );
   this._frameState.scene3DOnly = options.scene3DOnly ?? false;
-  this._removeCreditContainer = !hasCreditContainer;
+  this._removeCreditContainer = !hasCreditContainer && defined(canvasParent);
   this._creditContainer = creditContainer;
 
   this._canvas = canvas;
@@ -4465,10 +4472,14 @@ Scene.prototype.initializeFrame = function () {
 function updateDebugShowFramesPerSecond(scene, renderedThisFrame) {
   if (scene.debugShowFramesPerSecond) {
     if (!defined(scene._performanceDisplay)) {
+      const container = scene._canvas.parentNode;
+      if (!defined(container)) {
+        return;
+      }
+
       const performanceContainer = document.createElement("div");
       performanceContainer.className =
         "cesium-performanceDisplay-defaultContainer";
-      const container = scene._canvas.parentNode;
       container.appendChild(performanceContainer);
       const performanceDisplay = new PerformanceDisplay({
         container: performanceContainer,
@@ -4482,9 +4493,11 @@ function updateDebugShowFramesPerSecond(scene, renderedThisFrame) {
   } else if (defined(scene._performanceDisplay)) {
     scene._performanceDisplay =
       scene._performanceDisplay && scene._performanceDisplay.destroy();
-    scene._performanceContainer.parentNode.removeChild(
-      scene._performanceContainer,
-    );
+    if (defined(scene._performanceContainer.parentNode)) {
+      scene._performanceContainer.parentNode.removeChild(
+        scene._performanceContainer,
+      );
+    }
   }
 }
 
@@ -5485,6 +5498,55 @@ Scene.prototype.isDestroyed = function () {
 };
 
 /**
+ * Resizes the scene's canvas and updates the camera frustum. This is primarily
+ * intended for {@link OffscreenCanvas} and other canvases that are not automatically
+ * sized by the DOM.
+ *
+ * @param {number} width The width in CSS pixels.
+ * @param {number} height The height in CSS pixels.
+ * @param {number} [pixelRatio=1.0] The pixel ratio to apply when setting the canvas buffer size.
+ */
+Scene.prototype.resize = function (width, height, pixelRatio) {
+  //>>includeStart('debug', pragmas.debug);
+  if (!defined(width) || !defined(height)) {
+    throw new DeveloperError("width and height are required.");
+  }
+  if (width < 0 || height < 0) {
+    throw new DeveloperError("width and height must be non-negative.");
+  }
+  //>>includeEnd('debug');
+
+  pixelRatio = pixelRatio ?? 1.0;
+
+  const canvas = this._canvas;
+  const bufferWidth = Math.floor(width * pixelRatio);
+  const bufferHeight = Math.floor(height * pixelRatio);
+
+  if (
+    typeof OffscreenCanvas !== "undefined" &&
+    canvas instanceof OffscreenCanvas
+  ) {
+    setOffscreenCanvasClientDimensions(canvas, width, height);
+  }
+
+  canvas.width = bufferWidth;
+  canvas.height = bufferHeight;
+  this.pixelRatio = pixelRatio;
+
+  if (bufferWidth !== 0 && bufferHeight !== 0) {
+    const frustum = this.camera.frustum;
+    if (defined(frustum.aspectRatio)) {
+      frustum.aspectRatio = bufferWidth / bufferHeight;
+    } else {
+      frustum.top = frustum.right * (bufferHeight / bufferWidth);
+      frustum.bottom = -frustum.top;
+    }
+  }
+
+  this.requestRender();
+};
+
+/**
  * Destroys the WebGL resources held by this object.  Destroying an object allows for deterministic
  * release of WebGL resources, instead of relying on the garbage collector to destroy this object.
  * <br /><br />
@@ -5533,8 +5595,18 @@ Scene.prototype.destroy = function () {
   this._defaultView = this._defaultView && this._defaultView.destroy();
   this._view = undefined;
 
-  if (this._removeCreditContainer) {
-    this._canvas.parentNode.removeChild(this._creditContainer);
+  if (
+    this._removeCreditContainer &&
+    defined(this._creditContainer.parentNode)
+  ) {
+    this._creditContainer.parentNode.removeChild(this._creditContainer);
+  }
+
+  if (
+    typeof OffscreenCanvas !== "undefined" &&
+    this._canvas instanceof OffscreenCanvas
+  ) {
+    clearOffscreenCanvasClientDimensions(this._canvas);
   }
 
   this.postProcessStages =
@@ -5547,9 +5619,11 @@ Scene.prototype.destroy = function () {
   if (defined(this._performanceDisplay)) {
     this._performanceDisplay =
       this._performanceDisplay && this._performanceDisplay.destroy();
-    this._performanceContainer.parentNode.removeChild(
-      this._performanceContainer,
-    );
+    if (defined(this._performanceContainer.parentNode)) {
+      this._performanceContainer.parentNode.removeChild(
+        this._performanceContainer,
+      );
+    }
   }
 
   this._removeRequestListenerCallback();
