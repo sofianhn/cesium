@@ -3,6 +3,12 @@ import Check from "../Core/Check.js";
 import Color from "../Core/Color.js";
 import combine from "../Core/combine.js";
 import createGuid from "../Core/createGuid.js";
+import {
+  isHtmlCanvasElement,
+  isHtmlImageElement,
+  isHtmlVideoElement,
+  isImageLikeSource,
+} from "../Core/domElementTypes.js";
 import Frozen from "../Core/Frozen.js";
 import defined from "../Core/defined.js";
 import destroyObject from "../Core/destroyObject.js";
@@ -403,14 +409,7 @@ PostProcessStage.prototype._isSupported = function (context) {
 
 function getUniformValueGetterAndSetter(stage, uniforms, name) {
   const currentValue = uniforms[name];
-  if (
-    typeof currentValue === "string" ||
-    currentValue instanceof HTMLCanvasElement ||
-    currentValue instanceof OffscreenCanvas ||
-    currentValue instanceof HTMLImageElement ||
-    currentValue instanceof HTMLVideoElement ||
-    currentValue instanceof ImageData
-  ) {
+  if (isImageLikeSource(currentValue)) {
     stage._dirtyUniforms.push(name);
   }
 
@@ -439,14 +438,7 @@ function getUniformValueGetterAndSetter(stage, uniforms, name) {
         stage._texturesToRelease.push(currentValue);
       }
 
-      if (
-        typeof value === "string" ||
-        value instanceof HTMLCanvasElement ||
-        value instanceof OffscreenCanvas ||
-        value instanceof HTMLImageElement ||
-        value instanceof HTMLVideoElement ||
-        value instanceof ImageData
-      ) {
+      if (isImageLikeSource(value)) {
         stage._dirtyUniforms.push(name);
       } else {
         actualUniforms[name] = value;
@@ -502,10 +494,11 @@ function createUniformMap(stage) {
     if (
       typeof value === "string" ||
       value instanceof Texture ||
-      value instanceof HTMLImageElement ||
-      value instanceof HTMLCanvasElement ||
-      value instanceof OffscreenCanvas ||
-      value instanceof HTMLVideoElement
+      isHtmlImageElement(value) ||
+      isHtmlCanvasElement(value) ||
+      (typeof OffscreenCanvas !== "undefined" &&
+        value instanceof OffscreenCanvas) ||
+      isHtmlVideoElement(value)
     ) {
       uniformMap[`${name}Dimensions`] = getUniformMapDimensionsFunction(
         uniformMap,

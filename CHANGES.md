@@ -13,6 +13,7 @@
 - Added `HeadlessCreditDisplay` so `Scene` can initialize in Web Workers without DOM access.
 - Added `HeadlessCameraEventAggregator` so camera input handling is skipped in Web Workers without DOM access.
 - Added globe, sky, and default camera setup to `cesiumEngineWorker`, plus pointer input forwarding through `OffscreenCesiumWidget` for orbit and zoom.
+- Fixed worker initialization on Safari by guarding DOM type checks (`HTMLCanvasElement`, etc.) that are unavailable in Web Workers.
 - Added two sandcastles for a 3D native vector data showcase and a large river data with semantic-based LOD
 - Added support for draping clamped vector tile polygons and polylines onto 3D Tiles, with a new `heightReference` option and matching read-only property on `BufferPrimitiveCollection`, inherited by `BufferPolygonCollection` and `BufferPolylineCollection`. [#13653](https://github.com/CesiumGS/cesium/pull/13653)
 - Added a `heightReference` option to `MVTDataProvider.fromUrl`, draping Mapbox Vector Tiles content onto terrain, 3D Tiles, or both. [#13727](https://github.com/CesiumGS/cesium/pull/13727)
