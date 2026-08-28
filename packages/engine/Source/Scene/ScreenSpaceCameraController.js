@@ -3,6 +3,8 @@ import Cartesian3 from "../Core/Cartesian3.js";
 import Cartesian4 from "../Core/Cartesian4.js";
 import Cartographic from "../Core/Cartographic.js";
 import defined from "../Core/defined.js";
+import getCanvasClientHeight from "../Core/getCanvasClientHeight.js";
+import getCanvasClientWidth from "../Core/getCanvasClientWidth.js";
 import destroyObject from "../Core/destroyObject.js";
 import DeveloperError from "../Core/DeveloperError.js";
 import Ellipsoid from "../Core/Ellipsoid.js";
@@ -591,7 +593,7 @@ function handleZoom(
     object._maximumZoomRate,
   );
 
-  let rangeWindowRatio = diff / object._scene.canvas.clientHeight;
+  let rangeWindowRatio = diff / getCanvasClientHeight(object._scene.canvas);
   rangeWindowRatio = Math.min(rangeWindowRatio, object.maximumMovementRatio);
   let distance = zoomRate * rangeWindowRatio;
 
@@ -741,8 +743,8 @@ function handleZoom(
         const canvas = scene.canvas;
 
         const centerPixel = scratchCenterPixel;
-        centerPixel.x = canvas.clientWidth / 2;
-        centerPixel.y = canvas.clientHeight / 2;
+        centerPixel.x = getCanvasClientWidth(canvas) / 2;
+        centerPixel.y = getCanvasClientHeight(canvas) / 2;
         const centerPosition = pickPosition(
           object,
           centerPixel,
@@ -1036,8 +1038,8 @@ function twist2D(controller, startPosition, movement) {
   const scene = controller._scene;
   const camera = scene.camera;
   const canvas = scene.canvas;
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
+  const width = getCanvasClientWidth(canvas);
+  const height = getCanvasClientHeight(canvas);
 
   let start = twist2DStart;
   start.x = (2.0 / width) * movement.startPosition.x - 1.0;
@@ -1079,7 +1081,8 @@ function singleAxisTwist2D(controller, startPosition, movement) {
   const canvas = scene.canvas;
 
   let phiWindowRatio =
-    (movement.endPosition.x - movement.startPosition.x) / canvas.clientWidth;
+    (movement.endPosition.x - movement.startPosition.x) /
+    getCanvasClientWidth(canvas);
   phiWindowRatio = Math.min(phiWindowRatio, controller.maximumMovementRatio);
 
   const deltaPhi = rotateRate * phiWindowRatio * Math.PI * 4.0;
@@ -1441,8 +1444,8 @@ function rotateCVOnPlane(controller, startPosition, movement) {
   const canvas = scene.canvas;
 
   const windowPosition = rotateCVWindowPos;
-  windowPosition.x = canvas.clientWidth / 2;
-  windowPosition.y = canvas.clientHeight / 2;
+  windowPosition.x = getCanvasClientWidth(canvas) / 2;
+  windowPosition.y = getCanvasClientHeight(canvas) / 2;
   const ray = camera.getPickRay(windowPosition, rotateCVWindowRay);
   const normal = Cartesian3.UNIT_X;
 
@@ -1550,7 +1553,7 @@ function rotateCVOnTerrain(controller, startPosition, movement) {
   const canvas = scene.canvas;
 
   const windowPosition = rotateCVWindowPos;
-  windowPosition.x = canvas.clientWidth / 2;
+  windowPosition.x = getCanvasClientWidth(canvas) / 2;
   windowPosition.y = controller._tiltCenterMousePosition.y;
   ray = camera.getPickRay(windowPosition, rotateCVWindowRay);
 
@@ -1735,8 +1738,8 @@ function zoomCV(controller, startPosition, movement) {
     windowPosition = startPosition;
   } else {
     windowPosition = zoomCVWindowPos;
-    windowPosition.x = canvas.clientWidth / 2;
-    windowPosition.y = canvas.clientHeight / 2;
+    windowPosition.x = getCanvasClientWidth(canvas) / 2;
+    windowPosition.y = getCanvasClientHeight(canvas) / 2;
   }
 
   const ray = camera.getPickRay(windowPosition, zoomCVWindowRay);
@@ -2055,9 +2058,11 @@ function rotate3D(
   }
 
   let phiWindowRatio =
-    (movement.startPosition.x - movement.endPosition.x) / canvas.clientWidth;
+    (movement.startPosition.x - movement.endPosition.x) /
+    getCanvasClientWidth(canvas);
   let thetaWindowRatio =
-    (movement.startPosition.y - movement.endPosition.y) / canvas.clientHeight;
+    (movement.startPosition.y - movement.endPosition.y) /
+    getCanvasClientHeight(canvas);
   phiWindowRatio = Math.min(phiWindowRatio, controller.maximumMovementRatio);
   thetaWindowRatio = Math.min(
     thetaWindowRatio,
@@ -2334,8 +2339,8 @@ function zoom3D(controller, startPosition, movement) {
     windowPosition = startPosition;
   } else {
     windowPosition = zoomCVWindowPos;
-    windowPosition.x = canvas.clientWidth / 2;
-    windowPosition.y = canvas.clientHeight / 2;
+    windowPosition.x = getCanvasClientWidth(canvas) / 2;
+    windowPosition.y = getCanvasClientHeight(canvas) / 2;
   }
 
   const ray = camera.getPickRay(windowPosition, zoomCVWindowRay);
@@ -2482,8 +2487,8 @@ function tilt3DOnEllipsoid(controller, startPosition, movement) {
   const canvas = scene.canvas;
 
   const windowPosition = tilt3DWindowPos;
-  windowPosition.x = canvas.clientWidth / 2;
-  windowPosition.y = canvas.clientHeight / 2;
+  windowPosition.x = getCanvasClientWidth(canvas) / 2;
+  windowPosition.y = getCanvasClientHeight(canvas) / 2;
   const ray = camera.getPickRay(windowPosition, tilt3DRay);
 
   let center;
@@ -2596,7 +2601,7 @@ function tilt3DOnTerrain(controller, startPosition, movement) {
   const canvas = scene.canvas;
 
   const windowPosition = tilt3DWindowPos;
-  windowPosition.x = canvas.clientWidth / 2;
+  windowPosition.x = getCanvasClientWidth(canvas) / 2;
   windowPosition.y = controller._tiltCenterMousePosition.y;
   ray = camera.getPickRay(windowPosition, tilt3DRay);
 

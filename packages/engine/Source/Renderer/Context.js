@@ -36,7 +36,7 @@ import VertexArray from "./VertexArray.js";
  * @private
  * @constructor
  *
- * @param {HTMLCanvasElement} canvas The canvas element to which the context will be associated
+ * @param {HTMLCanvasElement|OffscreenCanvas} canvas The canvas element to which the context will be associated
  * @param {ContextOptions} [options] Options to control WebGL settings for the context
  */
 function Context(canvas, options) {
@@ -407,7 +407,7 @@ function Context(canvas, options) {
 
 /**
  * @private
- * @param {HTMLCanvasElement} canvas The canvas element to which the context will be associated
+ * @param {HTMLCanvasElement|OffscreenCanvas} canvas The canvas element to which the context will be associated
  * @param {WebGLOptions} webglOptions WebGL options to be passed on to HTMLCanvasElement.getContext()
  * @param {boolean} requestWebgl1 Whether to request a WebGLRenderingContext or a WebGL2RenderingContext.
  * @returns {WebGLRenderingContext|WebGL2RenderingContext}

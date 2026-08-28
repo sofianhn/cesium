@@ -4,6 +4,8 @@ import Cartesian3 from "../Core/Cartesian3.js";
 import Cartesian4 from "../Core/Cartesian4.js";
 import Cartographic from "../Core/Cartographic.js";
 import defined from "../Core/defined.js";
+import getCanvasClientHeight from "../Core/getCanvasClientHeight.js";
+import getCanvasClientWidth from "../Core/getCanvasClientWidth.js";
 import DeveloperError from "../Core/DeveloperError.js";
 import CesiumMath from "../Core/Math.js";
 import Matrix4 from "../Core/Matrix4.js";
@@ -128,8 +130,8 @@ SceneTransforms.worldWithEyeOffsetToWindowCoordinates = function (
   const viewport = scratchViewport;
   viewport.x = 0;
   viewport.y = 0;
-  viewport.width = canvas.clientWidth;
-  viewport.height = canvas.clientHeight;
+  viewport.width = getCanvasClientWidth(canvas);
+  viewport.height = getCanvasClientHeight(canvas);
 
   const camera = scene.camera;
   let cameraCentered = false;
@@ -171,11 +173,11 @@ SceneTransforms.worldWithEyeOffsetToWindowCoordinates = function (
     if (
       x === 0.0 ||
       windowCoordinates.x <= 0.0 ||
-      windowCoordinates.x >= canvas.clientWidth
+      windowCoordinates.x >= getCanvasClientWidth(canvas)
     ) {
       cameraCentered = true;
     } else {
-      if (windowCoordinates.x > canvas.clientWidth * 0.5) {
+      if (windowCoordinates.x > getCanvasClientWidth(canvas) * 0.5) {
         viewport.width = windowCoordinates.x;
 
         camera.frustum.right = maxCoord.x - x;
@@ -234,7 +236,7 @@ SceneTransforms.worldWithEyeOffsetToWindowCoordinates = function (
       camera.frustum = frustum.clone();
 
       result = Cartesian2.clone(scratchWindowCoord0, result);
-      if (result.x < 0.0 || result.x > canvas.clientWidth) {
+      if (result.x < 0.0 || result.x > getCanvasClientWidth(canvas)) {
         result.x = scratchWindowCoord1.x;
       }
     }
@@ -258,7 +260,7 @@ SceneTransforms.worldWithEyeOffsetToWindowCoordinates = function (
     );
   }
 
-  result.y = canvas.clientHeight - result.y;
+  result.y = getCanvasClientHeight(canvas) - result.y;
   return result;
 };
 
@@ -379,8 +381,8 @@ SceneTransforms.transformWindowToDrawingBuffer = function (
   result,
 ) {
   const canvas = scene.canvas;
-  const xScale = scene.drawingBufferWidth / canvas.clientWidth;
-  const yScale = scene.drawingBufferHeight / canvas.clientHeight;
+  const xScale = scene.drawingBufferWidth / getCanvasClientWidth(canvas);
+  const yScale = scene.drawingBufferHeight / getCanvasClientHeight(canvas);
   return Cartesian2.fromElements(
     windowPosition.x * xScale,
     windowPosition.y * yScale,

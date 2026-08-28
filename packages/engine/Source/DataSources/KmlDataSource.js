@@ -19,6 +19,8 @@ import Ellipsoid from "../Core/Ellipsoid.js";
 import Event from "../Core/Event.js";
 import getExtensionFromUri from "../Core/getExtensionFromUri.js";
 import getFilenameFromUri from "../Core/getFilenameFromUri.js";
+import getCanvasClientHeight from "../Core/getCanvasClientHeight.js";
+import getCanvasClientWidth from "../Core/getCanvasClientWidth.js";
 import getTimestamp from "../Core/getTimestamp.js";
 import HeadingPitchRange from "../Core/HeadingPitchRange.js";
 import HeadingPitchRoll from "../Core/HeadingPitchRoll.js";
@@ -2851,8 +2853,8 @@ function processNetworkLinkQueryString(
 
     bbox = bbox ?? zeroRectangle;
     if (defined(canvas)) {
-      scratchCartesian2.x = canvas.clientWidth * 0.5;
-      scratchCartesian2.y = canvas.clientHeight * 0.5;
+      scratchCartesian2.x = getCanvasClientWidth(canvas) * 0.5;
+      scratchCartesian2.y = getCanvasClientHeight(canvas) * 0.5;
       centerCartesian = camera.pickEllipsoid(
         scratchCartesian2,
         ellipsoid,
@@ -2977,8 +2979,14 @@ function processNetworkLinkQueryString(
   }
 
   if (defined(canvas)) {
-    queryString = queryString.replace("[horizPixels]", canvas.clientWidth);
-    queryString = queryString.replace("[vertPixels]", canvas.clientHeight);
+    queryString = queryString.replace(
+      "[horizPixels]",
+      getCanvasClientWidth(canvas),
+    );
+    queryString = queryString.replace(
+      "[vertPixels]",
+      getCanvasClientHeight(canvas),
+    );
   } else {
     queryString = queryString.replace("[horizPixels]", "");
     queryString = queryString.replace("[vertPixels]", "");

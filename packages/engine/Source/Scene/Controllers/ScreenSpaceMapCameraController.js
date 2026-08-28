@@ -3,6 +3,8 @@ import Cartesian3 from "../../Core/Cartesian3.js";
 import defined from "../../Core/defined.js";
 import Frozen from "../../Core/Frozen.js";
 import getTimestamp from "../../Core/getTimestamp.js";
+import getCanvasClientHeight from "../../Core/getCanvasClientHeight.js";
+import getCanvasClientWidth from "../../Core/getCanvasClientWidth.js";
 import CesiumMath from "../../Core/Math.js";
 import ScreenSpaceEventHandler from "../../Core/ScreenSpaceEventHandler.js";
 import TimeConstants from "../../Core/TimeConstants.js";
@@ -207,7 +209,8 @@ class ScreenSpaceMapCameraController {
     }
 
     const { camera, ellipsoid, canvas } = scene;
-    const { clientWidth, clientHeight } = canvas;
+    const clientWidth = getCanvasClientWidth(canvas);
+    const clientHeight = getCanvasClientHeight(canvas);
     if (
       dt === 0 ||
       clientWidth === 0 ||

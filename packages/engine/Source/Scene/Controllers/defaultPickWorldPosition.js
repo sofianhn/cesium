@@ -2,6 +2,7 @@ import Cartesian3 from "../../Core/Cartesian3.js";
 import Cartesian2 from "../../Core/Cartesian2.js";
 import Check from "../../Core/Check.js";
 import defined from "../../Core/defined.js";
+import getCanvasClientHeight from "../../Core/getCanvasClientHeight.js";
 import IntersectionTests from "../../Core/IntersectionTests.js";
 import Plane from "../../Core/Plane.js";
 import Ray from "../../Core/Ray.js";
@@ -70,7 +71,7 @@ export default function (
       scratchPlane,
     );
 
-    const { clientHeight } = scene.canvas;
+    const clientHeight = getCanvasClientHeight(scene.canvas);
     const focusDistance =
       (targetPixelSize.y * clientHeight) /
       (2.0 * Math.tan(camera.frustum.fovy * 0.5));
