@@ -46,6 +46,7 @@ function Context(canvas, options) {
 
   const {
     getWebGLStub,
+    glContext: providedGlContext,
     requestWebgl1,
     webgl: webglOptions = {},
     allowTextureFilterAnisotropic = true,
@@ -57,9 +58,14 @@ function Context(canvas, options) {
   webglOptions.powerPreference =
     webglOptions.powerPreference ?? "high-performance"; // WebGL default is "default"
 
-  const glContext = defined(getWebGLStub)
-    ? getWebGLStub(canvas, webglOptions)
-    : getWebGLContext(canvas, webglOptions, requestWebgl1);
+  let glContext;
+  if (defined(providedGlContext)) {
+    glContext = providedGlContext;
+  } else if (defined(getWebGLStub)) {
+    glContext = getWebGLStub(canvas, webglOptions);
+  } else {
+    glContext = getWebGLContext(canvas, webglOptions, requestWebgl1);
+  }
 
   // Get context type. instanceof will throw if WebGL2 is not supported
   const webgl2Supported = typeof WebGL2RenderingContext !== "undefined";
@@ -401,6 +407,7 @@ function Context(canvas, options) {
  *
  * @property {boolean} [requestWebgl1=false] If true and the browser supports it, use a WebGL 1 rendering context
  * @property {boolean} [allowTextureFilterAnisotropic=true] If true, use anisotropic filtering during texture sampling
+ * @property {WebGLRenderingContext|WebGL2RenderingContext} [glContext] An existing WebGL context to use instead of creating one from the canvas
  * @property {WebGLOptions} [webgl] WebGL options to be passed on to canvas.getContext
  * @property {Function} [getWebGLStub] A function to create a WebGL stub for testing
  */
@@ -408,7 +415,7 @@ function Context(canvas, options) {
 /**
  * @private
  * @param {HTMLCanvasElement|OffscreenCanvas} canvas The canvas element to which the context will be associated
- * @param {WebGLOptions} webglOptions WebGL options to be passed on to HTMLCanvasElement.getContext()
+ * @param {WebGLOptions} webglOptions WebGL options to be passed on to the canvas getContext call
  * @param {boolean} requestWebgl1 Whether to request a WebGLRenderingContext or a WebGL2RenderingContext.
  * @returns {WebGLRenderingContext|WebGL2RenderingContext}
  */
@@ -440,7 +447,7 @@ function getWebGLContext(canvas, webglOptions, requestWebgl1) {
 /**
  * @typedef {object} WebGLOptions
  *
- * WebGL options to be passed on to HTMLCanvasElement.getContext().
+ * WebGL options to be passed on to the canvas getContext call.
  * See {@link https://registry.khronos.org/webgl/specs/latest/1.0/#5.2|WebGLContextAttributes}
  * but note the modified defaults for 'alpha', 'stencil', and 'powerPreference'
  *
