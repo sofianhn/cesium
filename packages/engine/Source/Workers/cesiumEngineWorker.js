@@ -1,4 +1,5 @@
 import Cartesian2 from "../Core/Cartesian2.js";
+import Color from "../Core/Color.js";
 import defined from "../Core/defined.js";
 import OffscreenEngineMessageType from "../Core/OffscreenCanvasEngineProtocol.js";
 import ImageryLayer from "../Scene/ImageryLayer.js";
@@ -55,6 +56,15 @@ function serializePick(picked) {
 }
 
 function handleInit(data) {
+  if (defined(data.baseUrl)) {
+    self.CESIUM_BASE_URL = data.baseUrl;
+  }
+
+  const canvas = data.canvas;
+  const pixelRatio = data.pixelRatio ?? 1.0;
+  canvas.width = Math.max(1, Math.floor(data.width * pixelRatio));
+  canvas.height = Math.max(1, Math.floor(data.height * pixelRatio));
+
   scene = new Scene({
     canvas: data.canvas,
     contextOptions: data.contextOptions,
@@ -70,6 +80,15 @@ function handleInit(data) {
     scene.terrain = Terrain.fromWorldTerrain();
   }
 
+  if (defined(data.backgroundColor)) {
+    scene.backgroundColor = Color.fromBytes(
+      data.backgroundColor[0],
+      data.backgroundColor[1],
+      data.backgroundColor[2],
+      data.backgroundColor[3] ?? 255,
+    );
+  }
+
   startRenderLoop();
   self.postMessage({
     type: OffscreenEngineMessageType.READY,
@@ -82,6 +101,38 @@ function handleResize(data) {
   }
 
   scene.resize(data.width, data.height, data.pixelRatio);
+}
+
+function handleSamplePixel(data) {
+  if (!defined(scene)) {
+    self.postMessage({
+      type: OffscreenEngineMessageType.SAMPLE_PIXEL_RESULT,
+      id: data.id,
+      color: undefined,
+    });
+    return;
+  }
+
+  scene.render();
+
+  const pixelRatio = scene.pixelRatio;
+  const pixelX = Math.floor(data.x * pixelRatio);
+  const pixelY = Math.floor(
+    scene.drawingBufferHeight - data.y * pixelRatio - 1,
+  );
+
+  const pixels = scene.context.readPixels({
+    x: pixelX,
+    y: pixelY,
+    width: 1,
+    height: 1,
+  });
+
+  self.postMessage({
+    type: OffscreenEngineMessageType.SAMPLE_PIXEL_RESULT,
+    id: data.id,
+    color: [pixels[0], pixels[1], pixels[2], pixels[3]],
+  });
 }
 
 function handlePick(data) {
@@ -114,6 +165,9 @@ self.onmessage = function (event) {
         break;
       case OffscreenEngineMessageType.PICK:
         handlePick(data);
+        break;
+      case OffscreenEngineMessageType.SAMPLE_PIXEL:
+        handleSamplePixel(data);
         break;
       case OffscreenEngineMessageType.DESTROY:
         destroyEngine();

@@ -22,6 +22,7 @@ import VerticalExaggeration from "../Core/VerticalExaggeration.js";
 import Transforms from "../Core/Transforms.js";
 import CameraEventAggregator from "./CameraEventAggregator.js";
 import CameraEventType from "./CameraEventType.js";
+import HeadlessCameraEventAggregator from "./HeadlessCameraEventAggregator.js";
 import MapMode2D from "./MapMode2D.js";
 import SceneMode from "./SceneMode.js";
 import SceneTransforms from "./SceneTransforms.js";
@@ -291,7 +292,10 @@ function ScreenSpaceCameraController(scene) {
 
   this._lastGlobeHeight = 0.0;
 
-  this._aggregator = new CameraEventAggregator(scene.canvas);
+  this._aggregator =
+    typeof document === "undefined"
+      ? new HeadlessCameraEventAggregator()
+      : new CameraEventAggregator(scene.canvas);
 
   this._lastInertiaSpinMovement = undefined;
   this._lastInertiaZoomMovement = undefined;

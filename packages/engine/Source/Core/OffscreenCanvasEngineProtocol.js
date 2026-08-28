@@ -10,6 +10,8 @@ const OffscreenEngineMessageType = {
   RESIZE: "resize",
   PICK: "pick",
   PICK_RESULT: "pickResult",
+  SAMPLE_PIXEL: "samplePixel",
+  SAMPLE_PIXEL_RESULT: "samplePixelResult",
   DESTROY: "destroy",
   DESTROYED: "destroyed",
   START_RENDER_LOOP: "startRenderLoop",

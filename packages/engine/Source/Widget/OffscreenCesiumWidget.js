@@ -10,6 +10,8 @@ import OffscreenEngineMessageType from "../Core/OffscreenCanvasEngineProtocol.js
 import RuntimeError from "../Core/RuntimeError.js";
 import getElement from "../DataSources/getElement.js";
 
+/*global CESIUM_BASE_URL*/
+
 function createEngineWorker() {
   if (!FeatureDetection.supportsEsmWebWorkers()) {
     throw new RuntimeError(
@@ -43,6 +45,7 @@ function supportsTransferControlToOffscreen() {
  * @param {number} [options.pixelRatio] The pixel ratio to use when sizing the canvas buffer. Defaults to <code>window.devicePixelRatio</code>.
  * @param {boolean} [options.useWorldImagery=true] If true, add Cesium ion world imagery to the scene.
  * @param {boolean} [options.useWorldTerrain=false] If true, add Cesium ion world terrain to the scene.
+ * @param {number[]} [options.backgroundColor] An RGBA color in bytes, e.g. <code>[100, 149, 237, 255]</code>, applied to {@link Scene#backgroundColor} in the worker.
  *
  * @exception {DeveloperError} container is required.
  * @exception {RuntimeError} transferControlToOffscreen or ESM web workers are not supported.
@@ -77,6 +80,20 @@ function OffscreenCesiumWidget(container, options) {
     return false;
   };
   element.appendChild(canvas);
+
+  canvas.style.display = "block";
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+
+  const containerRect = container.getBoundingClientRect();
+  let width = getCanvasClientWidth(canvas);
+  let height = getCanvasClientHeight(canvas);
+  if (width === 0) {
+    width = containerRect.width || 300;
+  }
+  if (height === 0) {
+    height = containerRect.height || 150;
+  }
 
   const offscreen = canvas.transferControlToOffscreen();
   const pixelRatio = options.pixelRatio ?? window.devicePixelRatio;
@@ -114,8 +131,10 @@ function OffscreenCesiumWidget(container, options) {
     }
   };
 
-  const width = getCanvasClientWidth(canvas);
-  const height = getCanvasClientHeight(canvas);
+  const baseUrl =
+    typeof CESIUM_BASE_URL !== "undefined"
+      ? CESIUM_BASE_URL
+      : buildModuleUrl("");
 
   worker.postMessage(
     {
@@ -124,9 +143,11 @@ function OffscreenCesiumWidget(container, options) {
       width: width,
       height: height,
       pixelRatio: pixelRatio,
+      baseUrl: baseUrl,
       contextOptions: options.contextOptions,
       useWorldImagery: options.useWorldImagery ?? true,
       useWorldTerrain: options.useWorldTerrain ?? false,
+      backgroundColor: options.backgroundColor,
     },
     [offscreen],
   );
@@ -200,6 +221,14 @@ OffscreenCesiumWidget.prototype._handleWorkerMessage = function (data) {
       }
       break;
     }
+    case OffscreenEngineMessageType.SAMPLE_PIXEL_RESULT: {
+      const sampleRequest = this._pickRequests[data.id];
+      if (defined(sampleRequest)) {
+        sampleRequest.resolve(data.color);
+        delete this._pickRequests[data.id];
+      }
+      break;
+    }
     case OffscreenEngineMessageType.ERROR:
       if (defined(this._rejectReady)) {
         this._rejectReady(new RuntimeError(data.message));
@@ -229,6 +258,38 @@ OffscreenCesiumWidget.prototype.resize = function () {
     width: width,
     height: height,
     pixelRatio: this._pixelRatio,
+  });
+};
+
+/**
+ * Samples a pixel color from the worker-rendered frame.
+ *
+ * @param {number} x The x coordinate in CSS pixels relative to the canvas.
+ * @param {number} y The y coordinate in CSS pixels relative to the canvas.
+ * @returns {Promise<number[]|undefined>} A promise that resolves to an RGBA byte array.
+ */
+OffscreenCesiumWidget.prototype.samplePixel = function (x, y) {
+  //>>includeStart('debug', pragmas.debug);
+  if (!defined(x) || !defined(y)) {
+    throw new DeveloperError("x and y are required.");
+  }
+  //>>includeEnd('debug');
+
+  const id = ++this._pickRequestId;
+  const widget = this;
+
+  return new Promise(function (resolve, reject) {
+    widget._pickRequests[id] = {
+      resolve: resolve,
+      reject: reject,
+    };
+
+    widget._worker.postMessage({
+      type: OffscreenEngineMessageType.SAMPLE_PIXEL,
+      id: id,
+      x: x,
+      y: y,
+    });
   });
 };
 
