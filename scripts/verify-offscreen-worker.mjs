@@ -13,11 +13,59 @@ const GPU_ARGS = [
   "--enable-webgl2",
 ];
 
+function looksLikeEarthImagery(rgb) {
+  if (!Array.isArray(rgb) || rgb.length < 3) {
+    return false;
+  }
+  const [r, g, b] = rgb;
+  const sum = r + g + b;
+
+  if (r === 25 && g === 45 && b === 85) {
+    return false;
+  }
+
+  // Globe base color without draped imagery.
+  if (r < 8 && g < 8 && b >= 120 && b <= 140) {
+    return false;
+  }
+
+  // Saturated blue sphere / atmosphere with no imagery tiles.
+  if (b > 170 && r < 35 && g < 50) {
+    return false;
+  }
+
+  if (sum < 120) {
+    return false;
+  }
+
+  return sum >= 360 || (g >= 55 && r >= 20);
+}
+
 async function runCase(page, label, options) {
   return page.evaluate(
     async ({ label, options }) => {
+      function looksLikeEarthImagery(rgb) {
+        if (!Array.isArray(rgb) || rgb.length < 3) {
+          return false;
+        }
+        const [r, g, b] = rgb;
+        const sum = r + g + b;
+        if (r === 25 && g === 45 && b === 85) {
+          return false;
+        }
+        if (r < 8 && g < 8 && b >= 120 && b <= 140) {
+          return false;
+        }
+        if (b > 170 && r < 35 && g < 50) {
+          return false;
+        }
+        if (sum < 120) {
+          return false;
+        }
+        return sum >= 360 || (g >= 55 && r >= 20);
+      }
+
       const workerErrors = [];
-      const workerLogs = [];
 
       const NativeWorker = Worker;
       Worker = function (url, opts) {
@@ -31,7 +79,6 @@ async function runCase(page, label, options) {
               stack: data.stack?.slice?.(0, 500),
             });
           }
-          workerLogs.push(data?.type ?? "unknown");
         });
         return worker;
       };
@@ -41,6 +88,7 @@ async function runCase(page, label, options) {
       container.style.cssText = "width:960px;height:540px";
 
       let center;
+      let samples;
       let initError;
       try {
         const widget = new Cesium.OffscreenCesiumWidget(container, {
@@ -53,8 +101,20 @@ async function runCase(page, label, options) {
         });
         await widget.readyPromise;
         widget.resize();
-        await new Promise((r) => setTimeout(r, 8000));
-        center = await widget.samplePixel(480, 270);
+        await new Promise((r) => setTimeout(r, 10000));
+
+        const points = [
+          [480, 270],
+          [320, 220],
+          [640, 220],
+          [400, 360],
+          [560, 360],
+        ];
+        samples = [];
+        for (const [x, y] of points) {
+          samples.push(await widget.samplePixel(x, y));
+        }
+        center = samples[0];
         widget.destroy();
       } catch (e) {
         initError = e.message || String(e);
@@ -62,23 +122,18 @@ async function runCase(page, label, options) {
 
       Worker = NativeWorker;
 
-      const sum = Array.isArray(center)
-        ? center[0] + center[1] + center[2]
-        : 0;
-      const isBackgroundOnly =
-        Array.isArray(center) &&
-        center[0] === 25 &&
-        center[1] === 45 &&
-        center[2] === 85;
+      const earthLikeCount = (samples ?? []).filter(looksLikeEarthImagery).length;
+      const showsEarthImagery =
+        looksLikeEarthImagery(center) && earthLikeCount >= 1;
 
       return {
         label,
         initError,
         center,
-        sum,
-        isBackgroundOnly,
+        samples,
+        earthLikeCount,
+        showsEarthImagery,
         workerErrors,
-        workerMessageTypes: [...new Set(workerLogs)],
       };
     },
     { label, options },
@@ -108,7 +163,7 @@ async function runMainBaseline(page) {
     viewer.scene.camera.setView({
       destination: Cesium.Cartesian3.fromDegrees(-98, 40, 20000000),
     });
-    await new Promise((r) => setTimeout(r, 6000));
+    await new Promise((r) => setTimeout(r, 8000));
     const s = viewer.scene;
     s.render();
     const pr = s.pixelRatio;
@@ -141,13 +196,10 @@ async function main() {
   });
 
   const mainCenter = await runMainBaseline(page);
+  const baselineShowsEarth = looksLikeEarthImagery(mainCenter);
   console.log("\n=== MAIN THREAD BASELINE ===");
   console.log("center rgb:", mainCenter);
-  console.log(
-    "shows globe:",
-    mainCenter[0] + mainCenter[1] + mainCenter[2] > 60 &&
-      !(mainCenter[0] === 25 && mainCenter[1] === 45 && mainCenter[2] === 85),
-  );
+  console.log("showsEarthImagery:", baselineShowsEarth);
 
   const cases = [
     ["worker-ion-default", { useWorldImagery: true, simpleGlobe: false }],
@@ -172,14 +224,16 @@ async function main() {
   ];
 
   console.log("\n=== WORKER CASES ===");
-  let failed = false;
+  let failed = !baselineShowsEarth;
   for (const [label, options] of cases) {
     const result = await runCase(page, label, options);
     console.log(JSON.stringify(result, null, 2));
     if (label !== "worker-background-only") {
-      if (result.workerErrors.length > 0 || result.isBackgroundOnly) {
+      if (result.workerErrors.length > 0 || !result.showsEarthImagery) {
         failed = true;
       }
+    } else if (result.showsEarthImagery) {
+      failed = true;
     }
   }
 

@@ -1,5 +1,5 @@
 /**
- * Verify live GitHub Pages demos have no worker errors and show globe pixels.
+ * Verify live GitHub Pages demos show Earth imagery (not a blue sphere).
  * Run: node scripts/verify-github-pages.mjs
  */
 /* eslint-disable */
@@ -10,6 +10,40 @@ const URLS = {
   baseline:
     "https://sofianhn.github.io/cesium/Apps/MainThreadGlobeDemo.html",
 };
+
+function parseCenterRgb(status) {
+  const match = status.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+  if (!match) {
+    return undefined;
+  }
+  return [Number(match[1]), Number(match[2]), Number(match[3])];
+}
+
+function looksLikeEarthImagery(rgb) {
+  if (!Array.isArray(rgb) || rgb.length < 3) {
+    return false;
+  }
+  const [r, g, b] = rgb;
+  const sum = r + g + b;
+
+  if (r === 25 && g === 45 && b === 85) {
+    return false;
+  }
+
+  if (r < 8 && g < 8 && b >= 120 && b <= 140) {
+    return false;
+  }
+
+  if (b > 170 && r < 35 && g < 50) {
+    return false;
+  }
+
+  if (sum < 120) {
+    return false;
+  }
+
+  return sum >= 360 || (g >= 55 && r >= 20);
+}
 
 async function inspectDemo(page, url, label) {
   const pageErrors = [];
@@ -23,21 +57,17 @@ async function inspectDemo(page, url, label) {
   });
 
   await page.goto(url, { waitUntil: "networkidle", timeout: 120000 });
-  await page.waitForTimeout(12000);
+  await page.waitForTimeout(14000);
 
   const status = await page.locator("#statusText").innerText();
+  const center = parseCenterRgb(status);
+  const showsEarthImagery = looksLikeEarthImagery(center);
 
   if (label === "worker") {
     const captured = await page.evaluate(() => window.__workerErrors || []);
     workerErrors.push(...captured);
   }
 
-  const failedRequests = [];
-  page.on("requestfailed", (r) => {
-    failedRequests.push(r.url());
-  });
-
-  const isBackgroundOnly = /rgb\(25, 45, 85\)/.test(status);
   const hasErrorText =
     /failed|error|black|dark rgb\(0, 0, 0\)/i.test(status) &&
     !/Rendering · center rgb/.test(status);
@@ -46,15 +76,16 @@ async function inspectDemo(page, url, label) {
     label,
     url,
     status,
+    center,
+    showsEarthImagery,
     pageErrors,
     workerErrors,
-    isBackgroundOnly,
     hasErrorText,
     ok:
       pageErrors.length === 0 &&
       workerErrors.length === 0 &&
       !hasErrorText &&
-      (label === "baseline" || !isBackgroundOnly) &&
+      showsEarthImagery &&
       !status.startsWith("Starting"),
   };
 }
@@ -65,21 +96,19 @@ async function main() {
   });
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
 
-  if (URLS.worker.includes("sofianhn.github.io")) {
-    await page.addInitScript(() => {
-      window.__workerErrors = [];
-      const NativeWorker = Worker;
-      Worker = function (url, opts) {
-        const worker = new NativeWorker(url, opts);
-        worker.addEventListener("message", (event) => {
-          if (event.data?.type === "error") {
-            window.__workerErrors.push(event.data.message);
-          }
-        });
-        return worker;
-      };
-    });
-  }
+  await page.addInitScript(() => {
+    window.__workerErrors = [];
+    const NativeWorker = Worker;
+    Worker = function (url, opts) {
+      const worker = new NativeWorker(url, opts);
+      worker.addEventListener("message", (event) => {
+        if (event.data?.type === "error" || event.data?.type === "ERROR") {
+          window.__workerErrors.push(event.data.message);
+        }
+      });
+      return worker;
+    };
+  });
 
   const results = [];
   for (const [label, url] of Object.entries(URLS)) {

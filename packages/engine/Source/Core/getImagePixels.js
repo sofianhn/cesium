@@ -21,6 +21,19 @@ function getImagePixels(image, width, height) {
     height = image.height;
   }
 
+  if (typeof document === "undefined") {
+    if (typeof OffscreenCanvas !== "undefined") {
+      const canvas = new OffscreenCanvas(width, height);
+      const context2d = canvas.getContext("2d", { willReadFrequently: true });
+      context2d.globalCompositeOperation = "copy";
+      context2d.drawImage(image, 0, 0, width, height);
+      return context2d.getImageData(0, 0, width, height).data;
+    }
+    throw new Error(
+      "getImagePixels requires document or OffscreenCanvas support.",
+    );
+  }
+
   let context2DsByHeight = context2DsByWidthAndHeight[width];
   if (!defined(context2DsByHeight)) {
     context2DsByHeight = {};

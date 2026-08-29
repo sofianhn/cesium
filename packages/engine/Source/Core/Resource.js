@@ -25,6 +25,16 @@ import RequestState from "./RequestState.js";
 import RuntimeError from "./RuntimeError.js";
 import TrustedServers from "./TrustedServers.js";
 
+function getUrlApi() {
+  if (typeof window !== "undefined" && defined(window.URL)) {
+    return window.URL;
+  }
+  if (typeof self !== "undefined" && defined(self.URL)) {
+    return self.URL;
+  }
+  return undefined;
+}
+
 const xhrBlobSupported = (function () {
   try {
     const xhr = new XMLHttpRequest();
@@ -220,6 +230,12 @@ Resource.supportsImageBitmapOptions = function () {
 
   if (typeof createImageBitmap !== "function") {
     supportsImageBitmapOptionsPromise = Promise.resolve(false);
+    return supportsImageBitmapOptionsPromise;
+  }
+
+  // Workers can decode ImageBitmaps but cannot use getImagePixels (no document).
+  if (typeof document === "undefined") {
+    supportsImageBitmapOptionsPromise = Promise.resolve(true);
     return supportsImageBitmapOptionsPromise;
   }
 
@@ -952,7 +968,15 @@ Resource.prototype.fetchImage = function (options) {
           skipColorSpaceConversion: skipColorSpaceConversion,
         });
       }
-      const blobUrl = window.URL.createObjectURL(blob);
+      const urlApi = getUrlApi();
+      if (!defined(urlApi)) {
+        return Promise.reject(
+          new RuntimeError(
+            "Unable to decode imagery blob without URL.createObjectURL support.",
+          ),
+        );
+      }
+      const blobUrl = urlApi.createObjectURL(blob);
       generatedBlobResource = new Resource({
         url: blobUrl,
       });
@@ -976,12 +1000,16 @@ Resource.prototype.fetchImage = function (options) {
         return image;
       }
 
-      window.URL.revokeObjectURL(generatedBlobResource.url);
+      const urlApi = getUrlApi();
+      if (defined(urlApi) && defined(generatedBlobResource)) {
+        urlApi.revokeObjectURL(generatedBlobResource.url);
+      }
       return image;
     })
     .catch(function (error) {
-      if (defined(generatedBlobResource)) {
-        window.URL.revokeObjectURL(generatedBlobResource.url);
+      const urlApi = getUrlApi();
+      if (defined(urlApi) && defined(generatedBlobResource)) {
+        urlApi.revokeObjectURL(generatedBlobResource.url);
       }
 
       // If the blob load succeeded but the image decode failed, attach the blob
