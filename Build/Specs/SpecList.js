@@ -166150,7 +166150,10 @@ function getWebGLContext(canvas, webglOptions, requestWebgl1) {
     requestWebgl1 = true;
   }
   const contextType = requestWebgl1 ? "webgl" : "webgl2";
-  const glContext = canvas.getContext(contextType, webglOptions);
+  let glContext = canvas.getContext(contextType, webglOptions);
+  if (!defined_default(glContext) && !requestWebgl1 && webgl2Supported) {
+    glContext = canvas.getContext("webgl", webglOptions);
+  }
   if (!defined_default(glContext)) {
     throw new RuntimeError_default(
       "The browser supports WebGL, but initialization failed."
@@ -351116,17 +351119,531 @@ describe("Widgets/Animation/AnimationViewModel", function() {
   });
 });
 
-// packages/widgets/Specs/Cesium3DTilesInspector/Cesium3DTilesInspectorSpec.js
+// packages/widgets/Specs/BaseLayerPicker/BaseLayerPickerSpec.js
 var import_engine34 = __toESM(require_Cesium(), 1);
 var import__685 = __toESM(require_Cesium(), 1);
+describe("Widgets/BaseLayerPicker/BaseLayerPicker", function() {
+  function MockGlobe() {
+    this.imageryLayers = new import_engine34.ImageryLayerCollection();
+    this.terrainProvider = new import_engine34.EllipsoidTerrainProvider();
+  }
+  it("can create and destroy", function() {
+    const container = document.createElement("div");
+    container.id = "testContainer";
+    document.body.appendChild(container);
+    const globe2 = new MockGlobe();
+    const widget = new import__685.BaseLayerPicker("testContainer", {
+      globe: globe2
+    });
+    expect(widget.container).toBe(container);
+    expect(widget.viewModel.globe).toBe(globe2);
+    expect(widget.isDestroyed()).toEqual(false);
+    widget.destroy();
+    expect(widget.isDestroyed()).toEqual(true);
+    document.body.removeChild(container);
+  });
+  function addCloseOnInputSpec(name, func) {
+    it(`${name} event closes dropdown if target is not inside container`, function() {
+      const container = document.createElement("div");
+      container.id = "testContainer";
+      document.body.appendChild(container);
+      const widget = new import__685.BaseLayerPicker("testContainer", {
+        globe: new MockGlobe()
+      });
+      widget.viewModel.dropDownVisible = true;
+      func(document.body);
+      expect(widget.viewModel.dropDownVisible).toEqual(false);
+      widget.viewModel.dropDownVisible = true;
+      func(container.firstChild);
+      expect(widget.viewModel.dropDownVisible).toEqual(true);
+      widget.destroy();
+      document.body.removeChild(container);
+    });
+  }
+  if (import_engine34.FeatureDetection.supportsPointerEvents()) {
+    addCloseOnInputSpec("pointerDown", DomEventSimulator_default.firePointerDown);
+  } else {
+    addCloseOnInputSpec("mousedown", DomEventSimulator_default.fireMouseDown);
+    addCloseOnInputSpec("touchstart", DomEventSimulator_default.fireTouchStart);
+  }
+  it("constructor throws with no layer collection", function() {
+    expect(function() {
+      return new import__685.BaseLayerPicker(document.body, void 0);
+    }).toThrowDeveloperError();
+  });
+  it("constructor throws with no element", function() {
+    expect(function() {
+      return new import__685.BaseLayerPicker(void 0, {
+        globe: new MockGlobe()
+      });
+    }).toThrowDeveloperError();
+  });
+  it("constructor throws with string element that does not exist", function() {
+    expect(function() {
+      return new import__685.BaseLayerPicker("does not exist", {
+        globe: new MockGlobe()
+      });
+    }).toThrowDeveloperError();
+  });
+});
+
+// packages/widgets/Specs/BaseLayerPicker/BaseLayerPickerViewModelSpec.js
+var import_engine35 = __toESM(require_Cesium(), 1);
+var import__686 = __toESM(require_Cesium(), 1);
+describe("Widgets/BaseLayerPicker/BaseLayerPickerViewModel", function() {
+  function MockGlobe() {
+    this.imageryLayers = new import_engine35.ImageryLayerCollection();
+    this.terrainProvider = new import_engine35.EllipsoidTerrainProvider();
+    this.terrainProviderChanged = new import_engine35.Event();
+    this.depthTestAgainstTerrain = false;
+  }
+  MockGlobe.prototype.isDestroyed = () => false;
+  const testProvider = {
+    tilingScheme: new import_engine35.GeographicTilingScheme()
+  };
+  const testProvider2 = {
+    tilingScheme: new import_engine35.GeographicTilingScheme()
+  };
+  const testProvider3 = {
+    tilingScheme: new import_engine35.GeographicTilingScheme()
+  };
+  const testEllipsoidProviderViewModel = new import__686.ProviderViewModel({
+    name: "name",
+    tooltip: "tooltip",
+    iconUrl: "url",
+    creationFunction: function() {
+      return new import_engine35.EllipsoidTerrainProvider();
+    }
+  });
+  const testProviderViewModel = new import__686.ProviderViewModel({
+    name: "name",
+    tooltip: "tooltip",
+    iconUrl: "url",
+    creationFunction: function() {
+      return testProvider;
+    }
+  });
+  const testProviderViewModel2 = new import__686.ProviderViewModel({
+    name: "name2",
+    tooltip: "tooltip2",
+    iconUrl: "url2",
+    creationFunction: function() {
+      return [testProvider, testProvider2];
+    }
+  });
+  const testProviderViewModel3 = new import__686.ProviderViewModel({
+    name: "name3",
+    tooltip: "tooltip3",
+    iconUrl: "url3",
+    creationFunction: function() {
+      return testProvider3;
+    }
+  });
+  const testProviderViewModelAsync = new import__686.ProviderViewModel({
+    name: "name3",
+    tooltip: "tooltip3",
+    iconUrl: "url3",
+    creationFunction: async function() {
+      return testProvider;
+    }
+  });
+  it("constructor sets expected values", function() {
+    const imageryViewModels = [];
+    const terrainViewModels = [];
+    const globe2 = new MockGlobe();
+    const viewModel = new import__686.BaseLayerPickerViewModel({
+      globe: globe2,
+      imageryProviderViewModels: imageryViewModels,
+      terrainProviderViewModels: terrainViewModels
+    });
+    expect(viewModel.globe).toBe(globe2);
+    expect(viewModel.imageryProviderViewModels.length).toBe(0);
+    expect(viewModel.terrainProviderViewModels.length).toBe(0);
+  });
+  it("separates providers into categories", function() {
+    const imageryProviders = [
+      new import__686.ProviderViewModel({
+        name: "name",
+        tooltip: "tooltip",
+        iconUrl: "url",
+        category: "cat1",
+        creationFunction: function() {
+          return testProvider;
+        }
+      }),
+      new import__686.ProviderViewModel({
+        name: "name",
+        tooltip: "tooltip",
+        iconUrl: "url",
+        category: "cat1",
+        creationFunction: function() {
+          return testProvider;
+        }
+      }),
+      new import__686.ProviderViewModel({
+        name: "name",
+        tooltip: "tooltip",
+        iconUrl: "url",
+        category: "cat2",
+        creationFunction: function() {
+          return testProvider;
+        }
+      })
+    ];
+    const terrainProviders = [
+      new import__686.ProviderViewModel({
+        name: "name",
+        tooltip: "tooltip",
+        iconUrl: "url",
+        category: "cat1",
+        creationFunction: function() {
+          return testProvider;
+        }
+      }),
+      new import__686.ProviderViewModel({
+        name: "name",
+        tooltip: "tooltip",
+        iconUrl: "url",
+        category: "cat2",
+        creationFunction: function() {
+          return testProvider;
+        }
+      }),
+      new import__686.ProviderViewModel({
+        name: "name",
+        tooltip: "tooltip",
+        iconUrl: "url",
+        category: "cat2",
+        creationFunction: function() {
+          return testProvider;
+        }
+      })
+    ];
+    const viewModel = new import__686.BaseLayerPickerViewModel({
+      globe: new MockGlobe(),
+      imageryProviderViewModels: imageryProviders,
+      terrainProviderViewModels: terrainProviders
+    });
+    expect(viewModel._imageryProviders).toBeDefined();
+    expect(viewModel._imageryProviders().length).toBe(2);
+    expect(viewModel._imageryProviders()[0].providers.length).toBe(2);
+    expect(viewModel._imageryProviders()[0].name).toBe("cat1");
+    expect(viewModel._imageryProviders()[1].providers.length).toBe(1);
+    expect(viewModel._imageryProviders()[1].name).toBe("cat2");
+    expect(viewModel._terrainProviders).toBeDefined();
+    expect(viewModel._terrainProviders().length).toBe(2);
+    expect(viewModel._terrainProviders()[0].providers.length).toBe(1);
+    expect(viewModel._terrainProviders()[0].name).toBe("cat1");
+    expect(viewModel._terrainProviders()[1].providers.length).toBe(2);
+    expect(viewModel._terrainProviders()[1].name).toBe("cat2");
+  });
+  it("selecting imagery closes the dropDown", function() {
+    const imageryViewModels = [testProviderViewModel];
+    const globe2 = new MockGlobe();
+    const viewModel = new import__686.BaseLayerPickerViewModel({
+      globe: globe2,
+      imageryProviderViewModels: imageryViewModels
+    });
+    viewModel.dropDownVisible = true;
+    viewModel.selectedImagery = testProviderViewModel;
+    expect(viewModel.dropDownVisible).toEqual(false);
+  });
+  it("selecting terrain closes the dropDown", async function() {
+    const imageryViewModels = [testProviderViewModel];
+    const globe2 = new MockGlobe();
+    const viewModel = new import__686.BaseLayerPickerViewModel({
+      globe: globe2,
+      imageryProviderViewModels: imageryViewModels
+    });
+    viewModel.dropDownVisible = true;
+    viewModel.selectedTerrain = testProviderViewModel;
+    await testProviderViewModel.creationCommand();
+    expect(viewModel.dropDownVisible).toEqual(false);
+  });
+  it("tooltip, buttonImageUrl, and selectedImagery all return expected values", async function() {
+    const imageryViewModels = [testProviderViewModel];
+    const terrainViewModels = [testProviderViewModel3];
+    const globe2 = new MockGlobe();
+    const viewModel = new import__686.BaseLayerPickerViewModel({
+      globe: globe2,
+      imageryProviderViewModels: imageryViewModels,
+      terrainProviderViewModels: terrainViewModels
+    });
+    viewModel.selectedImagery = testProviderViewModel;
+    viewModel.selectedTerrain = testProviderViewModel3;
+    await testProviderViewModel.creationCommand();
+    expect(viewModel.buttonTooltip).toEqual(
+      `${testProviderViewModel.name}
+${testProviderViewModel3.name}`
+    );
+    viewModel.selectedImagery = void 0;
+    expect(viewModel.buttonTooltip).toEqual(testProviderViewModel3.name);
+    viewModel.selectedImagery = testProviderViewModel;
+    await testProviderViewModel.creationCommand();
+    viewModel.selectedTerrain = void 0;
+    expect(viewModel.buttonTooltip).toEqual(testProviderViewModel.name);
+    expect(viewModel.buttonImageUrl).toEqual(testProviderViewModel.iconUrl);
+  });
+  it("selectedImagery actually sets base layer", async function() {
+    const imageryViewModels = [testProviderViewModel];
+    const globe2 = new MockGlobe();
+    const imageryLayers = globe2.imageryLayers;
+    const viewModel = new import__686.BaseLayerPickerViewModel({
+      globe: globe2,
+      imageryProviderViewModels: imageryViewModels
+    });
+    expect(imageryLayers.length).toEqual(1);
+    viewModel.selectedImagery = testProviderViewModel;
+    expect(imageryLayers.length).toEqual(1);
+    await pollToPromise_default(() => imageryLayers.get(0).ready);
+    expect(imageryLayers.get(0).imageryProvider).toBe(testProvider);
+    viewModel.selectedImagery = testProviderViewModel2;
+    expect(imageryLayers.length).toEqual(2);
+    await pollToPromise_default(() => imageryLayers.get(0).ready);
+    expect(imageryLayers.get(0).imageryProvider).toBe(testProvider);
+    await pollToPromise_default(() => imageryLayers.get(1).ready);
+    expect(imageryLayers.get(1).imageryProvider).toBe(testProvider2);
+  });
+  it("selectedTerrain actually sets terrainProvider", async function() {
+    const terrainProviderViewModels = [
+      testProviderViewModel,
+      testProviderViewModel3
+    ];
+    const globe2 = new MockGlobe();
+    const viewModel = new import__686.BaseLayerPickerViewModel({
+      globe: globe2,
+      terrainProviderViewModels
+    });
+    viewModel.selectedTerrain = testProviderViewModel3;
+    await testProviderViewModel3.creationCommand();
+    expect(globe2.terrainProvider).toBe(testProvider3);
+  });
+  it("selectedTerrain actually sets async terrainProvider", async function() {
+    const terrainProviderViewModels = [
+      testProviderViewModel,
+      testProviderViewModelAsync
+    ];
+    const globe2 = new MockGlobe();
+    const viewModel = new import__686.BaseLayerPickerViewModel({
+      globe: globe2,
+      terrainProviderViewModels
+    });
+    viewModel.selectedTerrain = testProviderViewModelAsync;
+    await testProviderViewModelAsync.creationCommand();
+    expect(globe2.terrainProvider).toBe(testProvider);
+    expect(globe2.depthTestAgainstTerrain).toBeTrue();
+  });
+  it("selectedTerrain sets ellipsoid terrain provider", async function() {
+    const terrainProviderViewModels = [testEllipsoidProviderViewModel];
+    const globe2 = new MockGlobe();
+    const viewModel = new import__686.BaseLayerPickerViewModel({
+      globe: globe2,
+      terrainProviderViewModels
+    });
+    viewModel.selectedTerrain = testEllipsoidProviderViewModel;
+    await testProviderViewModelAsync.creationCommand();
+    expect(globe2.terrainProvider).toBeInstanceOf(import_engine35.EllipsoidTerrainProvider);
+    expect(globe2.depthTestAgainstTerrain).toBeFalse();
+  });
+  it("default does not override default value of depthTestAgainstTerrain", async function() {
+    const terrainProviderViewModels = [testEllipsoidProviderViewModel];
+    const globe2 = new MockGlobe();
+    const viewModel = new import__686.BaseLayerPickerViewModel({
+      globe: globe2,
+      terrainProviderViewModels
+    });
+    globe2.depthTestAgainstTerrain = true;
+    await testEllipsoidProviderViewModel.creationCommand();
+    expect(globe2.terrainProvider).toBeInstanceOf(import_engine35.EllipsoidTerrainProvider);
+    expect(globe2.depthTestAgainstTerrain).toBeTrue();
+  });
+  it("selectedTerrain cancels update if terrainProvider is set externally", async function() {
+    const terrainProviderViewModels = [testProviderViewModel3];
+    const globe2 = new MockGlobe();
+    const viewModel = new import__686.BaseLayerPickerViewModel({
+      globe: globe2,
+      terrainProviderViewModels
+    });
+    viewModel.selectedTerrain = testProviderViewModelAsync;
+    globe2.terrainProviderChanged.raiseEvent();
+    await testProviderViewModelAsync.creationCommand();
+    expect(globe2.terrainProvider).not.toBe(testProvider);
+  });
+  it("settings selectedImagery only removes layers added by view model", async function() {
+    const imageryViewModels = [testProviderViewModel];
+    const globe2 = new MockGlobe();
+    const imageryLayers = globe2.imageryLayers;
+    const viewModel = new import__686.BaseLayerPickerViewModel({
+      globe: globe2,
+      imageryProviderViewModels: imageryViewModels
+    });
+    expect(imageryLayers.length).toEqual(1);
+    viewModel.selectedImagery = testProviderViewModel2;
+    expect(imageryLayers.length).toEqual(2);
+    await pollToPromise_default(() => imageryLayers.get(0).ready);
+    expect(imageryLayers.get(0).imageryProvider).toBe(testProvider);
+    await pollToPromise_default(() => imageryLayers.get(1).ready);
+    expect(imageryLayers.get(1).imageryProvider).toBe(testProvider2);
+    imageryLayers.addImageryProvider(testProvider3, 1);
+    imageryLayers.remove(imageryLayers.get(0));
+    viewModel.selectedImagery = void 0;
+    expect(imageryLayers.length).toEqual(1);
+    await pollToPromise_default(() => imageryLayers.get(0).ready);
+    expect(imageryLayers.get(0).imageryProvider).toBe(testProvider3);
+  });
+  it("dropDownVisible and toggleDropDown work", function() {
+    const viewModel = new import__686.BaseLayerPickerViewModel({
+      globe: new MockGlobe()
+    });
+    expect(viewModel.dropDownVisible).toEqual(false);
+    viewModel.toggleDropDown();
+    expect(viewModel.dropDownVisible).toEqual(true);
+    viewModel.dropDownVisible = false;
+    expect(viewModel.dropDownVisible).toEqual(false);
+  });
+  it("constructor throws with no globe", function() {
+    expect(function() {
+      return new import__686.BaseLayerPickerViewModel({});
+    }).toThrowDeveloperError();
+  });
+});
+
+// packages/widgets/Specs/BaseLayerPicker/ProviderViewModelSpec.js
+var import__687 = __toESM(require_Cesium(), 1);
+describe("Widgets/BaseLayerPicker/ProviderViewModel", function() {
+  let spyCreationFunction;
+  beforeEach(function() {
+    spyCreationFunction = jasmine.createSpy("creationFunction");
+  });
+  describe("with observables", function() {
+    it("constructor sets expected parameters", function() {
+      const options = {
+        name: import__687.knockout.observable("name"),
+        tooltip: import__687.knockout.observable("tooltip"),
+        iconUrl: import__687.knockout.observable("iconUrl"),
+        category: "mycategory",
+        creationFunction: (0, import__687.createCommand)(spyCreationFunction)
+      };
+      const viewModel = new import__687.ProviderViewModel(options);
+      expect(viewModel.name).toBe(options.name());
+      expect(viewModel.tooltip).toBe(options.tooltip());
+      expect(viewModel.iconUrl).toBe(options.iconUrl());
+      expect(viewModel.category).toBe(options.category);
+      expect(viewModel.creationCommand).toBeDefined();
+      viewModel.creationCommand();
+      expect(spyCreationFunction).toHaveBeenCalled();
+    });
+    it("constructor throws with no name", function() {
+      const options = {
+        tooltip: import__687.knockout.observable("tooltip"),
+        iconUrl: import__687.knockout.observable("iconUrl"),
+        creationFunction: (0, import__687.createCommand)(spyCreationFunction)
+      };
+      expect(function() {
+        return new import__687.ProviderViewModel(options);
+      }).toThrowDeveloperError();
+    });
+    it("constructor throws with no tooltip", function() {
+      const options = {
+        name: import__687.knockout.observable("name"),
+        iconUrl: import__687.knockout.observable("iconUrl"),
+        creationFunction: (0, import__687.createCommand)(spyCreationFunction)
+      };
+      expect(function() {
+        return new import__687.ProviderViewModel(options);
+      }).toThrowDeveloperError();
+    });
+    it("constructor throws with no iconUrl", function() {
+      const options = {
+        name: import__687.knockout.observable("name"),
+        tooltip: import__687.knockout.observable("tooltip"),
+        creationFunction: (0, import__687.createCommand)(spyCreationFunction)
+      };
+      expect(function() {
+        return new import__687.ProviderViewModel(options);
+      }).toThrowDeveloperError();
+    });
+    it("constructor throws with no creationFunction", function() {
+      const options = {
+        name: import__687.knockout.observable("name"),
+        tooltip: import__687.knockout.observable("tooltip"),
+        iconUrl: import__687.knockout.observable("iconUrl")
+      };
+      expect(function() {
+        return new import__687.ProviderViewModel(options);
+      }).toThrowDeveloperError();
+    });
+  });
+  describe("with values", function() {
+    it("constructor sets expected parameters", function() {
+      const options = {
+        name: "name",
+        tooltip: "tooltip",
+        iconUrl: "iconUrl",
+        creationFunction: spyCreationFunction
+      };
+      const viewModel = new import__687.ProviderViewModel(options);
+      expect(viewModel.name).toEqual(options.name);
+      expect(viewModel.tooltip).toEqual(options.tooltip);
+      expect(viewModel.iconUrl).toEqual(options.iconUrl);
+      expect(viewModel.creationCommand).toBeDefined();
+      viewModel.creationCommand();
+      expect(spyCreationFunction).toHaveBeenCalled();
+    });
+    it("constructor throws with no name", function() {
+      const options = {
+        tooltip: "tooltip",
+        iconUrl: "iconUrl",
+        creationFunction: spyCreationFunction
+      };
+      expect(function() {
+        return new import__687.ProviderViewModel(options);
+      }).toThrowDeveloperError();
+    });
+    it("constructor throws with no tooltip", function() {
+      const options = {
+        name: "name",
+        iconUrl: "iconUrl",
+        creationFunction: spyCreationFunction
+      };
+      expect(function() {
+        return new import__687.ProviderViewModel(options);
+      }).toThrowDeveloperError();
+    });
+    it("constructor throws with no iconUrl", function() {
+      const options = {
+        name: "name",
+        tooltip: "tooltip",
+        creationFunction: spyCreationFunction
+      };
+      expect(function() {
+        return new import__687.ProviderViewModel(options);
+      }).toThrowDeveloperError();
+    });
+    it("constructor throws with no creationFunction", function() {
+      const options = {
+        name: "name",
+        tooltip: "tooltip",
+        iconUrl: "iconUrl"
+      };
+      expect(function() {
+        return new import__687.ProviderViewModel(options);
+      }).toThrowDeveloperError();
+    });
+  });
+});
+
+// packages/widgets/Specs/Cesium3DTilesInspector/Cesium3DTilesInspectorSpec.js
+var import_engine36 = __toESM(require_Cesium(), 1);
+var import__688 = __toESM(require_Cesium(), 1);
 describe(
   "Widgets/Cesium3DTilesInspector/Cesium3DTilesInspector",
   function() {
     let scene2;
     beforeAll(function() {
       scene2 = createScene_default();
-      const ellipsoid = import_engine34.Ellipsoid.UNIT_SPHERE;
-      scene2.globe = new import_engine34.Globe(ellipsoid);
+      const ellipsoid = import_engine36.Ellipsoid.UNIT_SPHERE;
+      scene2.globe = new import_engine36.Globe(ellipsoid);
     });
     afterAll(function() {
       scene2.destroyForSpecs();
@@ -351135,7 +351652,7 @@ describe(
       const container = document.createElement("div");
       container.id = "testContainer";
       document.body.appendChild(container);
-      const widget = new import__685.Cesium3DTilesInspector("testContainer", scene2);
+      const widget = new import__688.Cesium3DTilesInspector("testContainer", scene2);
       expect(widget.container).toBe(container);
       expect(widget.viewModel._scene).toBe(scene2);
       expect(widget.isDestroyed()).toEqual(false);
@@ -351145,17 +351662,17 @@ describe(
     });
     it("constructor throws with no element", function() {
       expect(function() {
-        return new import__685.Cesium3DTilesInspector();
+        return new import__688.Cesium3DTilesInspector();
       }).toThrowDeveloperError();
     });
     it("constructor throws with string element that does not exist", function() {
       expect(function() {
-        return new import__685.Cesium3DTilesInspector("does not exist", scene2);
+        return new import__688.Cesium3DTilesInspector("does not exist", scene2);
       }).toThrowDeveloperError();
     });
     it("constructor throws with no scene", function() {
       expect(function() {
-        return new import__685.Cesium3DTilesInspector(document.body);
+        return new import__688.Cesium3DTilesInspector(document.body);
       }).toThrowDeveloperError();
     });
   },
@@ -351163,8 +351680,8 @@ describe(
 );
 
 // packages/widgets/Specs/Cesium3DTilesInspector/Cesium3DTilesInspectorViewModelSpec.js
-var import_engine35 = __toESM(require_Cesium(), 1);
-var import__686 = __toESM(require_Cesium(), 1);
+var import_engine37 = __toESM(require_Cesium(), 1);
+var import__689 = __toESM(require_Cesium(), 1);
 describe(
   "Widgets/Cesium3DTilesInspector/Cesium3DTilesInspectorViewModel",
   function() {
@@ -351179,14 +351696,14 @@ describe(
       scene2.destroyForSpecs();
     });
     beforeEach(function() {
-      scene2.globe = new import_engine35.Globe();
+      scene2.globe = new import_engine37.Globe();
       scene2.initializeFrame();
     });
     afterEach(function() {
       scene2.primitives.removeAll();
     });
     it("can create and destroy", function() {
-      const viewModel2 = new import__686.Cesium3DTilesInspectorViewModel(
+      const viewModel2 = new import__689.Cesium3DTilesInspectorViewModel(
         scene2,
         performanceContainer
       );
@@ -351197,21 +351714,21 @@ describe(
     });
     it("throws if scene is undefined", function() {
       expect(function() {
-        return new import__686.Cesium3DTilesInspectorViewModel();
+        return new import__689.Cesium3DTilesInspectorViewModel();
       }).toThrowDeveloperError();
     });
     it("throws if performanceContainer is undefined", function() {
       expect(function() {
-        return new import__686.Cesium3DTilesInspectorViewModel(scene2);
+        return new import__689.Cesium3DTilesInspectorViewModel(scene2);
       }).toThrowDeveloperError();
     });
     describe("tileset options", function() {
       it("show properties", async function() {
-        viewModel = new import__686.Cesium3DTilesInspectorViewModel(
+        viewModel = new import__689.Cesium3DTilesInspectorViewModel(
           scene2,
           performanceContainer
         );
-        const tileset = await import_engine35.Cesium3DTileset.fromUrl(tilesetUrl);
+        const tileset = await import_engine37.Cesium3DTileset.fromUrl(tilesetUrl);
         viewModel.tileset = tileset;
         expect(viewModel.properties.indexOf("id") !== -1).toBe(true);
         expect(viewModel.properties.indexOf("Longitude") !== -1).toBe(true);
@@ -351222,11 +351739,11 @@ describe(
     });
     describe("display options", function() {
       beforeAll(async function() {
-        viewModel = new import__686.Cesium3DTilesInspectorViewModel(
+        viewModel = new import__689.Cesium3DTilesInspectorViewModel(
           scene2,
           performanceContainer
         );
-        const tileset = await import_engine35.Cesium3DTileset.fromUrl(tilesetUrl);
+        const tileset = await import_engine37.Cesium3DTileset.fromUrl(tilesetUrl);
         viewModel.tileset = tileset;
       });
       afterAll(function() {
@@ -351355,11 +351872,11 @@ describe(
     });
     describe("update options", function() {
       beforeAll(async function() {
-        viewModel = new import__686.Cesium3DTilesInspectorViewModel(
+        viewModel = new import__689.Cesium3DTilesInspectorViewModel(
           scene2,
           performanceContainer
         );
-        viewModel.tileset = await import_engine35.Cesium3DTileset.fromUrl(tilesetUrl);
+        viewModel.tileset = await import_engine37.Cesium3DTileset.fromUrl(tilesetUrl);
       });
       afterAll(function() {
         viewModel.destroy();
@@ -351390,17 +351907,17 @@ describe(
         viewModel.dynamicScreenSpaceErrorDensitySliderValue = rawSliderValue;
         expect(
           viewModel.dynamicScreenSpaceErrorDensitySliderValue
-        ).toEqualEpsilon(rawSliderValue, import_engine35.Math.EPSILON8);
+        ).toEqualEpsilon(rawSliderValue, import_engine37.Math.EPSILON8);
         expect(viewModel.tileset.dynamicScreenSpaceErrorDensity).toEqualEpsilon(
           scaledValue,
-          import_engine35.Math.EPSILON8
+          import_engine37.Math.EPSILON8
         );
       });
     });
     describe("style options", function() {
       let style;
       beforeAll(async function() {
-        style = new import_engine35.Cesium3DTileStyle({
+        style = new import_engine37.Cesium3DTileStyle({
           color: {
             conditions: [
               ["${Height} >= 83", "color('purple', 0.5)"],
@@ -351416,11 +351933,11 @@ describe(
             description: "'Building id ${id} has height ${Height}.'"
           }
         });
-        viewModel = new import__686.Cesium3DTilesInspectorViewModel(
+        viewModel = new import__689.Cesium3DTilesInspectorViewModel(
           scene2,
           performanceContainer
         );
-        viewModel.tileset = await import_engine35.Cesium3DTileset.fromUrl(tilesetUrl);
+        viewModel.tileset = await import_engine37.Cesium3DTileset.fromUrl(tilesetUrl);
       });
       afterAll(function() {
         viewModel.destroy();
@@ -351460,520 +351977,6 @@ describe(
   },
   "WebGL"
 );
-
-// packages/widgets/Specs/BaseLayerPicker/BaseLayerPickerSpec.js
-var import_engine36 = __toESM(require_Cesium(), 1);
-var import__687 = __toESM(require_Cesium(), 1);
-describe("Widgets/BaseLayerPicker/BaseLayerPicker", function() {
-  function MockGlobe() {
-    this.imageryLayers = new import_engine36.ImageryLayerCollection();
-    this.terrainProvider = new import_engine36.EllipsoidTerrainProvider();
-  }
-  it("can create and destroy", function() {
-    const container = document.createElement("div");
-    container.id = "testContainer";
-    document.body.appendChild(container);
-    const globe2 = new MockGlobe();
-    const widget = new import__687.BaseLayerPicker("testContainer", {
-      globe: globe2
-    });
-    expect(widget.container).toBe(container);
-    expect(widget.viewModel.globe).toBe(globe2);
-    expect(widget.isDestroyed()).toEqual(false);
-    widget.destroy();
-    expect(widget.isDestroyed()).toEqual(true);
-    document.body.removeChild(container);
-  });
-  function addCloseOnInputSpec(name, func) {
-    it(`${name} event closes dropdown if target is not inside container`, function() {
-      const container = document.createElement("div");
-      container.id = "testContainer";
-      document.body.appendChild(container);
-      const widget = new import__687.BaseLayerPicker("testContainer", {
-        globe: new MockGlobe()
-      });
-      widget.viewModel.dropDownVisible = true;
-      func(document.body);
-      expect(widget.viewModel.dropDownVisible).toEqual(false);
-      widget.viewModel.dropDownVisible = true;
-      func(container.firstChild);
-      expect(widget.viewModel.dropDownVisible).toEqual(true);
-      widget.destroy();
-      document.body.removeChild(container);
-    });
-  }
-  if (import_engine36.FeatureDetection.supportsPointerEvents()) {
-    addCloseOnInputSpec("pointerDown", DomEventSimulator_default.firePointerDown);
-  } else {
-    addCloseOnInputSpec("mousedown", DomEventSimulator_default.fireMouseDown);
-    addCloseOnInputSpec("touchstart", DomEventSimulator_default.fireTouchStart);
-  }
-  it("constructor throws with no layer collection", function() {
-    expect(function() {
-      return new import__687.BaseLayerPicker(document.body, void 0);
-    }).toThrowDeveloperError();
-  });
-  it("constructor throws with no element", function() {
-    expect(function() {
-      return new import__687.BaseLayerPicker(void 0, {
-        globe: new MockGlobe()
-      });
-    }).toThrowDeveloperError();
-  });
-  it("constructor throws with string element that does not exist", function() {
-    expect(function() {
-      return new import__687.BaseLayerPicker("does not exist", {
-        globe: new MockGlobe()
-      });
-    }).toThrowDeveloperError();
-  });
-});
-
-// packages/widgets/Specs/BaseLayerPicker/BaseLayerPickerViewModelSpec.js
-var import_engine37 = __toESM(require_Cesium(), 1);
-var import__688 = __toESM(require_Cesium(), 1);
-describe("Widgets/BaseLayerPicker/BaseLayerPickerViewModel", function() {
-  function MockGlobe() {
-    this.imageryLayers = new import_engine37.ImageryLayerCollection();
-    this.terrainProvider = new import_engine37.EllipsoidTerrainProvider();
-    this.terrainProviderChanged = new import_engine37.Event();
-    this.depthTestAgainstTerrain = false;
-  }
-  MockGlobe.prototype.isDestroyed = () => false;
-  const testProvider = {
-    tilingScheme: new import_engine37.GeographicTilingScheme()
-  };
-  const testProvider2 = {
-    tilingScheme: new import_engine37.GeographicTilingScheme()
-  };
-  const testProvider3 = {
-    tilingScheme: new import_engine37.GeographicTilingScheme()
-  };
-  const testEllipsoidProviderViewModel = new import__688.ProviderViewModel({
-    name: "name",
-    tooltip: "tooltip",
-    iconUrl: "url",
-    creationFunction: function() {
-      return new import_engine37.EllipsoidTerrainProvider();
-    }
-  });
-  const testProviderViewModel = new import__688.ProviderViewModel({
-    name: "name",
-    tooltip: "tooltip",
-    iconUrl: "url",
-    creationFunction: function() {
-      return testProvider;
-    }
-  });
-  const testProviderViewModel2 = new import__688.ProviderViewModel({
-    name: "name2",
-    tooltip: "tooltip2",
-    iconUrl: "url2",
-    creationFunction: function() {
-      return [testProvider, testProvider2];
-    }
-  });
-  const testProviderViewModel3 = new import__688.ProviderViewModel({
-    name: "name3",
-    tooltip: "tooltip3",
-    iconUrl: "url3",
-    creationFunction: function() {
-      return testProvider3;
-    }
-  });
-  const testProviderViewModelAsync = new import__688.ProviderViewModel({
-    name: "name3",
-    tooltip: "tooltip3",
-    iconUrl: "url3",
-    creationFunction: async function() {
-      return testProvider;
-    }
-  });
-  it("constructor sets expected values", function() {
-    const imageryViewModels = [];
-    const terrainViewModels = [];
-    const globe2 = new MockGlobe();
-    const viewModel = new import__688.BaseLayerPickerViewModel({
-      globe: globe2,
-      imageryProviderViewModels: imageryViewModels,
-      terrainProviderViewModels: terrainViewModels
-    });
-    expect(viewModel.globe).toBe(globe2);
-    expect(viewModel.imageryProviderViewModels.length).toBe(0);
-    expect(viewModel.terrainProviderViewModels.length).toBe(0);
-  });
-  it("separates providers into categories", function() {
-    const imageryProviders = [
-      new import__688.ProviderViewModel({
-        name: "name",
-        tooltip: "tooltip",
-        iconUrl: "url",
-        category: "cat1",
-        creationFunction: function() {
-          return testProvider;
-        }
-      }),
-      new import__688.ProviderViewModel({
-        name: "name",
-        tooltip: "tooltip",
-        iconUrl: "url",
-        category: "cat1",
-        creationFunction: function() {
-          return testProvider;
-        }
-      }),
-      new import__688.ProviderViewModel({
-        name: "name",
-        tooltip: "tooltip",
-        iconUrl: "url",
-        category: "cat2",
-        creationFunction: function() {
-          return testProvider;
-        }
-      })
-    ];
-    const terrainProviders = [
-      new import__688.ProviderViewModel({
-        name: "name",
-        tooltip: "tooltip",
-        iconUrl: "url",
-        category: "cat1",
-        creationFunction: function() {
-          return testProvider;
-        }
-      }),
-      new import__688.ProviderViewModel({
-        name: "name",
-        tooltip: "tooltip",
-        iconUrl: "url",
-        category: "cat2",
-        creationFunction: function() {
-          return testProvider;
-        }
-      }),
-      new import__688.ProviderViewModel({
-        name: "name",
-        tooltip: "tooltip",
-        iconUrl: "url",
-        category: "cat2",
-        creationFunction: function() {
-          return testProvider;
-        }
-      })
-    ];
-    const viewModel = new import__688.BaseLayerPickerViewModel({
-      globe: new MockGlobe(),
-      imageryProviderViewModels: imageryProviders,
-      terrainProviderViewModels: terrainProviders
-    });
-    expect(viewModel._imageryProviders).toBeDefined();
-    expect(viewModel._imageryProviders().length).toBe(2);
-    expect(viewModel._imageryProviders()[0].providers.length).toBe(2);
-    expect(viewModel._imageryProviders()[0].name).toBe("cat1");
-    expect(viewModel._imageryProviders()[1].providers.length).toBe(1);
-    expect(viewModel._imageryProviders()[1].name).toBe("cat2");
-    expect(viewModel._terrainProviders).toBeDefined();
-    expect(viewModel._terrainProviders().length).toBe(2);
-    expect(viewModel._terrainProviders()[0].providers.length).toBe(1);
-    expect(viewModel._terrainProviders()[0].name).toBe("cat1");
-    expect(viewModel._terrainProviders()[1].providers.length).toBe(2);
-    expect(viewModel._terrainProviders()[1].name).toBe("cat2");
-  });
-  it("selecting imagery closes the dropDown", function() {
-    const imageryViewModels = [testProviderViewModel];
-    const globe2 = new MockGlobe();
-    const viewModel = new import__688.BaseLayerPickerViewModel({
-      globe: globe2,
-      imageryProviderViewModels: imageryViewModels
-    });
-    viewModel.dropDownVisible = true;
-    viewModel.selectedImagery = testProviderViewModel;
-    expect(viewModel.dropDownVisible).toEqual(false);
-  });
-  it("selecting terrain closes the dropDown", async function() {
-    const imageryViewModels = [testProviderViewModel];
-    const globe2 = new MockGlobe();
-    const viewModel = new import__688.BaseLayerPickerViewModel({
-      globe: globe2,
-      imageryProviderViewModels: imageryViewModels
-    });
-    viewModel.dropDownVisible = true;
-    viewModel.selectedTerrain = testProviderViewModel;
-    await testProviderViewModel.creationCommand();
-    expect(viewModel.dropDownVisible).toEqual(false);
-  });
-  it("tooltip, buttonImageUrl, and selectedImagery all return expected values", async function() {
-    const imageryViewModels = [testProviderViewModel];
-    const terrainViewModels = [testProviderViewModel3];
-    const globe2 = new MockGlobe();
-    const viewModel = new import__688.BaseLayerPickerViewModel({
-      globe: globe2,
-      imageryProviderViewModels: imageryViewModels,
-      terrainProviderViewModels: terrainViewModels
-    });
-    viewModel.selectedImagery = testProviderViewModel;
-    viewModel.selectedTerrain = testProviderViewModel3;
-    await testProviderViewModel.creationCommand();
-    expect(viewModel.buttonTooltip).toEqual(
-      `${testProviderViewModel.name}
-${testProviderViewModel3.name}`
-    );
-    viewModel.selectedImagery = void 0;
-    expect(viewModel.buttonTooltip).toEqual(testProviderViewModel3.name);
-    viewModel.selectedImagery = testProviderViewModel;
-    await testProviderViewModel.creationCommand();
-    viewModel.selectedTerrain = void 0;
-    expect(viewModel.buttonTooltip).toEqual(testProviderViewModel.name);
-    expect(viewModel.buttonImageUrl).toEqual(testProviderViewModel.iconUrl);
-  });
-  it("selectedImagery actually sets base layer", async function() {
-    const imageryViewModels = [testProviderViewModel];
-    const globe2 = new MockGlobe();
-    const imageryLayers = globe2.imageryLayers;
-    const viewModel = new import__688.BaseLayerPickerViewModel({
-      globe: globe2,
-      imageryProviderViewModels: imageryViewModels
-    });
-    expect(imageryLayers.length).toEqual(1);
-    viewModel.selectedImagery = testProviderViewModel;
-    expect(imageryLayers.length).toEqual(1);
-    await pollToPromise_default(() => imageryLayers.get(0).ready);
-    expect(imageryLayers.get(0).imageryProvider).toBe(testProvider);
-    viewModel.selectedImagery = testProviderViewModel2;
-    expect(imageryLayers.length).toEqual(2);
-    await pollToPromise_default(() => imageryLayers.get(0).ready);
-    expect(imageryLayers.get(0).imageryProvider).toBe(testProvider);
-    await pollToPromise_default(() => imageryLayers.get(1).ready);
-    expect(imageryLayers.get(1).imageryProvider).toBe(testProvider2);
-  });
-  it("selectedTerrain actually sets terrainProvider", async function() {
-    const terrainProviderViewModels = [
-      testProviderViewModel,
-      testProviderViewModel3
-    ];
-    const globe2 = new MockGlobe();
-    const viewModel = new import__688.BaseLayerPickerViewModel({
-      globe: globe2,
-      terrainProviderViewModels
-    });
-    viewModel.selectedTerrain = testProviderViewModel3;
-    await testProviderViewModel3.creationCommand();
-    expect(globe2.terrainProvider).toBe(testProvider3);
-  });
-  it("selectedTerrain actually sets async terrainProvider", async function() {
-    const terrainProviderViewModels = [
-      testProviderViewModel,
-      testProviderViewModelAsync
-    ];
-    const globe2 = new MockGlobe();
-    const viewModel = new import__688.BaseLayerPickerViewModel({
-      globe: globe2,
-      terrainProviderViewModels
-    });
-    viewModel.selectedTerrain = testProviderViewModelAsync;
-    await testProviderViewModelAsync.creationCommand();
-    expect(globe2.terrainProvider).toBe(testProvider);
-    expect(globe2.depthTestAgainstTerrain).toBeTrue();
-  });
-  it("selectedTerrain sets ellipsoid terrain provider", async function() {
-    const terrainProviderViewModels = [testEllipsoidProviderViewModel];
-    const globe2 = new MockGlobe();
-    const viewModel = new import__688.BaseLayerPickerViewModel({
-      globe: globe2,
-      terrainProviderViewModels
-    });
-    viewModel.selectedTerrain = testEllipsoidProviderViewModel;
-    await testProviderViewModelAsync.creationCommand();
-    expect(globe2.terrainProvider).toBeInstanceOf(import_engine37.EllipsoidTerrainProvider);
-    expect(globe2.depthTestAgainstTerrain).toBeFalse();
-  });
-  it("default does not override default value of depthTestAgainstTerrain", async function() {
-    const terrainProviderViewModels = [testEllipsoidProviderViewModel];
-    const globe2 = new MockGlobe();
-    const viewModel = new import__688.BaseLayerPickerViewModel({
-      globe: globe2,
-      terrainProviderViewModels
-    });
-    globe2.depthTestAgainstTerrain = true;
-    await testEllipsoidProviderViewModel.creationCommand();
-    expect(globe2.terrainProvider).toBeInstanceOf(import_engine37.EllipsoidTerrainProvider);
-    expect(globe2.depthTestAgainstTerrain).toBeTrue();
-  });
-  it("selectedTerrain cancels update if terrainProvider is set externally", async function() {
-    const terrainProviderViewModels = [testProviderViewModel3];
-    const globe2 = new MockGlobe();
-    const viewModel = new import__688.BaseLayerPickerViewModel({
-      globe: globe2,
-      terrainProviderViewModels
-    });
-    viewModel.selectedTerrain = testProviderViewModelAsync;
-    globe2.terrainProviderChanged.raiseEvent();
-    await testProviderViewModelAsync.creationCommand();
-    expect(globe2.terrainProvider).not.toBe(testProvider);
-  });
-  it("settings selectedImagery only removes layers added by view model", async function() {
-    const imageryViewModels = [testProviderViewModel];
-    const globe2 = new MockGlobe();
-    const imageryLayers = globe2.imageryLayers;
-    const viewModel = new import__688.BaseLayerPickerViewModel({
-      globe: globe2,
-      imageryProviderViewModels: imageryViewModels
-    });
-    expect(imageryLayers.length).toEqual(1);
-    viewModel.selectedImagery = testProviderViewModel2;
-    expect(imageryLayers.length).toEqual(2);
-    await pollToPromise_default(() => imageryLayers.get(0).ready);
-    expect(imageryLayers.get(0).imageryProvider).toBe(testProvider);
-    await pollToPromise_default(() => imageryLayers.get(1).ready);
-    expect(imageryLayers.get(1).imageryProvider).toBe(testProvider2);
-    imageryLayers.addImageryProvider(testProvider3, 1);
-    imageryLayers.remove(imageryLayers.get(0));
-    viewModel.selectedImagery = void 0;
-    expect(imageryLayers.length).toEqual(1);
-    await pollToPromise_default(() => imageryLayers.get(0).ready);
-    expect(imageryLayers.get(0).imageryProvider).toBe(testProvider3);
-  });
-  it("dropDownVisible and toggleDropDown work", function() {
-    const viewModel = new import__688.BaseLayerPickerViewModel({
-      globe: new MockGlobe()
-    });
-    expect(viewModel.dropDownVisible).toEqual(false);
-    viewModel.toggleDropDown();
-    expect(viewModel.dropDownVisible).toEqual(true);
-    viewModel.dropDownVisible = false;
-    expect(viewModel.dropDownVisible).toEqual(false);
-  });
-  it("constructor throws with no globe", function() {
-    expect(function() {
-      return new import__688.BaseLayerPickerViewModel({});
-    }).toThrowDeveloperError();
-  });
-});
-
-// packages/widgets/Specs/BaseLayerPicker/ProviderViewModelSpec.js
-var import__689 = __toESM(require_Cesium(), 1);
-describe("Widgets/BaseLayerPicker/ProviderViewModel", function() {
-  let spyCreationFunction;
-  beforeEach(function() {
-    spyCreationFunction = jasmine.createSpy("creationFunction");
-  });
-  describe("with observables", function() {
-    it("constructor sets expected parameters", function() {
-      const options = {
-        name: import__689.knockout.observable("name"),
-        tooltip: import__689.knockout.observable("tooltip"),
-        iconUrl: import__689.knockout.observable("iconUrl"),
-        category: "mycategory",
-        creationFunction: (0, import__689.createCommand)(spyCreationFunction)
-      };
-      const viewModel = new import__689.ProviderViewModel(options);
-      expect(viewModel.name).toBe(options.name());
-      expect(viewModel.tooltip).toBe(options.tooltip());
-      expect(viewModel.iconUrl).toBe(options.iconUrl());
-      expect(viewModel.category).toBe(options.category);
-      expect(viewModel.creationCommand).toBeDefined();
-      viewModel.creationCommand();
-      expect(spyCreationFunction).toHaveBeenCalled();
-    });
-    it("constructor throws with no name", function() {
-      const options = {
-        tooltip: import__689.knockout.observable("tooltip"),
-        iconUrl: import__689.knockout.observable("iconUrl"),
-        creationFunction: (0, import__689.createCommand)(spyCreationFunction)
-      };
-      expect(function() {
-        return new import__689.ProviderViewModel(options);
-      }).toThrowDeveloperError();
-    });
-    it("constructor throws with no tooltip", function() {
-      const options = {
-        name: import__689.knockout.observable("name"),
-        iconUrl: import__689.knockout.observable("iconUrl"),
-        creationFunction: (0, import__689.createCommand)(spyCreationFunction)
-      };
-      expect(function() {
-        return new import__689.ProviderViewModel(options);
-      }).toThrowDeveloperError();
-    });
-    it("constructor throws with no iconUrl", function() {
-      const options = {
-        name: import__689.knockout.observable("name"),
-        tooltip: import__689.knockout.observable("tooltip"),
-        creationFunction: (0, import__689.createCommand)(spyCreationFunction)
-      };
-      expect(function() {
-        return new import__689.ProviderViewModel(options);
-      }).toThrowDeveloperError();
-    });
-    it("constructor throws with no creationFunction", function() {
-      const options = {
-        name: import__689.knockout.observable("name"),
-        tooltip: import__689.knockout.observable("tooltip"),
-        iconUrl: import__689.knockout.observable("iconUrl")
-      };
-      expect(function() {
-        return new import__689.ProviderViewModel(options);
-      }).toThrowDeveloperError();
-    });
-  });
-  describe("with values", function() {
-    it("constructor sets expected parameters", function() {
-      const options = {
-        name: "name",
-        tooltip: "tooltip",
-        iconUrl: "iconUrl",
-        creationFunction: spyCreationFunction
-      };
-      const viewModel = new import__689.ProviderViewModel(options);
-      expect(viewModel.name).toEqual(options.name);
-      expect(viewModel.tooltip).toEqual(options.tooltip);
-      expect(viewModel.iconUrl).toEqual(options.iconUrl);
-      expect(viewModel.creationCommand).toBeDefined();
-      viewModel.creationCommand();
-      expect(spyCreationFunction).toHaveBeenCalled();
-    });
-    it("constructor throws with no name", function() {
-      const options = {
-        tooltip: "tooltip",
-        iconUrl: "iconUrl",
-        creationFunction: spyCreationFunction
-      };
-      expect(function() {
-        return new import__689.ProviderViewModel(options);
-      }).toThrowDeveloperError();
-    });
-    it("constructor throws with no tooltip", function() {
-      const options = {
-        name: "name",
-        iconUrl: "iconUrl",
-        creationFunction: spyCreationFunction
-      };
-      expect(function() {
-        return new import__689.ProviderViewModel(options);
-      }).toThrowDeveloperError();
-    });
-    it("constructor throws with no iconUrl", function() {
-      const options = {
-        name: "name",
-        tooltip: "tooltip",
-        creationFunction: spyCreationFunction
-      };
-      expect(function() {
-        return new import__689.ProviderViewModel(options);
-      }).toThrowDeveloperError();
-    });
-    it("constructor throws with no creationFunction", function() {
-      const options = {
-        name: "name",
-        tooltip: "tooltip",
-        iconUrl: "iconUrl"
-      };
-      expect(function() {
-        return new import__689.ProviderViewModel(options);
-      }).toThrowDeveloperError();
-    });
-  });
-});
 
 // packages/widgets/Specs/CesiumInspector/CesiumInspectorSpec.js
 var import_engine38 = __toESM(require_Cesium(), 1);
@@ -352374,286 +352377,8 @@ describe("Widgets/FullscreenButton/FullscreenButtonViewModel", function() {
   });
 });
 
-// packages/widgets/Specs/I3SBSLExplorer/I3SBSLExplorerSpec.js
-var import__694 = __toESM(require_Cesium(), 1);
-describe("Widgets/I3SBuildingSceneLayerExplorer/I3SBuildingSceneLayerExplorer", function() {
-  const i3sProvider = {
-    sublayers: [
-      {
-        name: "Overview",
-        modelName: "Overview",
-        visibility: true,
-        sublayers: []
-      },
-      {
-        name: "Full Model",
-        modelName: "FullModel",
-        visibility: true,
-        sublayers: [
-          {
-            name: "Cat1",
-            visibility: false,
-            sublayers: [
-              { name: "SubCat1", visibility: true, sublayers: [] },
-              { name: "SubCat2", visibility: false, sublayers: [] }
-            ]
-          }
-        ]
-      }
-    ],
-    getAttributeNames: function() {
-      return ["BldgLevel", "testAttr"];
-    },
-    getAttributeValues: function() {
-      return [1, 0];
-    }
-  };
-  it("can create bsl explorer ui", function() {
-    const container = document.createElement("div");
-    container.id = "testContainer";
-    document.body.appendChild(container);
-    const widget = new import__694.I3SBuildingSceneLayerExplorer("testContainer", {
-      sublayers: []
-    });
-    expect(widget).toBeInstanceOf(import__694.I3SBuildingSceneLayerExplorer);
-    expect(container.childElementCount).toEqual(1);
-    expect(container.children[0].childElementCount).toEqual(3);
-    expect(container.children[0].children[0].localName).toEqual("h3");
-    expect(container.children[0].children[0].textContent).toEqual(
-      "Building explorer"
-    );
-    expect(container.children[0].children[1].localName).toEqual("select");
-    expect(container.children[0].children[1].textContent).toEqual(
-      "Building layers not found"
-    );
-    expect(container.children[0].children[2].localName).toEqual("div");
-    expect(container.children[0].children[2].id).toEqual("bsl-wrapper");
-    document.body.removeChild(container);
-  });
-  it("throws dev error with no container", function() {
-    expect(function() {
-      return new import__694.I3SBuildingSceneLayerExplorer();
-    }).toThrowDeveloperError();
-  });
-  it("throws dev error with no i3sdataprovider", function() {
-    const container = document.createElement("div");
-    container.id = "testContainer";
-    document.body.appendChild(container);
-    expect(function() {
-      return new import__694.I3SBuildingSceneLayerExplorer("testContainer");
-    }).toThrowDeveloperError();
-    document.body.removeChild(container);
-  });
-  it("can expand/collapse bsl tree", function() {
-    const container = document.createElement("div");
-    container.id = "testContainer";
-    document.body.appendChild(container);
-    i3sProvider.filterByAttributes = jasmine.createSpy();
-    const widget = new import__694.I3SBuildingSceneLayerExplorer(
-      "testContainer",
-      i3sProvider
-    );
-    expect(widget).toBeInstanceOf(import__694.I3SBuildingSceneLayerExplorer);
-    const expander = document.querySelector(".expandItem");
-    const nestedList = expander.parentElement.parentElement.querySelector("#Cat1-expander");
-    expect(expander.textContent).toEqual("+");
-    expect(nestedList.className).toEqual("nested");
-    DomEventSimulator_default.fireClick(expander);
-    expect(expander.textContent).toEqual("-");
-    expect(nestedList.className).toEqual("nested active");
-    DomEventSimulator_default.fireClick(expander);
-    expect(expander.textContent).toEqual("+");
-    expect(nestedList.className).toEqual("nested");
-    document.body.removeChild(container);
-  });
-});
-
-// packages/widgets/Specs/I3SBSLExplorer/I3SBSLExplorerViewModelSpec.js
-var import__695 = __toESM(require_Cesium(), 1);
-describe("Widgets/I3SBuildingSceneLayerExplorer/I3SBuildingSceneLayerExplorerViewModel", function() {
-  const i3sProvider = {
-    sublayers: [
-      {
-        name: "Full Model",
-        modelName: "FullModel",
-        visibility: true,
-        sublayers: [
-          {
-            name: "Cat1",
-            visibility: false,
-            sublayers: [
-              { name: "SubCat1", visibility: true, sublayers: [] },
-              { name: "SubCat2", visibility: false, sublayers: [] }
-            ]
-          }
-        ]
-      },
-      {
-        name: "Overview",
-        modelName: "Overview",
-        visibility: true,
-        sublayers: []
-      }
-    ],
-    getAttributeNames: function() {
-      return ["BldgLevel", "testAttr"];
-    },
-    getAttributeValues: function() {
-      return [1, 0];
-    }
-  };
-  const i3sProviderWithoutOverview = {
-    sublayers: [
-      {
-        name: "Cat1",
-        visibility: false,
-        sublayers: [
-          { name: "SubCat1", visibility: true, sublayers: [] },
-          { name: "SubCat2", visibility: false, sublayers: [] }
-        ]
-      }
-    ]
-  };
-  it("can create bsl explorer ViewModel", function() {
-    const viewModel = new import__695.I3SBuildingSceneLayerExplorerViewModel(i3sProvider);
-    expect(viewModel.levels).toEqual(["All", 0, 1]);
-    expect(viewModel.selectedLevel).toEqual("All");
-    expect(viewModel.sublayers.length).toEqual(2);
-    expect(viewModel.sublayers[1].name).toEqual("Overview");
-    expect(viewModel.sublayers[1].modelName).toEqual("Overview");
-    expect(viewModel.sublayers[1].visibility).toEqual(false);
-    expect(viewModel.sublayers[1].sublayers.length).toEqual(0);
-    expect(viewModel.sublayers[0].name).toEqual("Full Model");
-    expect(viewModel.sublayers[0].modelName).toEqual("FullModel");
-    expect(viewModel.sublayers[0].visibility).toEqual(false);
-    expect(viewModel.sublayers[0].sublayers.length).toEqual(1);
-    expect(viewModel.sublayers[0].sublayers[0].name).toEqual("Cat1");
-    expect(viewModel.sublayers[0].sublayers[0].visibility).toEqual(true);
-    expect(viewModel.sublayers[0].sublayers[0].sublayers.length).toEqual(2);
-    expect(viewModel.sublayers[0].sublayers[0].sublayers[0].name).toEqual(
-      "SubCat1"
-    );
-    expect(viewModel.sublayers[0].sublayers[0].sublayers[0].visibility).toEqual(
-      true
-    );
-    expect(
-      viewModel.sublayers[0].sublayers[0].sublayers[0].sublayers.length
-    ).toEqual(0);
-    expect(viewModel.sublayers[0].sublayers[0].sublayers[1].name).toEqual(
-      "SubCat2"
-    );
-    expect(viewModel.sublayers[0].sublayers[0].sublayers[1].visibility).toEqual(
-      false
-    );
-    expect(
-      viewModel.sublayers[0].sublayers[0].sublayers[1].sublayers.length
-    ).toEqual(0);
-    expect(viewModel.topLayers.length).toEqual(3);
-    expect(viewModel.defaultLayer.modelName).toEqual("Overview");
-  });
-  it("can create bsl explorer ViewModel if no Overview", function() {
-    const viewModel = new import__695.I3SBuildingSceneLayerExplorerViewModel(
-      i3sProviderWithoutOverview
-    );
-    expect(viewModel.sublayers.length).toEqual(1);
-    expect(viewModel.sublayers[0].name).toEqual("Full Model");
-    expect(viewModel.sublayers[0].modelName).toEqual("FullModel");
-    expect(viewModel.sublayers[0].visibility).toEqual(false);
-    expect(viewModel.sublayers[0].sublayers.length).toEqual(1);
-    expect(viewModel.sublayers[0].sublayers[0].name).toEqual("Cat1");
-    expect(viewModel.sublayers[0].sublayers[0].visibility).toEqual(true);
-    expect(viewModel.sublayers[0].sublayers[0].sublayers.length).toEqual(2);
-    expect(viewModel.sublayers[0].sublayers[0].sublayers[0].name).toEqual(
-      "SubCat1"
-    );
-    expect(viewModel.sublayers[0].sublayers[0].sublayers[0].visibility).toEqual(
-      true
-    );
-    expect(
-      viewModel.sublayers[0].sublayers[0].sublayers[0].sublayers.length
-    ).toEqual(0);
-    expect(viewModel.sublayers[0].sublayers[0].sublayers[1].name).toEqual(
-      "SubCat2"
-    );
-    expect(viewModel.sublayers[0].sublayers[0].sublayers[1].visibility).toEqual(
-      false
-    );
-    expect(
-      viewModel.sublayers[0].sublayers[0].sublayers[1].sublayers.length
-    ).toEqual(0);
-    expect(viewModel.topLayers.length).toEqual(2);
-    expect(viewModel.defaultLayer.modelName).toEqual("FullModel");
-  });
-  it("can handle filtering by level", function() {
-    i3sProvider.filterByAttributes = jasmine.createSpy();
-    const viewModel = new import__695.I3SBuildingSceneLayerExplorerViewModel(i3sProvider);
-    import__695.knockout.track(viewModel);
-    viewModel.currentLevel = 1;
-    expect(i3sProvider.filterByAttributes).toHaveBeenCalledWith([
-      {
-        name: "BldgLevel",
-        values: [1]
-      }
-    ]);
-    viewModel.currentLevel = "All";
-    expect(i3sProvider.filterByAttributes).toHaveBeenCalledWith();
-  });
-  it("can handle top layer selection", function() {
-    const bslWrapper = document.createElement("div");
-    bslWrapper.id = "bsl-wrapper";
-    document.body.appendChild(bslWrapper);
-    i3sProvider.filterByAttributes = jasmine.createSpy();
-    const viewModel = new import__695.I3SBuildingSceneLayerExplorerViewModel(i3sProvider);
-    import__695.knockout.track(viewModel);
-    viewModel.currentLayer = {
-      name: "Full Model",
-      modelName: "FullModel",
-      index: 1
-    };
-    viewModel.currentLevel = 1;
-    viewModel.currentLayer = {
-      name: "Overview",
-      modelName: "Overview",
-      index: 0
-    };
-    expect(viewModel.sublayers[0].visibility).toEqual(true);
-    expect(viewModel.sublayers[1].visibility).toEqual(false);
-    expect(viewModel.selectedLevel).toEqual(1);
-    expect(viewModel.currentLevel).toEqual("All");
-    expect(bslWrapper.style.display).toEqual("none");
-    viewModel.currentLayer = {
-      name: "Full Model",
-      modelName: "FullModel",
-      index: 1
-    };
-    expect(viewModel.sublayers[0].visibility).toEqual(false);
-    expect(viewModel.sublayers[1].visibility).toEqual(true);
-    expect(viewModel.currentLevel).toEqual(1);
-    expect(bslWrapper.style.display).toEqual("block");
-    document.body.removeChild(bslWrapper);
-  });
-  it("can handle top layer selection if no Overview", function() {
-    const bslWrapper = document.createElement("div");
-    bslWrapper.id = "bsl-wrapper";
-    document.body.appendChild(bslWrapper);
-    i3sProviderWithoutOverview.filterByAttributes = jasmine.createSpy();
-    const viewModel = new import__695.I3SBuildingSceneLayerExplorerViewModel(
-      i3sProviderWithoutOverview
-    );
-    import__695.knockout.track(viewModel);
-    viewModel.currentLayer = {
-      name: "Full Model",
-      modelName: "FullModel",
-      index: 0
-    };
-    expect(viewModel.sublayers[0].visibility).toEqual(true);
-    expect(bslWrapper.style.display).toEqual("block");
-    document.body.removeChild(bslWrapper);
-  });
-});
-
 // packages/widgets/Specs/Geocoder/GeocoderSpec.js
-var import__696 = __toESM(require_Cesium(), 1);
+var import__694 = __toESM(require_Cesium(), 1);
 describe(
   "Widgets/Geocoder/Geocoder",
   function() {
@@ -352667,7 +352392,7 @@ describe(
     it("constructor sets expected properties", function() {
       const flightDuration = 1234;
       const destinationFound = jasmine.createSpy();
-      const geocoder = new import__696.Geocoder({
+      const geocoder = new import__694.Geocoder({
         container: document.body,
         scene: scene2,
         flightDuration,
@@ -352683,7 +352408,7 @@ describe(
       const container = document.createElement("div");
       container.id = "testContainer";
       document.body.appendChild(container);
-      const widget = new import__696.Geocoder({
+      const widget = new import__694.Geocoder({
         container: "testContainer",
         scene: scene2
       });
@@ -352697,21 +352422,21 @@ describe(
     });
     it("constructor throws with no scene", function() {
       expect(function() {
-        return new import__696.Geocoder({
+        return new import__694.Geocoder({
           container: document.body
         });
       }).toThrowDeveloperError();
     });
     it("constructor throws with no element", function() {
       expect(function() {
-        return new import__696.Geocoder({
+        return new import__694.Geocoder({
           scene: scene2
         });
       }).toThrowDeveloperError();
     });
     it("constructor throws with string element that does not exist", function() {
       expect(function() {
-        return new import__696.Geocoder({
+        return new import__694.Geocoder({
           container: "does not exist",
           scene: scene2
         });
@@ -352723,7 +352448,7 @@ describe(
 
 // packages/widgets/Specs/Geocoder/GeocoderViewModelSpec.js
 var import_engine41 = __toESM(require_Cesium(), 1);
-var import__697 = __toESM(require_Cesium(), 1);
+var import__695 = __toESM(require_Cesium(), 1);
 describe(
   "Widgets/Geocoder/GeocoderViewModel",
   function() {
@@ -352783,7 +352508,7 @@ describe(
     });
     it("constructor sets expected properties", function() {
       const flightDuration = 1234;
-      geocoderViewModel = new import__697.GeocoderViewModel({
+      geocoderViewModel = new import__695.GeocoderViewModel({
         scene: scene2,
         flightDuration
       });
@@ -352792,7 +352517,7 @@ describe(
       expect(geocoderViewModel.keepExpanded).toBe(false);
     });
     it("can get and set flight duration", function() {
-      geocoderViewModel = new import__697.GeocoderViewModel({
+      geocoderViewModel = new import__695.GeocoderViewModel({
         scene: scene2
       });
       geocoderViewModel.flightDuration = 324;
@@ -352802,7 +352527,7 @@ describe(
       }).toThrowDeveloperError();
     });
     it("throws if searchText is not a string", function() {
-      geocoderViewModel = new import__697.GeocoderViewModel({
+      geocoderViewModel = new import__695.GeocoderViewModel({
         scene: scene2,
         geocoderServices: [customGeocoderOptions]
       });
@@ -352814,11 +352539,11 @@ describe(
       let destinationFoundCallback;
       const promise = new Promise((resolve) => {
         destinationFoundCallback = async function(viewModel, destination) {
-          await import__697.GeocoderViewModel.flyToDestination(viewModel, destination);
+          await import__695.GeocoderViewModel.flyToDestination(viewModel, destination);
           resolve();
         };
       });
-      geocoderViewModel = new import__697.GeocoderViewModel({
+      geocoderViewModel = new import__695.GeocoderViewModel({
         scene: scene2,
         geocoderServices: [customGeocoderOptions],
         destinationFound: destinationFoundCallback
@@ -352834,19 +352559,19 @@ describe(
     });
     it("constructor throws without scene", function() {
       expect(function() {
-        return new import__697.GeocoderViewModel();
+        return new import__695.GeocoderViewModel();
       }).toThrowDeveloperError();
     });
     it("raises the complete event camera finished", async function() {
       let destinationFoundCallback;
       const promise = new Promise((resolve) => {
         destinationFoundCallback = function(viewModel, destination) {
-          import__697.GeocoderViewModel.flyToDestination(viewModel, destination).then(
+          import__695.GeocoderViewModel.flyToDestination(viewModel, destination).then(
             resolve
           );
         };
       });
-      geocoderViewModel = new import__697.GeocoderViewModel({
+      geocoderViewModel = new import__695.GeocoderViewModel({
         scene: scene2,
         flightDuration: 0,
         geocoderServices: [customGeocoderOptions],
@@ -352861,7 +352586,7 @@ describe(
     });
     it("can be created with a custom geocoder", function() {
       expect(function() {
-        geocoderViewModel = new import__697.GeocoderViewModel({
+        geocoderViewModel = new import__695.GeocoderViewModel({
           scene: scene2,
           geocoderServices: [customGeocoderOptions]
         });
@@ -352869,34 +352594,34 @@ describe(
     });
     it("automatic suggestions can be retrieved", async function() {
       const destinationFoundCallback = jasmine.createSpy();
-      geocoderViewModel = new import__697.GeocoderViewModel({
+      geocoderViewModel = new import__695.GeocoderViewModel({
         scene: scene2,
         geocoderServices: [customGeocoderOptions],
         destinationFound: destinationFoundCallback
         // Don't move the camera after a successful geocode
       });
       geocoderViewModel._searchText = "some_text";
-      await import__697.GeocoderViewModel._updateSearchSuggestions(geocoderViewModel);
+      await import__695.GeocoderViewModel._updateSearchSuggestions(geocoderViewModel);
       expect(geocoderViewModel._suggestions.length).toEqual(3);
       expect(destinationFoundCallback).not.toHaveBeenCalled();
     });
     it("update search suggestions results in empty list if the query is empty", async function() {
       const destinationFoundCallback = jasmine.createSpy();
-      geocoderViewModel = new import__697.GeocoderViewModel({
+      geocoderViewModel = new import__695.GeocoderViewModel({
         scene: scene2,
         geocoderServices: [customGeocoderOptions],
         destinationFound: destinationFoundCallback
         // Don't move the camera after a successful geocode
       });
       geocoderViewModel._searchText = "";
-      await import__697.GeocoderViewModel._updateSearchSuggestions(geocoderViewModel);
+      await import__695.GeocoderViewModel._updateSearchSuggestions(geocoderViewModel);
       expect(geocoderViewModel._suggestions.length).toEqual(0);
       expect(destinationFoundCallback).not.toHaveBeenCalled();
     });
     it("can activate selected search suggestion", function() {
       const destinationFoundCallback = jasmine.createSpy();
       const destination = new import_engine41.Rectangle(0, -0.1, 0.1, 0.1);
-      geocoderViewModel = new import__697.GeocoderViewModel({
+      geocoderViewModel = new import__695.GeocoderViewModel({
         scene: scene2,
         geocoderServices: [customGeocoderOptions],
         destinationFound: destinationFoundCallback
@@ -352913,7 +352638,7 @@ describe(
     });
     it("if more than one geocoder service is provided, use first result from first geocode in array order", async function() {
       const destinationFoundCallback = jasmine.createSpy();
-      geocoderViewModel = new import__697.GeocoderViewModel({
+      geocoderViewModel = new import__695.GeocoderViewModel({
         scene: scene2,
         geocoderServices: [noResultsGeocoder, customGeocoderOptions2],
         destinationFound: destinationFoundCallback
@@ -352931,23 +352656,23 @@ describe(
     });
     it("can update autoComplete suggestions list using multiple geocoders", async function() {
       const destinationFoundCallback = jasmine.createSpy();
-      geocoderViewModel = new import__697.GeocoderViewModel({
+      geocoderViewModel = new import__695.GeocoderViewModel({
         scene: scene2,
         geocoderServices: [customGeocoderOptions, customGeocoderOptions2],
         destinationFound: destinationFoundCallback
         // Don't move the camera after a successful geocode
       });
       geocoderViewModel._searchText = "sthsnth";
-      await import__697.GeocoderViewModel._updateSearchSuggestions(geocoderViewModel);
+      await import__695.GeocoderViewModel._updateSearchSuggestions(geocoderViewModel);
       expect(geocoderViewModel._suggestions.length).toEqual(
         geocoderResults1.length + geocoderResults2.length
       );
       expect(destinationFoundCallback).not.toHaveBeenCalled();
     });
     it("uses custom destination found callback", async function() {
-      spyOn(import__697.GeocoderViewModel, "flyToDestination");
+      spyOn(import__695.GeocoderViewModel, "flyToDestination");
       const destinationFoundCallback = jasmine.createSpy();
-      geocoderViewModel = new import__697.GeocoderViewModel({
+      geocoderViewModel = new import__695.GeocoderViewModel({
         scene: scene2,
         geocoderServices: [noResultsGeocoder, customGeocoderOptions2],
         destinationFound: destinationFoundCallback
@@ -352957,23 +352682,23 @@ describe(
       expect(geocoderViewModel._searchText).toEqual(
         geocoderResults2[0].displayName
       );
-      expect(import__697.GeocoderViewModel.flyToDestination).not.toHaveBeenCalled();
+      expect(import__695.GeocoderViewModel.flyToDestination).not.toHaveBeenCalled();
       expect(destinationFoundCallback).toHaveBeenCalledWith(
         geocoderViewModel,
         mockDestination
       );
     });
     it("automatic suggestions can be navigated by arrow up/down keys", function() {
-      spyOn(import__697.GeocoderViewModel, "_adjustSuggestionsScroll");
+      spyOn(import__695.GeocoderViewModel, "_adjustSuggestionsScroll");
       const destinationFoundCallback = jasmine.createSpy();
-      geocoderViewModel = new import__697.GeocoderViewModel({
+      geocoderViewModel = new import__695.GeocoderViewModel({
         scene: scene2,
         geocoderServices: [customGeocoderOptions],
         destinationFound: destinationFoundCallback
         // Don't move the camera after a successful geocode
       });
       geocoderViewModel._searchText = "some_text";
-      return import__697.GeocoderViewModel._updateSearchSuggestions(geocoderViewModel).then(
+      return import__695.GeocoderViewModel._updateSearchSuggestions(geocoderViewModel).then(
         function() {
           expect(geocoderViewModel._selectedSuggestion).toEqual(void 0);
           geocoderViewModel._handleArrowDown(geocoderViewModel);
@@ -353028,7 +352753,7 @@ describe(
         credit: new import_engine41.Credit("custom credit", false)
       };
       const destinationFoundCallback = jasmine.createSpy();
-      geocoderViewModel = new import__697.GeocoderViewModel({
+      geocoderViewModel = new import__695.GeocoderViewModel({
         scene: scene2,
         geocoderServices: [geocoderOptions],
         destinationFound: destinationFoundCallback
@@ -353054,7 +352779,7 @@ describe(
         credit: new import_engine41.Credit("custom credit", false)
       };
       const destinationFoundCallback = jasmine.createSpy();
-      geocoderViewModel = new import__697.GeocoderViewModel({
+      geocoderViewModel = new import__695.GeocoderViewModel({
         scene: scene2,
         geocoderServices: [geocoderOptions],
         destinationFound: destinationFoundCallback
@@ -353075,9 +352800,388 @@ describe(
   "WebGL"
 );
 
-// packages/widgets/Specs/InfoBox/InfoBoxSpec.js
+// packages/widgets/Specs/HomeButton/HomeButtonSpec.js
+var import__696 = __toESM(require_Cesium(), 1);
+describe(
+  "Widgets/HomeButton/HomeButton",
+  function() {
+    let scene2;
+    beforeAll(function() {
+      scene2 = createScene_default();
+    });
+    afterAll(function() {
+      scene2.destroyForSpecs();
+    });
+    it("constructor sets default values", function() {
+      const homeButton = new import__696.HomeButton(document.body, scene2);
+      expect(homeButton.container).toBe(document.body);
+      expect(homeButton.viewModel.scene).toBe(scene2);
+      expect(homeButton.isDestroyed()).toEqual(false);
+      homeButton.destroy();
+      expect(homeButton.isDestroyed()).toEqual(true);
+    });
+    it("constructor sets expected values", function() {
+      const homeButton = new import__696.HomeButton(document.body, scene2);
+      expect(homeButton.container).toBe(document.body);
+      expect(homeButton.viewModel.scene).toBe(scene2);
+      homeButton.destroy();
+    });
+    it("constructor works with string id container", function() {
+      const testElement = document.createElement("span");
+      testElement.id = "testElement";
+      document.body.appendChild(testElement);
+      const homeButton = new import__696.HomeButton("testElement", scene2);
+      expect(homeButton.container).toBe(testElement);
+      document.body.removeChild(testElement);
+      homeButton.destroy();
+    });
+    it("throws if container is undefined", function() {
+      expect(function() {
+        return new import__696.HomeButton(void 0, scene2);
+      }).toThrowDeveloperError();
+    });
+    it("throws if container string is undefined", function() {
+      expect(function() {
+        return new import__696.HomeButton("testElement", scene2);
+      }).toThrowDeveloperError();
+    });
+  },
+  "WebGL"
+);
+
+// packages/widgets/Specs/HomeButton/HomeButtonViewModelSpec.js
 var import_engine42 = __toESM(require_Cesium(), 1);
+var import__697 = __toESM(require_Cesium(), 1);
+describe(
+  "Widgets/HomeButton/HomeButtonViewModel",
+  function() {
+    let scene2;
+    const ellipsoid = import_engine42.Ellipsoid.WGS84;
+    const globe2 = new import_engine42.Globe(ellipsoid);
+    beforeAll(function() {
+      scene2 = createScene_default();
+      scene2.globe = globe2;
+    });
+    afterAll(function() {
+      scene2.destroyForSpecs();
+    });
+    it("constructor sets default values", function() {
+      const viewModel = new import__697.HomeButtonViewModel(scene2);
+      expect(viewModel.scene).toBe(scene2);
+    });
+    it("throws if scene is undefined", function() {
+      expect(function() {
+        return new import__697.HomeButtonViewModel(void 0);
+      }).toThrowDeveloperError();
+    });
+    it("works in 3D", function() {
+      scene2.render();
+      const viewModel = new import__697.HomeButtonViewModel(scene2);
+      viewModel.command();
+    });
+    it("works in 2D", function() {
+      scene2.render();
+      const viewModel = new import__697.HomeButtonViewModel(scene2);
+      scene2.morphTo2D();
+      viewModel.command();
+    });
+    it("works in Columbus View", function() {
+      scene2.render();
+      const viewModel = new import__697.HomeButtonViewModel(scene2);
+      scene2.morphToColumbusView();
+      viewModel.command();
+    });
+    it("works while morphing", function() {
+      scene2.render();
+      const viewModel = new import__697.HomeButtonViewModel(scene2);
+      scene2.morphToColumbusView(2e3);
+      viewModel.command();
+    });
+  },
+  "WebGL"
+);
+
+// packages/widgets/Specs/I3SBSLExplorer/I3SBSLExplorerSpec.js
 var import__698 = __toESM(require_Cesium(), 1);
+describe("Widgets/I3SBuildingSceneLayerExplorer/I3SBuildingSceneLayerExplorer", function() {
+  const i3sProvider = {
+    sublayers: [
+      {
+        name: "Overview",
+        modelName: "Overview",
+        visibility: true,
+        sublayers: []
+      },
+      {
+        name: "Full Model",
+        modelName: "FullModel",
+        visibility: true,
+        sublayers: [
+          {
+            name: "Cat1",
+            visibility: false,
+            sublayers: [
+              { name: "SubCat1", visibility: true, sublayers: [] },
+              { name: "SubCat2", visibility: false, sublayers: [] }
+            ]
+          }
+        ]
+      }
+    ],
+    getAttributeNames: function() {
+      return ["BldgLevel", "testAttr"];
+    },
+    getAttributeValues: function() {
+      return [1, 0];
+    }
+  };
+  it("can create bsl explorer ui", function() {
+    const container = document.createElement("div");
+    container.id = "testContainer";
+    document.body.appendChild(container);
+    const widget = new import__698.I3SBuildingSceneLayerExplorer("testContainer", {
+      sublayers: []
+    });
+    expect(widget).toBeInstanceOf(import__698.I3SBuildingSceneLayerExplorer);
+    expect(container.childElementCount).toEqual(1);
+    expect(container.children[0].childElementCount).toEqual(3);
+    expect(container.children[0].children[0].localName).toEqual("h3");
+    expect(container.children[0].children[0].textContent).toEqual(
+      "Building explorer"
+    );
+    expect(container.children[0].children[1].localName).toEqual("select");
+    expect(container.children[0].children[1].textContent).toEqual(
+      "Building layers not found"
+    );
+    expect(container.children[0].children[2].localName).toEqual("div");
+    expect(container.children[0].children[2].id).toEqual("bsl-wrapper");
+    document.body.removeChild(container);
+  });
+  it("throws dev error with no container", function() {
+    expect(function() {
+      return new import__698.I3SBuildingSceneLayerExplorer();
+    }).toThrowDeveloperError();
+  });
+  it("throws dev error with no i3sdataprovider", function() {
+    const container = document.createElement("div");
+    container.id = "testContainer";
+    document.body.appendChild(container);
+    expect(function() {
+      return new import__698.I3SBuildingSceneLayerExplorer("testContainer");
+    }).toThrowDeveloperError();
+    document.body.removeChild(container);
+  });
+  it("can expand/collapse bsl tree", function() {
+    const container = document.createElement("div");
+    container.id = "testContainer";
+    document.body.appendChild(container);
+    i3sProvider.filterByAttributes = jasmine.createSpy();
+    const widget = new import__698.I3SBuildingSceneLayerExplorer(
+      "testContainer",
+      i3sProvider
+    );
+    expect(widget).toBeInstanceOf(import__698.I3SBuildingSceneLayerExplorer);
+    const expander = document.querySelector(".expandItem");
+    const nestedList = expander.parentElement.parentElement.querySelector("#Cat1-expander");
+    expect(expander.textContent).toEqual("+");
+    expect(nestedList.className).toEqual("nested");
+    DomEventSimulator_default.fireClick(expander);
+    expect(expander.textContent).toEqual("-");
+    expect(nestedList.className).toEqual("nested active");
+    DomEventSimulator_default.fireClick(expander);
+    expect(expander.textContent).toEqual("+");
+    expect(nestedList.className).toEqual("nested");
+    document.body.removeChild(container);
+  });
+});
+
+// packages/widgets/Specs/I3SBSLExplorer/I3SBSLExplorerViewModelSpec.js
+var import__699 = __toESM(require_Cesium(), 1);
+describe("Widgets/I3SBuildingSceneLayerExplorer/I3SBuildingSceneLayerExplorerViewModel", function() {
+  const i3sProvider = {
+    sublayers: [
+      {
+        name: "Full Model",
+        modelName: "FullModel",
+        visibility: true,
+        sublayers: [
+          {
+            name: "Cat1",
+            visibility: false,
+            sublayers: [
+              { name: "SubCat1", visibility: true, sublayers: [] },
+              { name: "SubCat2", visibility: false, sublayers: [] }
+            ]
+          }
+        ]
+      },
+      {
+        name: "Overview",
+        modelName: "Overview",
+        visibility: true,
+        sublayers: []
+      }
+    ],
+    getAttributeNames: function() {
+      return ["BldgLevel", "testAttr"];
+    },
+    getAttributeValues: function() {
+      return [1, 0];
+    }
+  };
+  const i3sProviderWithoutOverview = {
+    sublayers: [
+      {
+        name: "Cat1",
+        visibility: false,
+        sublayers: [
+          { name: "SubCat1", visibility: true, sublayers: [] },
+          { name: "SubCat2", visibility: false, sublayers: [] }
+        ]
+      }
+    ]
+  };
+  it("can create bsl explorer ViewModel", function() {
+    const viewModel = new import__699.I3SBuildingSceneLayerExplorerViewModel(i3sProvider);
+    expect(viewModel.levels).toEqual(["All", 0, 1]);
+    expect(viewModel.selectedLevel).toEqual("All");
+    expect(viewModel.sublayers.length).toEqual(2);
+    expect(viewModel.sublayers[1].name).toEqual("Overview");
+    expect(viewModel.sublayers[1].modelName).toEqual("Overview");
+    expect(viewModel.sublayers[1].visibility).toEqual(false);
+    expect(viewModel.sublayers[1].sublayers.length).toEqual(0);
+    expect(viewModel.sublayers[0].name).toEqual("Full Model");
+    expect(viewModel.sublayers[0].modelName).toEqual("FullModel");
+    expect(viewModel.sublayers[0].visibility).toEqual(false);
+    expect(viewModel.sublayers[0].sublayers.length).toEqual(1);
+    expect(viewModel.sublayers[0].sublayers[0].name).toEqual("Cat1");
+    expect(viewModel.sublayers[0].sublayers[0].visibility).toEqual(true);
+    expect(viewModel.sublayers[0].sublayers[0].sublayers.length).toEqual(2);
+    expect(viewModel.sublayers[0].sublayers[0].sublayers[0].name).toEqual(
+      "SubCat1"
+    );
+    expect(viewModel.sublayers[0].sublayers[0].sublayers[0].visibility).toEqual(
+      true
+    );
+    expect(
+      viewModel.sublayers[0].sublayers[0].sublayers[0].sublayers.length
+    ).toEqual(0);
+    expect(viewModel.sublayers[0].sublayers[0].sublayers[1].name).toEqual(
+      "SubCat2"
+    );
+    expect(viewModel.sublayers[0].sublayers[0].sublayers[1].visibility).toEqual(
+      false
+    );
+    expect(
+      viewModel.sublayers[0].sublayers[0].sublayers[1].sublayers.length
+    ).toEqual(0);
+    expect(viewModel.topLayers.length).toEqual(3);
+    expect(viewModel.defaultLayer.modelName).toEqual("Overview");
+  });
+  it("can create bsl explorer ViewModel if no Overview", function() {
+    const viewModel = new import__699.I3SBuildingSceneLayerExplorerViewModel(
+      i3sProviderWithoutOverview
+    );
+    expect(viewModel.sublayers.length).toEqual(1);
+    expect(viewModel.sublayers[0].name).toEqual("Full Model");
+    expect(viewModel.sublayers[0].modelName).toEqual("FullModel");
+    expect(viewModel.sublayers[0].visibility).toEqual(false);
+    expect(viewModel.sublayers[0].sublayers.length).toEqual(1);
+    expect(viewModel.sublayers[0].sublayers[0].name).toEqual("Cat1");
+    expect(viewModel.sublayers[0].sublayers[0].visibility).toEqual(true);
+    expect(viewModel.sublayers[0].sublayers[0].sublayers.length).toEqual(2);
+    expect(viewModel.sublayers[0].sublayers[0].sublayers[0].name).toEqual(
+      "SubCat1"
+    );
+    expect(viewModel.sublayers[0].sublayers[0].sublayers[0].visibility).toEqual(
+      true
+    );
+    expect(
+      viewModel.sublayers[0].sublayers[0].sublayers[0].sublayers.length
+    ).toEqual(0);
+    expect(viewModel.sublayers[0].sublayers[0].sublayers[1].name).toEqual(
+      "SubCat2"
+    );
+    expect(viewModel.sublayers[0].sublayers[0].sublayers[1].visibility).toEqual(
+      false
+    );
+    expect(
+      viewModel.sublayers[0].sublayers[0].sublayers[1].sublayers.length
+    ).toEqual(0);
+    expect(viewModel.topLayers.length).toEqual(2);
+    expect(viewModel.defaultLayer.modelName).toEqual("FullModel");
+  });
+  it("can handle filtering by level", function() {
+    i3sProvider.filterByAttributes = jasmine.createSpy();
+    const viewModel = new import__699.I3SBuildingSceneLayerExplorerViewModel(i3sProvider);
+    import__699.knockout.track(viewModel);
+    viewModel.currentLevel = 1;
+    expect(i3sProvider.filterByAttributes).toHaveBeenCalledWith([
+      {
+        name: "BldgLevel",
+        values: [1]
+      }
+    ]);
+    viewModel.currentLevel = "All";
+    expect(i3sProvider.filterByAttributes).toHaveBeenCalledWith();
+  });
+  it("can handle top layer selection", function() {
+    const bslWrapper = document.createElement("div");
+    bslWrapper.id = "bsl-wrapper";
+    document.body.appendChild(bslWrapper);
+    i3sProvider.filterByAttributes = jasmine.createSpy();
+    const viewModel = new import__699.I3SBuildingSceneLayerExplorerViewModel(i3sProvider);
+    import__699.knockout.track(viewModel);
+    viewModel.currentLayer = {
+      name: "Full Model",
+      modelName: "FullModel",
+      index: 1
+    };
+    viewModel.currentLevel = 1;
+    viewModel.currentLayer = {
+      name: "Overview",
+      modelName: "Overview",
+      index: 0
+    };
+    expect(viewModel.sublayers[0].visibility).toEqual(true);
+    expect(viewModel.sublayers[1].visibility).toEqual(false);
+    expect(viewModel.selectedLevel).toEqual(1);
+    expect(viewModel.currentLevel).toEqual("All");
+    expect(bslWrapper.style.display).toEqual("none");
+    viewModel.currentLayer = {
+      name: "Full Model",
+      modelName: "FullModel",
+      index: 1
+    };
+    expect(viewModel.sublayers[0].visibility).toEqual(false);
+    expect(viewModel.sublayers[1].visibility).toEqual(true);
+    expect(viewModel.currentLevel).toEqual(1);
+    expect(bslWrapper.style.display).toEqual("block");
+    document.body.removeChild(bslWrapper);
+  });
+  it("can handle top layer selection if no Overview", function() {
+    const bslWrapper = document.createElement("div");
+    bslWrapper.id = "bsl-wrapper";
+    document.body.appendChild(bslWrapper);
+    i3sProviderWithoutOverview.filterByAttributes = jasmine.createSpy();
+    const viewModel = new import__699.I3SBuildingSceneLayerExplorerViewModel(
+      i3sProviderWithoutOverview
+    );
+    import__699.knockout.track(viewModel);
+    viewModel.currentLayer = {
+      name: "Full Model",
+      modelName: "FullModel",
+      index: 0
+    };
+    expect(viewModel.sublayers[0].visibility).toEqual(true);
+    expect(bslWrapper.style.display).toEqual("block");
+    document.body.removeChild(bslWrapper);
+  });
+});
+
+// packages/widgets/Specs/InfoBox/InfoBoxSpec.js
+var import_engine43 = __toESM(require_Cesium(), 1);
+var import__700 = __toESM(require_Cesium(), 1);
 describe("Widgets/InfoBox/InfoBox", function() {
   let testContainer;
   let infoBox;
@@ -353087,13 +353191,13 @@ describe("Widgets/InfoBox/InfoBox", function() {
     document.body.appendChild(testContainer);
   });
   afterEach(function() {
-    if ((0, import_engine42.defined)(infoBox) && !infoBox.isDestroyed()) {
+    if ((0, import_engine43.defined)(infoBox) && !infoBox.isDestroyed()) {
       infoBox = infoBox.destroy();
     }
     document.body.removeChild(testContainer);
   });
   it("constructor sets expected values", function() {
-    infoBox = new import__698.InfoBox(testContainer);
+    infoBox = new import__700.InfoBox(testContainer);
     expect(infoBox.container).toBe(testContainer);
     expect(infoBox.viewModel).toBeDefined();
     expect(infoBox.isDestroyed()).toEqual(false);
@@ -353101,7 +353205,7 @@ describe("Widgets/InfoBox/InfoBox", function() {
     expect(infoBox.isDestroyed()).toEqual(true);
   });
   it("can set description body", function() {
-    const infoBox2 = new import__698.InfoBox(testContainer);
+    const infoBox2 = new import__700.InfoBox(testContainer);
     let node;
     const infoElement = testContainer.firstChild;
     infoBox2.viewModel.description = "Please do not crash";
@@ -353126,26 +353230,26 @@ describe("Widgets/InfoBox/InfoBox", function() {
     });
   });
   it("constructor works with string id container", function() {
-    infoBox = new import__698.InfoBox("testContainer");
+    infoBox = new import__700.InfoBox("testContainer");
     expect(infoBox.container.id).toBe(testContainer.id);
   });
   it("throws if container is undefined", function() {
     expect(function() {
-      return new import__698.InfoBox(void 0);
+      return new import__700.InfoBox(void 0);
     }).toThrowDeveloperError();
   });
   it("throws if container string is undefined", function() {
     expect(function() {
-      return new import__698.InfoBox("foo");
+      return new import__700.InfoBox("foo");
     }).toThrowDeveloperError();
   });
 });
 
 // packages/widgets/Specs/InfoBox/InfoBoxViewModelSpec.js
-var import__699 = __toESM(require_Cesium(), 1);
+var import__701 = __toESM(require_Cesium(), 1);
 describe("Widgets/InfoBox/InfoBoxViewModel", function() {
   it("constructor sets expected values", function() {
-    const viewModel = new import__699.InfoBoxViewModel();
+    const viewModel = new import__701.InfoBoxViewModel();
     expect(viewModel.enableCamera).toBe(false);
     expect(viewModel.isCameraTracking).toBe(false);
     expect(viewModel.showInfo).toBe(false);
@@ -353155,18 +353259,18 @@ describe("Widgets/InfoBox/InfoBoxViewModel", function() {
   });
   it("sets description", function() {
     const safeString = "<p>This is a test.</p>";
-    const viewModel = new import__699.InfoBoxViewModel();
+    const viewModel = new import__701.InfoBoxViewModel();
     viewModel.description = safeString;
     expect(viewModel.description).toBe(safeString);
   });
   it("indicates missing description", function() {
-    const viewModel = new import__699.InfoBoxViewModel();
+    const viewModel = new import__701.InfoBoxViewModel();
     expect(viewModel._bodyless).toBe(true);
     viewModel.description = "Testing";
     expect(viewModel._bodyless).toBe(false);
   });
   it("camera icon changes when tracking is not available, unless due to active tracking", function() {
-    const viewModel = new import__699.InfoBoxViewModel();
+    const viewModel = new import__701.InfoBoxViewModel();
     viewModel.enableCamera = true;
     viewModel.isCameraTracking = false;
     const enabledTrackingPath = viewModel.cameraIconPath;
@@ -353182,107 +353286,6 @@ describe("Widgets/InfoBox/InfoBoxViewModel", function() {
     expect(viewModel.cameraIconPath).toBe(disableTrackingPath);
   });
 });
-
-// packages/widgets/Specs/HomeButton/HomeButtonSpec.js
-var import__700 = __toESM(require_Cesium(), 1);
-describe(
-  "Widgets/HomeButton/HomeButton",
-  function() {
-    let scene2;
-    beforeAll(function() {
-      scene2 = createScene_default();
-    });
-    afterAll(function() {
-      scene2.destroyForSpecs();
-    });
-    it("constructor sets default values", function() {
-      const homeButton = new import__700.HomeButton(document.body, scene2);
-      expect(homeButton.container).toBe(document.body);
-      expect(homeButton.viewModel.scene).toBe(scene2);
-      expect(homeButton.isDestroyed()).toEqual(false);
-      homeButton.destroy();
-      expect(homeButton.isDestroyed()).toEqual(true);
-    });
-    it("constructor sets expected values", function() {
-      const homeButton = new import__700.HomeButton(document.body, scene2);
-      expect(homeButton.container).toBe(document.body);
-      expect(homeButton.viewModel.scene).toBe(scene2);
-      homeButton.destroy();
-    });
-    it("constructor works with string id container", function() {
-      const testElement = document.createElement("span");
-      testElement.id = "testElement";
-      document.body.appendChild(testElement);
-      const homeButton = new import__700.HomeButton("testElement", scene2);
-      expect(homeButton.container).toBe(testElement);
-      document.body.removeChild(testElement);
-      homeButton.destroy();
-    });
-    it("throws if container is undefined", function() {
-      expect(function() {
-        return new import__700.HomeButton(void 0, scene2);
-      }).toThrowDeveloperError();
-    });
-    it("throws if container string is undefined", function() {
-      expect(function() {
-        return new import__700.HomeButton("testElement", scene2);
-      }).toThrowDeveloperError();
-    });
-  },
-  "WebGL"
-);
-
-// packages/widgets/Specs/HomeButton/HomeButtonViewModelSpec.js
-var import_engine43 = __toESM(require_Cesium(), 1);
-var import__701 = __toESM(require_Cesium(), 1);
-describe(
-  "Widgets/HomeButton/HomeButtonViewModel",
-  function() {
-    let scene2;
-    const ellipsoid = import_engine43.Ellipsoid.WGS84;
-    const globe2 = new import_engine43.Globe(ellipsoid);
-    beforeAll(function() {
-      scene2 = createScene_default();
-      scene2.globe = globe2;
-    });
-    afterAll(function() {
-      scene2.destroyForSpecs();
-    });
-    it("constructor sets default values", function() {
-      const viewModel = new import__701.HomeButtonViewModel(scene2);
-      expect(viewModel.scene).toBe(scene2);
-    });
-    it("throws if scene is undefined", function() {
-      expect(function() {
-        return new import__701.HomeButtonViewModel(void 0);
-      }).toThrowDeveloperError();
-    });
-    it("works in 3D", function() {
-      scene2.render();
-      const viewModel = new import__701.HomeButtonViewModel(scene2);
-      viewModel.command();
-    });
-    it("works in 2D", function() {
-      scene2.render();
-      const viewModel = new import__701.HomeButtonViewModel(scene2);
-      scene2.morphTo2D();
-      viewModel.command();
-    });
-    it("works in Columbus View", function() {
-      scene2.render();
-      const viewModel = new import__701.HomeButtonViewModel(scene2);
-      scene2.morphToColumbusView();
-      viewModel.command();
-    });
-    it("works while morphing", function() {
-      scene2.render();
-      const viewModel = new import__701.HomeButtonViewModel(scene2);
-      scene2.morphToColumbusView(2e3);
-      viewModel.command();
-    });
-  },
-  "WebGL"
-);
 
 // packages/widgets/Specs/NavigationHelpButton/NavigationHelpButtonSpec.js
 var import_engine44 = __toESM(require_Cesium(), 1);

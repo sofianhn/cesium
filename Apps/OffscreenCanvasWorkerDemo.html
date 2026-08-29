@@ -9,12 +9,13 @@
     />
     <title>Cesium OffscreenCanvas Worker Demo</title>
     <script>
+      window.CESIUM_DEMO_CACHE_VERSION = "20260829-mobile2";
       window.CESIUM_BASE_URL = new URL(
         "../Build/Cesium/",
         window.location.href,
       ).href;
     </script>
-    <script src="../Build/Cesium/Cesium.js"></script>
+    <script src="../Build/Cesium/Cesium.js?v=20260829-mobile2"></script>
     <link rel="stylesheet" href="../Build/Cesium/Widgets/widgets.css" />
     <style>
       html,
@@ -131,11 +132,12 @@
             pixelRatio: isIOS ? 1 : Math.min(window.devicePixelRatio || 1, 2),
             backgroundColor: [25, 45, 85, 255],
             contextOptions: {
+              requestWebgl1: isIOS,
               webgl: {
                 alpha: false,
                 antialias: false,
-                preserveDrawingBuffer: true,
-                powerPreference: "high-performance",
+                preserveDrawingBuffer: !isIOS,
+                powerPreference: isIOS ? "default" : "high-performance",
               },
             },
           });
@@ -167,7 +169,7 @@
               }, 6000);
             })
             .catch(function (error) {
-              statusText.textContent = `Worker init failed: ${error.message || error}`;
+              statusText.textContent = `Worker init failed: ${error.message || error}. Try clearing Safari cache or open with ?v=${window.CESIUM_DEMO_CACHE_VERSION}`;
             });
 
           pickButton.addEventListener("click", async function () {
