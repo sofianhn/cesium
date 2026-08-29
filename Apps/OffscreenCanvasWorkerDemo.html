@@ -9,11 +9,14 @@
     />
     <title>Cesium OffscreenCanvas Worker Demo</title>
     <script>
-      window.CESIUM_BASE_URL = "../Build/Cesium/";
+      window.CESIUM_BASE_URL = new URL(
+        "../Build/Cesium/",
+        window.location.href,
+      ).href;
     </script>
     <script src="../Build/Cesium/Cesium.js"></script>
+    <link rel="stylesheet" href="../Build/Cesium/Widgets/widgets.css" />
     <style>
-      @import url(../Build/Cesium/Widgets/widgets.css);
       html,
       body {
         width: 100%;
@@ -113,9 +116,9 @@
         statusText.textContent =
           "This browser does not support transferControlToOffscreen.";
       } else {
-        const widget = new window.Cesium.OffscreenCesiumWidget(
-          "cesiumContainer",
-          {
+        let widget;
+        try {
+          widget = new window.Cesium.OffscreenCesiumWidget("cesiumContainer", {
             useWorldImagery: true,
             useOpenStreetMapImagery: false,
             simpleGlobe: isIOS,
@@ -131,53 +134,58 @@
                 powerPreference: "high-performance",
               },
             },
-          },
-        );
-
-        widget.readyPromise
-          .then(function () {
-            const resizeNow = function () {
-              widget.resize();
-            };
-            resizeNow();
-            requestAnimationFrame(resizeNow);
-            setTimeout(resizeNow, 250);
-            setTimeout(resizeNow, 1000);
-
-            statusText.textContent =
-              "Loading globe · drag to orbit · pinch to zoom";
-            pickButton.disabled = false;
-
-            setTimeout(function () {
-              updatePixelStatus(widget);
-            }, 2000);
-            setTimeout(function () {
-              updatePixelStatus(widget);
-            }, 6000);
-          })
-          .catch(function (error) {
-            statusText.textContent = `Worker init failed: ${error.message || error}`;
           });
+        } catch (error) {
+          statusText.textContent = `Widget failed: ${error.message || error}`;
+          widget = undefined;
+        }
+
+        if (widget) {
+          widget.readyPromise
+            .then(function () {
+              const resizeNow = function () {
+                widget.resize();
+              };
+              resizeNow();
+              requestAnimationFrame(resizeNow);
+              setTimeout(resizeNow, 250);
+              setTimeout(resizeNow, 1000);
+
+              statusText.textContent =
+                "Loading globe · drag to orbit · pinch to zoom";
+              pickButton.disabled = false;
+
+              setTimeout(function () {
+                updatePixelStatus(widget);
+              }, 2000);
+              setTimeout(function () {
+                updatePixelStatus(widget);
+              }, 6000);
+            })
+            .catch(function (error) {
+              statusText.textContent = `Worker init failed: ${error.message || error}`;
+            });
+
+          pickButton.addEventListener("click", async function () {
+            const canvas = widget.canvas;
+            const picked = await widget.pick(
+              canvas.clientWidth / 2,
+              canvas.clientHeight / 2,
+            );
+            statusText.textContent = picked
+              ? `Picked object id: ${picked.id}`
+              : "Nothing picked at center";
+          });
+
+          window.addEventListener("resize", function () {
+            widget.resize();
+          });
+        }
 
         window.addEventListener("error", function (event) {
           if (event.message && statusText.textContent.startsWith("Starting")) {
             statusText.textContent = `Error: ${event.message}`;
           }
-        });
-
-        pickButton.addEventListener("click", async function () {
-          const canvas = widget.canvas;
-          const picked = await widget.pick(
-            canvas.clientWidth / 2,
-            canvas.clientHeight / 2,
-          );
-          statusText.textContent = picked
-            ? `Picked object id: ${picked.id}`
-            : "Nothing picked at center";
-        });
-
-        window.addEventListener("resize", function () {
-          widget.resize();
         });
       }
     </script>
