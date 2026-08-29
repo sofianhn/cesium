@@ -48,7 +48,7 @@ import {
   TaskProcessor_default,
   TerrainMesh_default,
   destroyObject_default
-} from "./chunk-6G6HGDQ6.js";
+} from "./chunk-U62MFXW5.js";
 import {
   TerrainProvider_default
 } from "./chunk-MZU6WQJA.js";
@@ -47107,820 +47107,1219 @@ DepthPlane.prototype.destroy = function() {
 };
 var DepthPlane_default = DepthPlane;
 
-// packages/engine/Source/Core/DistanceDisplayCondition.js
-function DistanceDisplayCondition(near, far) {
-  near = near ?? 0;
-  this._near = near;
-  far = far ?? Number.MAX_VALUE;
-  this._far = far;
+// packages/engine/Source/Core/TileAvailability.js
+function TileAvailability(tilingScheme, maximumLevel) {
+  this._tilingScheme = tilingScheme;
+  this._maximumLevel = maximumLevel;
+  this._rootNodes = [];
 }
-Object.defineProperties(DistanceDisplayCondition.prototype, {
-  /**
-   * The smallest distance in the interval where the object is visible.
-   * @memberof DistanceDisplayCondition.prototype
-   * @type {number}
-   * @default 0.0
-   */
-  near: {
-    get: function() {
-      return this._near;
-    },
-    set: function(value) {
-      this._near = value;
-    }
-  },
-  /**
-   * The largest distance in the interval where the object is visible.
-   * @memberof DistanceDisplayCondition.prototype
-   * @type {number}
-   * @default Number.MAX_VALUE
-   */
-  far: {
-    get: function() {
-      return this._far;
-    },
-    set: function(value) {
-      this._far = value;
+var rectangleScratch3 = new Rectangle_default();
+function findNode(level, x, y, nodes) {
+  const count = nodes.length;
+  for (let i = 0; i < count; ++i) {
+    const node = nodes[i];
+    if (node.x === x && node.y === y && node.level === level) {
+      return true;
     }
   }
-});
-DistanceDisplayCondition.packedLength = 2;
-DistanceDisplayCondition.pack = function(value, array, startingIndex) {
-  if (!defined_default(value)) {
-    throw new DeveloperError_default("value is required");
-  }
-  if (!defined_default(array)) {
-    throw new DeveloperError_default("array is required");
-  }
-  startingIndex = startingIndex ?? 0;
-  array[startingIndex++] = value.near;
-  array[startingIndex] = value.far;
-  return array;
-};
-DistanceDisplayCondition.unpack = function(array, startingIndex, result) {
-  if (!defined_default(array)) {
-    throw new DeveloperError_default("array is required");
-  }
-  startingIndex = startingIndex ?? 0;
-  if (!defined_default(result)) {
-    result = new DistanceDisplayCondition();
-  }
-  result.near = array[startingIndex++];
-  result.far = array[startingIndex];
-  return result;
-};
-DistanceDisplayCondition.equals = function(left, right) {
-  return left === right || defined_default(left) && defined_default(right) && left.near === right.near && left.far === right.far;
-};
-DistanceDisplayCondition.clone = function(value, result) {
-  if (!defined_default(value)) {
-    return void 0;
-  }
-  if (!defined_default(result)) {
-    result = new DistanceDisplayCondition();
-  }
-  result.near = value.near;
-  result.far = value.far;
-  return result;
-};
-DistanceDisplayCondition.prototype.clone = function(result) {
-  return DistanceDisplayCondition.clone(this, result);
-};
-DistanceDisplayCondition.prototype.equals = function(other) {
-  return DistanceDisplayCondition.equals(this, other);
-};
-var DistanceDisplayCondition_default = DistanceDisplayCondition;
-
-// packages/engine/Source/Core/ShowGeometryInstanceAttribute.js
-function ShowGeometryInstanceAttribute(show) {
-  show = show ?? true;
-  this.value = ShowGeometryInstanceAttribute.toValue(show);
-}
-Object.defineProperties(ShowGeometryInstanceAttribute.prototype, {
-  /**
-   * The datatype of each component in the attribute, e.g., individual elements in
-   * {@link ColorGeometryInstanceAttribute#value}.
-   *
-   * @memberof ShowGeometryInstanceAttribute.prototype
-   *
-   * @type {ComponentDatatype}
-   * @readonly
-   *
-   * @default {@link ComponentDatatype.UNSIGNED_BYTE}
-   */
-  componentDatatype: {
-    get: function() {
-      return ComponentDatatype_default.UNSIGNED_BYTE;
-    }
-  },
-  /**
-   * The number of components in the attributes, i.e., {@link ColorGeometryInstanceAttribute#value}.
-   *
-   * @memberof ShowGeometryInstanceAttribute.prototype
-   *
-   * @type {number}
-   * @readonly
-   *
-   * @default 1
-   */
-  componentsPerAttribute: {
-    get: function() {
-      return 1;
-    }
-  },
-  /**
-   * When <code>true</code> and <code>componentDatatype</code> is an integer format,
-   * indicate that the components should be mapped to the range [0, 1] (unsigned)
-   * or [-1, 1] (signed) when they are accessed as floating-point for rendering.
-   *
-   * @memberof ShowGeometryInstanceAttribute.prototype
-   *
-   * @type {boolean}
-   * @readonly
-   *
-   * @default true
-   */
-  normalize: {
-    get: function() {
-      return false;
-    }
-  }
-});
-ShowGeometryInstanceAttribute.toValue = function(show, result) {
-  if (!defined_default(show)) {
-    throw new DeveloperError_default("show is required.");
-  }
-  if (!defined_default(result)) {
-    return new Uint8Array([show]);
-  }
-  result[0] = show;
-  return result;
-};
-var ShowGeometryInstanceAttribute_default = ShowGeometryInstanceAttribute;
-
-// packages/engine/Source/Scene/ClassificationType.js
-var ClassificationType = {
-  /**
-   * Only terrain will be classified.
-   *
-   * @type {number}
-   * @constant
-   */
-  TERRAIN: 0,
-  /**
-   * Only 3D Tiles will be classified.
-   *
-   * @type {number}
-   * @constant
-   */
-  CESIUM_3D_TILE: 1,
-  /**
-   * Both terrain and 3D Tiles will be classified.
-   *
-   * @type {number}
-   * @constant
-   */
-  BOTH: 2
-};
-ClassificationType.NUMBER_OF_CLASSIFICATION_TYPES = 3;
-Object.freeze(ClassificationType);
-var ClassificationType_default = ClassificationType;
-
-// packages/engine/Source/Scene/StencilFunction.js
-var StencilFunction = {
-  /**
-   * The stencil test never passes.
-   *
-   * @type {number}
-   * @constant
-   */
-  NEVER: WebGLConstants_default.NEVER,
-  /**
-   * The stencil test passes when the masked reference value is less than the masked stencil value.
-   *
-   * @type {number}
-   * @constant
-   */
-  LESS: WebGLConstants_default.LESS,
-  /**
-   * The stencil test passes when the masked reference value is equal to the masked stencil value.
-   *
-   * @type {number}
-   * @constant
-   */
-  EQUAL: WebGLConstants_default.EQUAL,
-  /**
-   * The stencil test passes when the masked reference value is less than or equal to the masked stencil value.
-   *
-   * @type {number}
-   * @constant
-   */
-  LESS_OR_EQUAL: WebGLConstants_default.LEQUAL,
-  /**
-   * The stencil test passes when the masked reference value is greater than the masked stencil value.
-   *
-   * @type {number}
-   * @constant
-   */
-  GREATER: WebGLConstants_default.GREATER,
-  /**
-   * The stencil test passes when the masked reference value is not equal to the masked stencil value.
-   *
-   * @type {number}
-   * @constant
-   */
-  NOT_EQUAL: WebGLConstants_default.NOTEQUAL,
-  /**
-   * The stencil test passes when the masked reference value is greater than or equal to the masked stencil value.
-   *
-   * @type {number}
-   * @constant
-   */
-  GREATER_OR_EQUAL: WebGLConstants_default.GEQUAL,
-  /**
-   * The stencil test always passes.
-   *
-   * @type {number}
-   * @constant
-   */
-  ALWAYS: WebGLConstants_default.ALWAYS
-};
-Object.freeze(StencilFunction);
-var StencilFunction_default = StencilFunction;
-
-// packages/engine/Source/Scene/StencilOperation.js
-var StencilOperation = {
-  /**
-   * Sets the stencil buffer value to zero.
-   *
-   * @type {number}
-   * @constant
-   */
-  ZERO: WebGLConstants_default.ZERO,
-  /**
-   * Does not change the stencil buffer.
-   *
-   * @type {number}
-   * @constant
-   */
-  KEEP: WebGLConstants_default.KEEP,
-  /**
-   * Replaces the stencil buffer value with the reference value.
-   *
-   * @type {number}
-   * @constant
-   */
-  REPLACE: WebGLConstants_default.REPLACE,
-  /**
-   * Increments the stencil buffer value, clamping to unsigned byte.
-   *
-   * @type {number}
-   * @constant
-   */
-  INCREMENT: WebGLConstants_default.INCR,
-  /**
-   * Decrements the stencil buffer value, clamping to zero.
-   *
-   * @type {number}
-   * @constant
-   */
-  DECREMENT: WebGLConstants_default.DECR,
-  /**
-   * Bitwise inverts the existing stencil buffer value.
-   *
-   * @type {number}
-   * @constant
-   */
-  INVERT: WebGLConstants_default.INVERT,
-  /**
-   * Increments the stencil buffer value, wrapping to zero when exceeding the unsigned byte range.
-   *
-   * @type {number}
-   * @constant
-   */
-  INCREMENT_WRAP: WebGLConstants_default.INCR_WRAP,
-  /**
-   * Decrements the stencil buffer value, wrapping to the maximum unsigned byte instead of going below zero.
-   *
-   * @type {number}
-   * @constant
-   */
-  DECREMENT_WRAP: WebGLConstants_default.DECR_WRAP
-};
-Object.freeze(StencilOperation);
-var StencilOperation_default = StencilOperation;
-
-// packages/engine/Source/Scene/StencilConstants.js
-var StencilConstants = {
-  CESIUM_3D_TILE_MASK: 128,
-  SKIP_LOD_MASK: 112,
-  SKIP_LOD_BIT_SHIFT: 4,
-  CLASSIFICATION_MASK: 15
-};
-StencilConstants.setCesium3DTileBit = function() {
-  return {
-    enabled: true,
-    frontFunction: StencilFunction_default.ALWAYS,
-    frontOperation: {
-      fail: StencilOperation_default.KEEP,
-      zFail: StencilOperation_default.KEEP,
-      zPass: StencilOperation_default.REPLACE
-    },
-    backFunction: StencilFunction_default.ALWAYS,
-    backOperation: {
-      fail: StencilOperation_default.KEEP,
-      zFail: StencilOperation_default.KEEP,
-      zPass: StencilOperation_default.REPLACE
-    },
-    reference: StencilConstants.CESIUM_3D_TILE_MASK,
-    mask: StencilConstants.CESIUM_3D_TILE_MASK
-  };
-};
-var StencilConstants_default = Object.freeze(StencilConstants);
-
-// packages/engine/Source/Shaders/PolylineFS.js
-var PolylineFS_default = "#ifdef VECTOR_TILE\nuniform vec4 u_highlightColor;\n#endif\n\nin vec2 v_st;\n\nvoid main()\n{\n    czm_materialInput materialInput;\n\n    vec2 st = v_st;\n    st.t = czm_readNonPerspective(st.t, gl_FragCoord.w);\n\n    materialInput.s = st.s;\n    materialInput.st = st;\n    materialInput.str = vec3(st, 0.0);\n\n    czm_material material = czm_getMaterial(materialInput);\n    out_FragColor = vec4(material.diffuse + material.emission, material.alpha);\n#ifdef VECTOR_TILE\n    out_FragColor *= u_highlightColor;\n#endif\n\n    czm_writeLogDepth();\n}\n";
-
-// packages/engine/Source/Core/TranslationRotationScale.js
-var defaultScale = new Cartesian3_default(1, 1, 1);
-var defaultTranslation = Cartesian3_default.ZERO;
-var defaultRotation = Quaternion_default.IDENTITY;
-function TranslationRotationScale(translation2, rotation, scale) {
-  this.translation = Cartesian3_default.clone(translation2 ?? defaultTranslation);
-  this.rotation = Quaternion_default.clone(rotation ?? defaultRotation);
-  this.scale = Cartesian3_default.clone(scale ?? defaultScale);
-}
-TranslationRotationScale.prototype.equals = function(right) {
-  return this === right || defined_default(right) && Cartesian3_default.equals(this.translation, right.translation) && Quaternion_default.equals(this.rotation, right.rotation) && Cartesian3_default.equals(this.scale, right.scale);
-};
-var TranslationRotationScale_default = TranslationRotationScale;
-
-// packages/engine/Source/Core/deprecationWarning.js
-function deprecationWarning(identifier, message) {
-  if (!defined_default(identifier) || !defined_default(message)) {
-    throw new DeveloperError_default("identifier and message are required.");
-  }
-  oneTimeWarning_default(identifier, message);
-}
-var deprecationWarning_default = deprecationWarning;
-
-// packages/engine/Source/Scene/SpecularEnvironmentCubeMap.js
-function SpecularEnvironmentCubeMap(url) {
-  this._url = url;
-  this._cubeMapBuffers = void 0;
-  this._texture = void 0;
-  this._maximumMipmapLevel = void 0;
-  this._loading = false;
-  this._ready = false;
-  this._errorEvent = new Event_default();
-}
-Object.defineProperties(SpecularEnvironmentCubeMap.prototype, {
-  /**
-   * The url to the KTX2 file containing the specular environment map and convoluted mipmaps.
-   * @memberof SpecularEnvironmentCubeMap.prototype
-   * @type {string}
-   * @readonly
-   */
-  url: {
-    get: function() {
-      return this._url;
-    }
-  },
-  /**
-   * Gets an event that is raised when encountering an asynchronous error.  By subscribing
-   * to the event, you will be notified of the error and can potentially recover from it.
-   * @memberof SpecularEnvironmentCubeMap.prototype
-   * @type {Event}
-   * @readonly
-   */
-  errorEvent: {
-    get: function() {
-      return this._errorEvent;
-    }
-  },
-  /**
-   * A texture containing all the packed convolutions.
-   * @memberof SpecularEnvironmentCubeMap.prototype
-   * @type {Texture}
-   * @readonly
-   */
-  texture: {
-    get: function() {
-      return this._texture;
-    }
-  },
-  /**
-   * The maximum number of mip levels with valid environment map data.
-   * This may differ from the number of mips in the WebGL cubemap.
-   * The data loaded at <code>maximumMipmapLevel</code> is suitable for
-   * PBR rendering of a material with maximum roughness (1.0).
-   * @memberOf SpecularEnvironmentCubeMap.prototype
-   * @type {number}
-   * @readonly
-   */
-  maximumMipmapLevel: {
-    get: function() {
-      return this._maximumMipmapLevel;
-    }
-  },
-  /**
-   * Determines if the cube map is complete and ready to use.
-   * @memberof SpecularEnvironmentCubeMap.prototype
-   * @type {boolean}
-   * @readonly
-   */
-  ready: {
-    get: function() {
-      return this._ready;
-    }
-  }
-});
-SpecularEnvironmentCubeMap.isSupported = function(context) {
-  const supportsFloatBuffersAndTextures = context.colorBufferHalfFloat && context.halfFloatingPointTexture || context.floatingPointTexture && context.colorBufferFloat;
-  return supportsFloatBuffersAndTextures && context.supportsTextureLod;
-};
-function cleanupResources(map) {
-  map._cubeMapBuffers = void 0;
-}
-SpecularEnvironmentCubeMap.prototype.update = function(frameState) {
-  const { context } = frameState;
-  if (!SpecularEnvironmentCubeMap.isSupported(context)) {
-    return;
-  }
-  if (defined_default(this._texture)) {
-    cleanupResources(this);
-    return;
-  }
-  if (!defined_default(this._texture) && !this._loading) {
-    const cachedTexture = context.textureCache.getTexture(this._url);
-    if (defined_default(cachedTexture)) {
-      cleanupResources(this);
-      this._texture = cachedTexture;
-      this._maximumMipmapLevel = this._texture.maximumMipmapLevel;
-      this._ready = true;
-    }
-  }
-  const cubeMapBuffers = this._cubeMapBuffers;
-  if (!defined_default(cubeMapBuffers) && !this._loading) {
-    const that = this;
-    loadKTX2_default(this._url).then(function(buffers) {
-      that._cubeMapBuffers = buffers;
-      that._loading = false;
-    }).catch(function(error) {
-      if (that.isDestroyed()) {
-        return;
-      }
-      that._errorEvent.raiseEvent(error);
-    });
-    this._loading = true;
-  }
-  if (!defined_default(this._cubeMapBuffers)) {
-    return;
-  }
-  let { pixelDatatype } = cubeMapBuffers[0].positiveX;
-  if (!defined_default(pixelDatatype)) {
-    pixelDatatype = context.halfFloatingPointTexture ? PixelDatatype_default.HALF_FLOAT : PixelDatatype_default.FLOAT;
-  }
-  const pixelFormat = PixelFormat_default.RGBA;
-  const mipLevels = cubeMapBuffers.length;
-  this._maximumMipmapLevel = mipLevels - 1;
-  const faceSize = cubeMapBuffers[0].positiveX.width;
-  const expectedMipLevels = Math.log2(faceSize) + 1;
-  if (mipLevels !== expectedMipLevels) {
-    const dummyMipLevel = {};
-    Object.values(CubeMap_default.FaceName).forEach((faceName) => {
-      dummyMipLevel[faceName] = void 0;
-    });
-    for (let mipLevel = mipLevels; mipLevel < expectedMipLevels; mipLevel++) {
-      cubeMapBuffers.push(dummyMipLevel);
-    }
-  }
-  const sampler = new Sampler_default({
-    minificationFilter: TextureMinificationFilter_default.LINEAR_MIPMAP_LINEAR
-  });
-  const cubeMap = new CubeMap_default({
-    context,
-    source: cubeMapBuffers[0],
-    flipY: false,
-    pixelDatatype,
-    pixelFormat,
-    sampler
-  });
-  cubeMap.loadMipmaps(cubeMapBuffers.slice(1));
-  this._texture = cubeMap;
-  this._texture.maximumMipmapLevel = this._maximumMipmapLevel;
-  context.textureCache.addTexture(this._url, this._texture);
-  this._ready = true;
-};
-SpecularEnvironmentCubeMap.prototype.isDestroyed = function() {
   return false;
+}
+TileAvailability.prototype.addAvailableTileRange = function(level, startX, startY, endX, endY) {
+  const tilingScheme = this._tilingScheme;
+  const rootNodes = this._rootNodes;
+  if (level === 0) {
+    for (let y = startY; y <= endY; ++y) {
+      for (let x = startX; x <= endX; ++x) {
+        if (!findNode(level, x, y, rootNodes)) {
+          rootNodes.push(new QuadtreeNode(tilingScheme, void 0, 0, x, y));
+        }
+      }
+    }
+  }
+  tilingScheme.tileXYToRectangle(startX, startY, level, rectangleScratch3);
+  const west = rectangleScratch3.west;
+  const north = rectangleScratch3.north;
+  tilingScheme.tileXYToRectangle(endX, endY, level, rectangleScratch3);
+  const east = rectangleScratch3.east;
+  const south = rectangleScratch3.south;
+  const rectangleWithLevel = new RectangleWithLevel(
+    level,
+    west,
+    south,
+    east,
+    north
+  );
+  for (let i = 0; i < rootNodes.length; ++i) {
+    const rootNode = rootNodes[i];
+    if (rectanglesOverlap(rootNode.extent, rectangleWithLevel)) {
+      putRectangleInQuadtree(this._maximumLevel, rootNode, rectangleWithLevel);
+    }
+  }
 };
-SpecularEnvironmentCubeMap.prototype.destroy = function() {
-  cleanupResources(this);
-  this._texture = this._texture && this._texture.destroy();
-  return destroyObject_default(this);
+TileAvailability.prototype.computeMaximumLevelAtPosition = function(position) {
+  let node;
+  for (let nodeIndex = 0; nodeIndex < this._rootNodes.length; ++nodeIndex) {
+    const rootNode = this._rootNodes[nodeIndex];
+    if (rectangleContainsPosition(rootNode.extent, position)) {
+      node = rootNode;
+      break;
+    }
+  }
+  if (!defined_default(node)) {
+    return -1;
+  }
+  return findMaxLevelFromNode(void 0, node, position);
 };
-var SpecularEnvironmentCubeMap_default = SpecularEnvironmentCubeMap;
-
-// packages/engine/Source/Scene/ImageBasedLighting.js
-function ImageBasedLighting(options) {
-  options = options ?? Frozen_default.EMPTY_OBJECT;
-  const imageBasedLightingFactor = defined_default(options.imageBasedLightingFactor) ? Cartesian2_default.clone(options.imageBasedLightingFactor) : new Cartesian2_default(1, 1);
-  Check_default.typeOf.object(
-    "options.imageBasedLightingFactor",
-    imageBasedLightingFactor
-  );
-  Check_default.typeOf.number.greaterThanOrEquals(
-    "options.imageBasedLightingFactor.x",
-    imageBasedLightingFactor.x,
-    0
-  );
-  Check_default.typeOf.number.lessThanOrEquals(
-    "options.imageBasedLightingFactor.x",
-    imageBasedLightingFactor.x,
-    1
-  );
-  Check_default.typeOf.number.greaterThanOrEquals(
-    "options.imageBasedLightingFactor.y",
-    imageBasedLightingFactor.y,
-    0
-  );
-  Check_default.typeOf.number.lessThanOrEquals(
-    "options.imageBasedLightingFactor.y",
-    imageBasedLightingFactor.y,
-    1
-  );
-  this._imageBasedLightingFactor = imageBasedLightingFactor;
-  const sphericalHarmonicCoefficients = options.sphericalHarmonicCoefficients;
-  if (defined_default(sphericalHarmonicCoefficients) && (!Array.isArray(sphericalHarmonicCoefficients) || sphericalHarmonicCoefficients.length !== 9)) {
-    throw new DeveloperError_default(
-      "options.sphericalHarmonicCoefficients must be an array of 9 Cartesian3 values."
+var rectanglesScratch = [];
+var remainingToCoverByLevelScratch = [];
+var westScratch = new Rectangle_default();
+var eastScratch = new Rectangle_default();
+TileAvailability.prototype.computeBestAvailableLevelOverRectangle = function(rectangle) {
+  const rectangles = rectanglesScratch;
+  rectangles.length = 0;
+  if (rectangle.east < rectangle.west) {
+    rectangles.push(
+      Rectangle_default.fromRadians(
+        -Math.PI,
+        rectangle.south,
+        rectangle.east,
+        rectangle.north,
+        westScratch
+      )
+    );
+    rectangles.push(
+      Rectangle_default.fromRadians(
+        rectangle.west,
+        rectangle.south,
+        Math.PI,
+        rectangle.north,
+        eastScratch
+      )
+    );
+  } else {
+    rectangles.push(rectangle);
+  }
+  const remainingToCoverByLevel = remainingToCoverByLevelScratch;
+  remainingToCoverByLevel.length = 0;
+  let i;
+  for (i = 0; i < this._rootNodes.length; ++i) {
+    updateCoverageWithNode(
+      remainingToCoverByLevel,
+      this._rootNodes[i],
+      rectangles
     );
   }
-  this._sphericalHarmonicCoefficients = sphericalHarmonicCoefficients;
-  this._specularEnvironmentMaps = options.specularEnvironmentMaps;
-  this._specularEnvironmentCubeMap = void 0;
-  this._specularEnvironmentCubeMapDirty = true;
-  this._specularEnvironmentMapLoaded = false;
-  this._previousSpecularEnvironmentMapLoaded = false;
-  this._useDefaultSpecularMaps = false;
-  this._useDefaultSphericalHarmonics = false;
-  this._shouldRegenerateShaders = false;
-  this._previousFrameNumber = void 0;
-  this._previousFrameContext = void 0;
-  this._previousImageBasedLightingFactor = Cartesian2_default.clone(
-    imageBasedLightingFactor
-  );
-  this._previousSphericalHarmonicCoefficients = sphericalHarmonicCoefficients;
-  this._removeErrorListener = void 0;
-}
-Object.defineProperties(ImageBasedLighting.prototype, {
-  /**
-   * Cesium adds lighting from the earth, sky, atmosphere, and star skybox.
-   * This cartesian is used to scale the final diffuse and specular lighting
-   * contribution from those sources to the final color. A value of 0.0 will
-   * disable those light sources.
-   *
-   * @memberof ImageBasedLighting.prototype
-   *
-   * @type {Cartesian2}
-   * @default Cartesian2(1.0, 1.0)
-   */
-  imageBasedLightingFactor: {
-    get: function() {
-      return this._imageBasedLightingFactor;
-    },
-    set: function(value) {
-      Check_default.typeOf.object("imageBasedLightingFactor", value);
-      Check_default.typeOf.number.greaterThanOrEquals(
-        "imageBasedLightingFactor.x",
-        value.x,
-        0
-      );
-      Check_default.typeOf.number.lessThanOrEquals(
-        "imageBasedLightingFactor.x",
-        value.x,
-        1
-      );
-      Check_default.typeOf.number.greaterThanOrEquals(
-        "imageBasedLightingFactor.y",
-        value.y,
-        0
-      );
-      Check_default.typeOf.number.lessThanOrEquals(
-        "imageBasedLightingFactor.y",
-        value.y,
-        1
-      );
-      this._previousImageBasedLightingFactor = Cartesian2_default.clone(
-        this._imageBasedLightingFactor,
-        this._previousImageBasedLightingFactor
-      );
-      this._imageBasedLightingFactor = Cartesian2_default.clone(
-        value,
-        this._imageBasedLightingFactor
-      );
+  for (i = remainingToCoverByLevel.length - 1; i >= 0; --i) {
+    if (defined_default(remainingToCoverByLevel[i]) && remainingToCoverByLevel[i].length === 0) {
+      return i;
     }
-  },
-  /**
-   * The third order spherical harmonic coefficients used for the diffuse color of image-based lighting. When <code>undefined</code>, a diffuse irradiance
-   * computed from the atmosphere color is used.
-   * <p>
-   * There are nine <code>Cartesian3</code> coefficients.
-   * The order of the coefficients is: L<sub>0,0</sub>, L<sub>1,-1</sub>, L<sub>1,0</sub>, L<sub>1,1</sub>, L<sub>2,-2</sub>, L<sub>2,-1</sub>, L<sub>2,0</sub>, L<sub>2,1</sub>, L<sub>2,2</sub>
-   * </p>
-   *
-   * These values can be obtained by preprocessing the environment map using the <code>cmgen</code> tool of
-   * {@link https://github.com/google/filament/releases|Google's Filament project}.
-   * Be sure to use the <code>--no-mirror</code> option in <code>cmgen</code>.
-   *
-   * @memberof ImageBasedLighting.prototype
-   *
-   * @type {Cartesian3[]}
-   * @demo {@link https://sandcastle.cesium.com/index.html?id=image-based-lighting|Sandcastle Image Based Lighting Demo}
-   * @see {@link https://graphics.stanford.edu/papers/envmap/envmap.pdf|An Efficient Representation for Irradiance Environment Maps}
-   */
-  sphericalHarmonicCoefficients: {
+  }
+  return 0;
+};
+var cartographicScratch4 = new Cartographic_default();
+TileAvailability.prototype.isTileAvailable = function(level, x, y) {
+  const rectangle = this._tilingScheme.tileXYToRectangle(
+    x,
+    y,
+    level,
+    rectangleScratch3
+  );
+  Rectangle_default.center(rectangle, cartographicScratch4);
+  return this.computeMaximumLevelAtPosition(cartographicScratch4) >= level;
+};
+TileAvailability.prototype.computeChildMaskForTile = function(level, x, y) {
+  const childLevel = level + 1;
+  if (childLevel >= this._maximumLevel) {
+    return 0;
+  }
+  let mask = 0;
+  mask |= this.isTileAvailable(childLevel, 2 * x, 2 * y + 1) ? 1 : 0;
+  mask |= this.isTileAvailable(childLevel, 2 * x + 1, 2 * y + 1) ? 2 : 0;
+  mask |= this.isTileAvailable(childLevel, 2 * x, 2 * y) ? 4 : 0;
+  mask |= this.isTileAvailable(childLevel, 2 * x + 1, 2 * y) ? 8 : 0;
+  return mask;
+};
+function QuadtreeNode(tilingScheme, parent, level, x, y) {
+  this.tilingScheme = tilingScheme;
+  this.parent = parent;
+  this.level = level;
+  this.x = x;
+  this.y = y;
+  this.extent = tilingScheme.tileXYToRectangle(x, y, level);
+  this.rectangles = [];
+  this._sw = void 0;
+  this._se = void 0;
+  this._nw = void 0;
+  this._ne = void 0;
+}
+Object.defineProperties(QuadtreeNode.prototype, {
+  nw: {
     get: function() {
-      return this._sphericalHarmonicCoefficients;
-    },
-    set: function(value) {
-      if (defined_default(value) && (!Array.isArray(value) || value.length !== 9)) {
-        throw new DeveloperError_default(
-          "sphericalHarmonicCoefficients must be an array of 9 Cartesian3 values."
+      if (!this._nw) {
+        this._nw = new QuadtreeNode(
+          this.tilingScheme,
+          this,
+          this.level + 1,
+          this.x * 2,
+          this.y * 2
         );
       }
-      this._previousSphericalHarmonicCoefficients = this._sphericalHarmonicCoefficients;
-      this._sphericalHarmonicCoefficients = value;
+      return this._nw;
     }
   },
-  /**
-   * A URL to a KTX2 file that contains a cube map of the specular lighting and the convoluted specular mipmaps.
-   *
-   * @memberof ImageBasedLighting.prototype
-   * @demo {@link https://sandcastle.cesium.com/index.html?id=image-based-lighting|Sandcastle Image Based Lighting Demo}
-   * @type {string}
-   * @see ImageBasedLighting#sphericalHarmonicCoefficients
-   */
-  specularEnvironmentMaps: {
+  ne: {
     get: function() {
-      return this._specularEnvironmentMaps;
-    },
-    set: function(value) {
-      if (value !== this._specularEnvironmentMaps) {
-        this._specularEnvironmentCubeMapDirty = this._specularEnvironmentCubeMapDirty || value !== this._specularEnvironmentMaps;
-        this._specularEnvironmentMapLoaded = false;
+      if (!this._ne) {
+        this._ne = new QuadtreeNode(
+          this.tilingScheme,
+          this,
+          this.level + 1,
+          this.x * 2 + 1,
+          this.y * 2
+        );
       }
-      this._specularEnvironmentMaps = value;
+      return this._ne;
     }
   },
-  /**
-   * Whether or not image-based lighting is enabled.
-   *
-   * @memberof ImageBasedLighting.prototype
-   * @type {boolean}
-   *
-   * @private
-   */
-  enabled: {
+  sw: {
     get: function() {
-      return this._imageBasedLightingFactor.x > 0 || this._imageBasedLightingFactor.y > 0;
+      if (!this._sw) {
+        this._sw = new QuadtreeNode(
+          this.tilingScheme,
+          this,
+          this.level + 1,
+          this.x * 2,
+          this.y * 2 + 1
+        );
+      }
+      return this._sw;
     }
   },
-  /**
-   * Whether or not the models that use this lighting should regenerate their shaders,
-   * based on the properties and resources have changed.
-   *
-   * @memberof ImageBasedLighting.prototype
-   * @type {boolean}
-   *
-   * @private
-   */
-  shouldRegenerateShaders: {
+  se: {
     get: function() {
-      return this._shouldRegenerateShaders;
-    }
-  },
-  /**
-   * The texture atlas for the specular environment maps.
-   *
-   * @memberof ImageBasedLighting.prototype
-   * @type {SpecularEnvironmentCubeMap}
-   *
-   * @private
-   */
-  specularEnvironmentCubeMap: {
-    get: function() {
-      return this._specularEnvironmentCubeMap;
-    }
-  },
-  /**
-   * Whether or not to use the default spherical harmonics coefficients.
-   *
-   * @memberof ImageBasedLighting.prototype
-   * @type {boolean}
-   *
-   * @private
-   */
-  useDefaultSphericalHarmonics: {
-    get: function() {
-      return this._useDefaultSphericalHarmonics;
-    }
-  },
-  /**
-   * Whether or not to use the default specular environment maps.
-   *
-   * @memberof ImageBasedLighting.prototype
-   * @type {boolean}
-   *
-   * @private
-   */
-  useDefaultSpecularMaps: {
-    get: function() {
-      return this._useDefaultSpecularMaps;
-    }
-  },
-  /**
-   * Whether or not the image-based lighting settings use specular environment maps.
-   *
-   * @memberof ImageBasedLighting.prototype
-   * @type {boolean}
-   *
-   * @private
-   */
-  useSpecularEnvironmentMaps: {
-    get: function() {
-      return defined_default(this._specularEnvironmentCubeMap) && this._specularEnvironmentCubeMap.ready || this._useDefaultSpecularMaps;
+      if (!this._se) {
+        this._se = new QuadtreeNode(
+          this.tilingScheme,
+          this,
+          this.level + 1,
+          this.x * 2 + 1,
+          this.y * 2 + 1
+        );
+      }
+      return this._se;
     }
   }
 });
-function createSpecularEnvironmentCubeMap(imageBasedLighting, context) {
-  if (!SpecularEnvironmentCubeMap_default.isSupported(context)) {
-    return;
-  }
-  imageBasedLighting._specularEnvironmentCubeMap = imageBasedLighting._specularEnvironmentCubeMap && imageBasedLighting._specularEnvironmentCubeMap.destroy();
-  if (defined_default(imageBasedLighting._specularEnvironmentMaps)) {
-    const cubeMap = new SpecularEnvironmentCubeMap_default(
-      imageBasedLighting._specularEnvironmentMaps
-    );
-    imageBasedLighting._specularEnvironmentCubeMap = cubeMap;
-    imageBasedLighting._removeErrorListener = cubeMap.errorEvent.addEventListener((error) => {
-      console.error(`Error loading specularEnvironmentMaps: ${error}`);
-    });
-  }
-  imageBasedLighting._shouldRegenerateShaders = true;
+function RectangleWithLevel(level, west, south, east, north) {
+  this.level = level;
+  this.west = west;
+  this.south = south;
+  this.east = east;
+  this.north = north;
 }
-ImageBasedLighting.prototype.update = function(frameState) {
-  if (frameState.frameNumber === this._previousFrameNumber && frameState.context === this._previousFrameContext) {
-    return;
-  }
-  this._previousFrameNumber = frameState.frameNumber;
-  const context = this._previousFrameContext = frameState.context;
-  frameState.brdfLutGenerator.update(frameState);
-  this._shouldRegenerateShaders = false;
-  const iblFactor = this._imageBasedLightingFactor;
-  const previousIBLFactor = this._previousImageBasedLightingFactor;
-  if (!Cartesian2_default.equals(iblFactor, previousIBLFactor)) {
-    this._shouldRegenerateShaders = iblFactor.x > 0 && previousIBLFactor.x === 0 || iblFactor.x === 0 && previousIBLFactor.x > 0;
-    this._shouldRegenerateShaders = this._shouldRegenerateShaders || iblFactor.y > 0 && previousIBLFactor.y === 0 || iblFactor.y === 0 && previousIBLFactor.y > 0;
-    this._previousImageBasedLightingFactor = Cartesian2_default.clone(
-      this._imageBasedLightingFactor,
-      this._previousImageBasedLightingFactor
-    );
-  }
-  if (this._previousSphericalHarmonicCoefficients !== this._sphericalHarmonicCoefficients) {
-    this._shouldRegenerateShaders = this._shouldRegenerateShaders || defined_default(this._previousSphericalHarmonicCoefficients) !== defined_default(this._sphericalHarmonicCoefficients);
-    this._previousSphericalHarmonicCoefficients = this._sphericalHarmonicCoefficients;
-  }
-  this._shouldRegenerateShaders = this._shouldRegenerateShaders || this._previousSpecularEnvironmentMapLoaded !== this._specularEnvironmentMapLoaded;
-  this._previousSpecularEnvironmentMapLoaded = this._specularEnvironmentMapLoaded;
-  if (this._specularEnvironmentCubeMapDirty) {
-    createSpecularEnvironmentCubeMap(this, context);
-    this._specularEnvironmentCubeMapDirty = false;
-  }
-  if (defined_default(this._specularEnvironmentCubeMap)) {
-    this._specularEnvironmentCubeMap.update(frameState);
-    if (this._specularEnvironmentCubeMap.ready) {
-      this._specularEnvironmentMapLoaded = true;
+function rectanglesOverlap(rectangle1, rectangle2) {
+  const west = Math.max(rectangle1.west, rectangle2.west);
+  const south = Math.max(rectangle1.south, rectangle2.south);
+  const east = Math.min(rectangle1.east, rectangle2.east);
+  const north = Math.min(rectangle1.north, rectangle2.north);
+  return south < north && west < east;
+}
+function putRectangleInQuadtree(maxDepth, node, rectangle) {
+  while (node.level < maxDepth) {
+    if (rectangleFullyContainsRectangle(node.nw.extent, rectangle)) {
+      node = node.nw;
+    } else if (rectangleFullyContainsRectangle(node.ne.extent, rectangle)) {
+      node = node.ne;
+    } else if (rectangleFullyContainsRectangle(node.sw.extent, rectangle)) {
+      node = node.sw;
+    } else if (rectangleFullyContainsRectangle(node.se.extent, rectangle)) {
+      node = node.se;
+    } else {
+      break;
     }
   }
-  const recompileWithDefaultCubeMap = !defined_default(this._specularEnvironmentCubeMap) && defined_default(frameState.specularEnvironmentMaps) && !this._useDefaultSpecularMaps;
-  const recompileWithoutDefaultCubeMap = !defined_default(frameState.specularEnvironmentMaps) && this._useDefaultSpecularMaps;
-  const recompileWithDefaultSHCoeffs = !defined_default(this._sphericalHarmonicCoefficients) && defined_default(frameState.sphericalHarmonicCoefficients) && !this._useDefaultSphericalHarmonics;
-  const recompileWithoutDefaultSHCoeffs = !defined_default(frameState.sphericalHarmonicCoefficients) && this._useDefaultSphericalHarmonics;
-  this._shouldRegenerateShaders = this._shouldRegenerateShaders || recompileWithDefaultCubeMap || recompileWithoutDefaultCubeMap || recompileWithDefaultSHCoeffs || recompileWithoutDefaultSHCoeffs;
-  this._useDefaultSpecularMaps = !defined_default(this._specularEnvironmentCubeMap) && defined_default(frameState.specularEnvironmentMaps);
-  this._useDefaultSphericalHarmonics = !defined_default(this._sphericalHarmonicCoefficients) && defined_default(frameState.sphericalHarmonicCoefficients);
+  if (node.rectangles.length === 0 || node.rectangles[node.rectangles.length - 1].level <= rectangle.level) {
+    node.rectangles.push(rectangle);
+  } else {
+    let index = binarySearch_default(
+      node.rectangles,
+      rectangle.level,
+      rectangleLevelComparator
+    );
+    if (index < 0) {
+      index = ~index;
+    }
+    node.rectangles.splice(index, 0, rectangle);
+  }
+}
+function rectangleLevelComparator(a, b) {
+  return a.level - b;
+}
+function rectangleFullyContainsRectangle(potentialContainer, rectangleToTest) {
+  return rectangleToTest.west >= potentialContainer.west && rectangleToTest.east <= potentialContainer.east && rectangleToTest.south >= potentialContainer.south && rectangleToTest.north <= potentialContainer.north;
+}
+function rectangleContainsPosition(potentialContainer, positionToTest) {
+  return positionToTest.longitude >= potentialContainer.west && positionToTest.longitude <= potentialContainer.east && positionToTest.latitude >= potentialContainer.south && positionToTest.latitude <= potentialContainer.north;
+}
+function findMaxLevelFromNode(stopNode, node, position) {
+  let maxLevel = 0;
+  let found = false;
+  while (!found) {
+    const nw = node._nw && rectangleContainsPosition(node._nw.extent, position);
+    const ne = node._ne && rectangleContainsPosition(node._ne.extent, position);
+    const sw = node._sw && rectangleContainsPosition(node._sw.extent, position);
+    const se = node._se && rectangleContainsPosition(node._se.extent, position);
+    if (nw + ne + sw + se > 1) {
+      if (nw) {
+        maxLevel = Math.max(
+          maxLevel,
+          findMaxLevelFromNode(node, node._nw, position)
+        );
+      }
+      if (ne) {
+        maxLevel = Math.max(
+          maxLevel,
+          findMaxLevelFromNode(node, node._ne, position)
+        );
+      }
+      if (sw) {
+        maxLevel = Math.max(
+          maxLevel,
+          findMaxLevelFromNode(node, node._sw, position)
+        );
+      }
+      if (se) {
+        maxLevel = Math.max(
+          maxLevel,
+          findMaxLevelFromNode(node, node._se, position)
+        );
+      }
+      break;
+    } else if (nw) {
+      node = node._nw;
+    } else if (ne) {
+      node = node._ne;
+    } else if (sw) {
+      node = node._sw;
+    } else if (se) {
+      node = node._se;
+    } else {
+      found = true;
+    }
+  }
+  while (node !== stopNode) {
+    const rectangles = node.rectangles;
+    for (let i = rectangles.length - 1; i >= 0 && rectangles[i].level > maxLevel; --i) {
+      const rectangle = rectangles[i];
+      if (rectangleContainsPosition(rectangle, position)) {
+        maxLevel = rectangle.level;
+      }
+    }
+    node = node.parent;
+  }
+  return maxLevel;
+}
+function updateCoverageWithNode(remainingToCoverByLevel, node, rectanglesToCover) {
+  if (!node) {
+    return;
+  }
+  let i;
+  let anyOverlap = false;
+  for (i = 0; i < rectanglesToCover.length; ++i) {
+    anyOverlap = anyOverlap || rectanglesOverlap(node.extent, rectanglesToCover[i]);
+  }
+  if (!anyOverlap) {
+    return;
+  }
+  const rectangles = node.rectangles;
+  for (i = 0; i < rectangles.length; ++i) {
+    const rectangle = rectangles[i];
+    if (!remainingToCoverByLevel[rectangle.level]) {
+      remainingToCoverByLevel[rectangle.level] = rectanglesToCover;
+    }
+    remainingToCoverByLevel[rectangle.level] = subtractRectangle(
+      remainingToCoverByLevel[rectangle.level],
+      rectangle
+    );
+  }
+  updateCoverageWithNode(remainingToCoverByLevel, node._nw, rectanglesToCover);
+  updateCoverageWithNode(remainingToCoverByLevel, node._ne, rectanglesToCover);
+  updateCoverageWithNode(remainingToCoverByLevel, node._sw, rectanglesToCover);
+  updateCoverageWithNode(remainingToCoverByLevel, node._se, rectanglesToCover);
+}
+function subtractRectangle(rectangleList, rectangleToSubtract) {
+  const result = [];
+  for (let i = 0; i < rectangleList.length; ++i) {
+    const rectangle = rectangleList[i];
+    if (!rectanglesOverlap(rectangle, rectangleToSubtract)) {
+      result.push(rectangle);
+    } else {
+      if (rectangle.west < rectangleToSubtract.west) {
+        result.push(
+          new Rectangle_default(
+            rectangle.west,
+            rectangle.south,
+            rectangleToSubtract.west,
+            rectangle.north
+          )
+        );
+      }
+      if (rectangle.east > rectangleToSubtract.east) {
+        result.push(
+          new Rectangle_default(
+            rectangleToSubtract.east,
+            rectangle.south,
+            rectangle.east,
+            rectangle.north
+          )
+        );
+      }
+      if (rectangle.south < rectangleToSubtract.south) {
+        result.push(
+          new Rectangle_default(
+            Math.max(rectangleToSubtract.west, rectangle.west),
+            rectangle.south,
+            Math.min(rectangleToSubtract.east, rectangle.east),
+            rectangleToSubtract.south
+          )
+        );
+      }
+      if (rectangle.north > rectangleToSubtract.north) {
+        result.push(
+          new Rectangle_default(
+            Math.max(rectangleToSubtract.west, rectangle.west),
+            rectangleToSubtract.north,
+            Math.min(rectangleToSubtract.east, rectangle.east),
+            rectangle.north
+          )
+        );
+      }
+    }
+  }
+  return result;
+}
+var TileAvailability_default = TileAvailability;
+
+// packages/engine/Source/Core/ArticulationStageType.js
+var ArticulationStageType = {
+  XTRANSLATE: "xTranslate",
+  YTRANSLATE: "yTranslate",
+  ZTRANSLATE: "zTranslate",
+  XROTATE: "xRotate",
+  YROTATE: "yRotate",
+  ZROTATE: "zRotate",
+  XSCALE: "xScale",
+  YSCALE: "yScale",
+  ZSCALE: "zScale",
+  UNIFORMSCALE: "uniformScale"
 };
-ImageBasedLighting.prototype.isDestroyed = function() {
-  return false;
+Object.freeze(ArticulationStageType);
+var ArticulationStageType_default = ArticulationStageType;
+
+// packages/engine/Source/Core/Spline.js
+function Spline() {
+  this.times = void 0;
+  this.points = void 0;
+  DeveloperError_default.throwInstantiationError();
+}
+Spline.getPointType = function(point) {
+  if (typeof point === "number") {
+    return Number;
+  }
+  if (point instanceof Cartesian3_default) {
+    return Cartesian3_default;
+  }
+  if (point instanceof Quaternion_default) {
+    return Quaternion_default;
+  }
+  throw new DeveloperError_default(
+    "point must be a Cartesian3, Quaternion, or number."
+  );
 };
-ImageBasedLighting.prototype.destroy = function() {
-  this._specularEnvironmentCubeMap = this._specularEnvironmentCubeMap && this._specularEnvironmentCubeMap.destroy();
-  this._removeErrorListener = this._removeErrorListener && this._removeErrorListener();
-  return destroyObject_default(this);
+Spline.prototype.evaluate = DeveloperError_default.throwInstantiationError;
+Spline.prototype.findTimeInterval = function(time, startIndex) {
+  const times = this.times;
+  const length = times.length;
+  Check_default.typeOf.number("time", time);
+  if (time < times[0] || time > times[length - 1]) {
+    throw new DeveloperError_default("time is out of range.");
+  }
+  startIndex = startIndex ?? 0;
+  if (time >= times[startIndex]) {
+    if (startIndex + 1 < length && time < times[startIndex + 1]) {
+      return startIndex;
+    } else if (startIndex + 2 < length && time < times[startIndex + 2]) {
+      return startIndex + 1;
+    }
+  } else if (startIndex - 1 >= 0 && time >= times[startIndex - 1]) {
+    return startIndex - 1;
+  }
+  let i;
+  if (time > times[startIndex]) {
+    for (i = startIndex; i < length - 1; ++i) {
+      if (time >= times[i] && time < times[i + 1]) {
+        break;
+      }
+    }
+  } else {
+    for (i = startIndex - 1; i >= 0; --i) {
+      if (time >= times[i] && time < times[i + 1]) {
+        break;
+      }
+    }
+  }
+  if (i === length - 1) {
+    i = length - 2;
+  }
+  return i;
 };
-var ImageBasedLighting_default = ImageBasedLighting;
+Spline.prototype.wrapTime = function(time) {
+  Check_default.typeOf.number("time", time);
+  const times = this.times;
+  const timeEnd = times[times.length - 1];
+  const timeStart = times[0];
+  const timeStretch = timeEnd - timeStart;
+  let divs;
+  if (time < timeStart) {
+    divs = Math.floor((timeStart - time) / timeStretch) + 1;
+    time += divs * timeStretch;
+  }
+  if (time > timeEnd) {
+    divs = Math.floor((time - timeEnd) / timeStretch) + 1;
+    time -= divs * timeStretch;
+  }
+  return time;
+};
+Spline.prototype.clampTime = function(time) {
+  Check_default.typeOf.number("time", time);
+  const times = this.times;
+  return Math_default.clamp(time, times[0], times[times.length - 1]);
+};
+var Spline_default = Spline;
+
+// packages/engine/Source/Core/LinearSpline.js
+function LinearSpline(options) {
+  options = options ?? Frozen_default.EMPTY_OBJECT;
+  const points = options.points;
+  const times = options.times;
+  if (!defined_default(points) || !defined_default(times)) {
+    throw new DeveloperError_default("points and times are required.");
+  }
+  if (points.length < 2) {
+    throw new DeveloperError_default(
+      "points.length must be greater than or equal to 2."
+    );
+  }
+  if (times.length !== points.length) {
+    throw new DeveloperError_default("times.length must be equal to points.length.");
+  }
+  this._times = times;
+  this._points = points;
+  this._pointType = Spline_default.getPointType(points[0]);
+  this._lastTimeIndex = 0;
+}
+Object.defineProperties(LinearSpline.prototype, {
+  /**
+   * An array of times for the control points.
+   *
+   * @memberof LinearSpline.prototype
+   *
+   * @type {number[]}
+   * @readonly
+   */
+  times: {
+    get: function() {
+      return this._times;
+    }
+  },
+  /**
+   * An array of {@link Cartesian3} control points.
+   *
+   * @memberof LinearSpline.prototype
+   *
+   * @type {number[]|Cartesian3[]}
+   * @readonly
+   */
+  points: {
+    get: function() {
+      return this._points;
+    }
+  }
+});
+LinearSpline.prototype.findTimeInterval = Spline_default.prototype.findTimeInterval;
+LinearSpline.prototype.wrapTime = Spline_default.prototype.wrapTime;
+LinearSpline.prototype.clampTime = Spline_default.prototype.clampTime;
+LinearSpline.prototype.evaluate = function(time, result) {
+  const points = this.points;
+  const times = this.times;
+  const i = this._lastTimeIndex = this.findTimeInterval(
+    time,
+    this._lastTimeIndex
+  );
+  const u = (time - times[i]) / (times[i + 1] - times[i]);
+  const PointType = this._pointType;
+  if (PointType === Number) {
+    return (1 - u) * points[i] + u * points[i + 1];
+  }
+  if (!defined_default(result)) {
+    result = new Cartesian3_default();
+  }
+  return Cartesian3_default.lerp(points[i], points[i + 1], u, result);
+};
+var LinearSpline_default = LinearSpline;
+
+// packages/engine/Source/Core/TridiagonalSystemSolver.js
+var TridiagonalSystemSolver = {};
+TridiagonalSystemSolver.solve = function(lower, diagonal, upper, right) {
+  if (!defined_default(lower) || !(lower instanceof Array)) {
+    throw new DeveloperError_default("The array lower is required.");
+  }
+  if (!defined_default(diagonal) || !(diagonal instanceof Array)) {
+    throw new DeveloperError_default("The array diagonal is required.");
+  }
+  if (!defined_default(upper) || !(upper instanceof Array)) {
+    throw new DeveloperError_default("The array upper is required.");
+  }
+  if (!defined_default(right) || !(right instanceof Array)) {
+    throw new DeveloperError_default("The array right is required.");
+  }
+  if (diagonal.length !== right.length) {
+    throw new DeveloperError_default("diagonal and right must have the same lengths.");
+  }
+  if (lower.length !== upper.length) {
+    throw new DeveloperError_default("lower and upper must have the same lengths.");
+  } else if (lower.length !== diagonal.length - 1) {
+    throw new DeveloperError_default(
+      "lower and upper must be one less than the length of diagonal."
+    );
+  }
+  const c = new Array(upper.length);
+  const d = new Array(right.length);
+  const x = new Array(right.length);
+  let i;
+  for (i = 0; i < d.length; i++) {
+    d[i] = new Cartesian3_default();
+    x[i] = new Cartesian3_default();
+  }
+  c[0] = upper[0] / diagonal[0];
+  d[0] = Cartesian3_default.multiplyByScalar(right[0], 1 / diagonal[0], d[0]);
+  let scalar;
+  for (i = 1; i < c.length; ++i) {
+    scalar = 1 / (diagonal[i] - c[i - 1] * lower[i - 1]);
+    c[i] = upper[i] * scalar;
+    d[i] = Cartesian3_default.subtract(
+      right[i],
+      Cartesian3_default.multiplyByScalar(d[i - 1], lower[i - 1], d[i]),
+      d[i]
+    );
+    d[i] = Cartesian3_default.multiplyByScalar(d[i], scalar, d[i]);
+  }
+  scalar = 1 / (diagonal[i] - c[i - 1] * lower[i - 1]);
+  d[i] = Cartesian3_default.subtract(
+    right[i],
+    Cartesian3_default.multiplyByScalar(d[i - 1], lower[i - 1], d[i]),
+    d[i]
+  );
+  d[i] = Cartesian3_default.multiplyByScalar(d[i], scalar, d[i]);
+  x[x.length - 1] = d[d.length - 1];
+  for (i = x.length - 2; i >= 0; --i) {
+    x[i] = Cartesian3_default.subtract(
+      d[i],
+      Cartesian3_default.multiplyByScalar(x[i + 1], c[i], x[i]),
+      x[i]
+    );
+  }
+  return x;
+};
+var TridiagonalSystemSolver_default = TridiagonalSystemSolver;
+
+// packages/engine/Source/Core/HermiteSpline.js
+var scratchLower = [];
+var scratchDiagonal = [];
+var scratchUpper = [];
+var scratchRight2 = [];
+function generateClamped(points, firstTangent, lastTangent) {
+  const l = scratchLower;
+  const u = scratchUpper;
+  const d = scratchDiagonal;
+  const r = scratchRight2;
+  l.length = u.length = points.length - 1;
+  d.length = r.length = points.length;
+  let i;
+  l[0] = d[0] = 1;
+  u[0] = 0;
+  let right = r[0];
+  if (!defined_default(right)) {
+    right = r[0] = new Cartesian3_default();
+  }
+  Cartesian3_default.clone(firstTangent, right);
+  for (i = 1; i < l.length - 1; ++i) {
+    l[i] = u[i] = 1;
+    d[i] = 4;
+    right = r[i];
+    if (!defined_default(right)) {
+      right = r[i] = new Cartesian3_default();
+    }
+    Cartesian3_default.subtract(points[i + 1], points[i - 1], right);
+    Cartesian3_default.multiplyByScalar(right, 3, right);
+  }
+  l[i] = 0;
+  u[i] = 1;
+  d[i] = 4;
+  right = r[i];
+  if (!defined_default(right)) {
+    right = r[i] = new Cartesian3_default();
+  }
+  Cartesian3_default.subtract(points[i + 1], points[i - 1], right);
+  Cartesian3_default.multiplyByScalar(right, 3, right);
+  d[i + 1] = 1;
+  right = r[i + 1];
+  if (!defined_default(right)) {
+    right = r[i + 1] = new Cartesian3_default();
+  }
+  Cartesian3_default.clone(lastTangent, right);
+  return TridiagonalSystemSolver_default.solve(l, d, u, r);
+}
+function generateNatural(points) {
+  const l = scratchLower;
+  const u = scratchUpper;
+  const d = scratchDiagonal;
+  const r = scratchRight2;
+  l.length = u.length = points.length - 1;
+  d.length = r.length = points.length;
+  let i;
+  l[0] = u[0] = 1;
+  d[0] = 2;
+  let right = r[0];
+  if (!defined_default(right)) {
+    right = r[0] = new Cartesian3_default();
+  }
+  Cartesian3_default.subtract(points[1], points[0], right);
+  Cartesian3_default.multiplyByScalar(right, 3, right);
+  for (i = 1; i < l.length; ++i) {
+    l[i] = u[i] = 1;
+    d[i] = 4;
+    right = r[i];
+    if (!defined_default(right)) {
+      right = r[i] = new Cartesian3_default();
+    }
+    Cartesian3_default.subtract(points[i + 1], points[i - 1], right);
+    Cartesian3_default.multiplyByScalar(right, 3, right);
+  }
+  d[i] = 2;
+  right = r[i];
+  if (!defined_default(right)) {
+    right = r[i] = new Cartesian3_default();
+  }
+  Cartesian3_default.subtract(points[i], points[i - 1], right);
+  Cartesian3_default.multiplyByScalar(right, 3, right);
+  return TridiagonalSystemSolver_default.solve(l, d, u, r);
+}
+function HermiteSpline(options) {
+  options = options ?? Frozen_default.EMPTY_OBJECT;
+  const points = options.points;
+  const times = options.times;
+  const inTangents = options.inTangents;
+  const outTangents = options.outTangents;
+  if (!defined_default(points) || !defined_default(times) || !defined_default(inTangents) || !defined_default(outTangents)) {
+    throw new DeveloperError_default(
+      "times, points, inTangents, and outTangents are required."
+    );
+  }
+  if (points.length < 2) {
+    throw new DeveloperError_default(
+      "points.length must be greater than or equal to 2."
+    );
+  }
+  if (times.length !== points.length) {
+    throw new DeveloperError_default("times.length must be equal to points.length.");
+  }
+  if (inTangents.length !== outTangents.length || inTangents.length !== points.length - 1) {
+    throw new DeveloperError_default(
+      "inTangents and outTangents must have a length equal to points.length - 1."
+    );
+  }
+  this._times = times;
+  this._points = points;
+  this._pointType = Spline_default.getPointType(points[0]);
+  if (this._pointType !== Spline_default.getPointType(inTangents[0]) || this._pointType !== Spline_default.getPointType(outTangents[0])) {
+    throw new DeveloperError_default(
+      "inTangents and outTangents must be of the same type as points."
+    );
+  }
+  this._inTangents = inTangents;
+  this._outTangents = outTangents;
+  this._lastTimeIndex = 0;
+}
+Object.defineProperties(HermiteSpline.prototype, {
+  /**
+   * An array of times for the control points.
+   *
+   * @memberof HermiteSpline.prototype
+   *
+   * @type {number[]}
+   * @readonly
+   */
+  times: {
+    get: function() {
+      return this._times;
+    }
+  },
+  /**
+   * An array of control points.
+   *
+   * @memberof HermiteSpline.prototype
+   *
+   * @type {Cartesian3[]}
+   * @readonly
+   */
+  points: {
+    get: function() {
+      return this._points;
+    }
+  },
+  /**
+   * An array of incoming tangents at each control point.
+   *
+   * @memberof HermiteSpline.prototype
+   *
+   * @type {Cartesian3[]}
+   * @readonly
+   */
+  inTangents: {
+    get: function() {
+      return this._inTangents;
+    }
+  },
+  /**
+   * An array of outgoing tangents at each control point.
+   *
+   * @memberof HermiteSpline.prototype
+   *
+   * @type {Cartesian3[]}
+   * @readonly
+   */
+  outTangents: {
+    get: function() {
+      return this._outTangents;
+    }
+  }
+});
+HermiteSpline.createC1 = function(options) {
+  options = options ?? Frozen_default.EMPTY_OBJECT;
+  const times = options.times;
+  const points = options.points;
+  const tangents = options.tangents;
+  if (!defined_default(points) || !defined_default(times) || !defined_default(tangents)) {
+    throw new DeveloperError_default("points, times and tangents are required.");
+  }
+  if (points.length < 2) {
+    throw new DeveloperError_default(
+      "points.length must be greater than or equal to 2."
+    );
+  }
+  if (times.length !== points.length || times.length !== tangents.length) {
+    throw new DeveloperError_default(
+      "times, points and tangents must have the same length."
+    );
+  }
+  const outTangents = tangents.slice(0, tangents.length - 1);
+  const inTangents = tangents.slice(1, tangents.length);
+  return new HermiteSpline({
+    times,
+    points,
+    inTangents,
+    outTangents
+  });
+};
+HermiteSpline.createNaturalCubic = function(options) {
+  options = options ?? Frozen_default.EMPTY_OBJECT;
+  const times = options.times;
+  const points = options.points;
+  if (!defined_default(points) || !defined_default(times)) {
+    throw new DeveloperError_default("points and times are required.");
+  }
+  if (points.length < 2) {
+    throw new DeveloperError_default(
+      "points.length must be greater than or equal to 2."
+    );
+  }
+  if (times.length !== points.length) {
+    throw new DeveloperError_default("times.length must be equal to points.length.");
+  }
+  if (points.length < 3) {
+    return new LinearSpline_default({
+      points,
+      times
+    });
+  }
+  const tangents = generateNatural(points);
+  const outTangents = tangents.slice(0, tangents.length - 1);
+  const inTangents = tangents.slice(1, tangents.length);
+  return new HermiteSpline({
+    times,
+    points,
+    inTangents,
+    outTangents
+  });
+};
+HermiteSpline.createClampedCubic = function(options) {
+  options = options ?? Frozen_default.EMPTY_OBJECT;
+  const times = options.times;
+  const points = options.points;
+  const firstTangent = options.firstTangent;
+  const lastTangent = options.lastTangent;
+  if (!defined_default(points) || !defined_default(times) || !defined_default(firstTangent) || !defined_default(lastTangent)) {
+    throw new DeveloperError_default(
+      "points, times, firstTangent and lastTangent are required."
+    );
+  }
+  if (points.length < 2) {
+    throw new DeveloperError_default(
+      "points.length must be greater than or equal to 2."
+    );
+  }
+  if (times.length !== points.length) {
+    throw new DeveloperError_default("times.length must be equal to points.length.");
+  }
+  const PointType = Spline_default.getPointType(points[0]);
+  if (PointType !== Spline_default.getPointType(firstTangent) || PointType !== Spline_default.getPointType(lastTangent)) {
+    throw new DeveloperError_default(
+      "firstTangent and lastTangent must be of the same type as points."
+    );
+  }
+  if (points.length < 3) {
+    return new LinearSpline_default({
+      points,
+      times
+    });
+  }
+  const tangents = generateClamped(points, firstTangent, lastTangent);
+  const outTangents = tangents.slice(0, tangents.length - 1);
+  const inTangents = tangents.slice(1, tangents.length);
+  return new HermiteSpline({
+    times,
+    points,
+    inTangents,
+    outTangents
+  });
+};
+HermiteSpline.hermiteCoefficientMatrix = new Matrix4_default(
+  2,
+  -3,
+  0,
+  1,
+  -2,
+  3,
+  0,
+  0,
+  1,
+  -2,
+  1,
+  0,
+  1,
+  -1,
+  0,
+  0
+);
+HermiteSpline.prototype.findTimeInterval = Spline_default.prototype.findTimeInterval;
+var scratchTimeVec = new Cartesian4_default();
+var scratchTemp = new Cartesian3_default();
+HermiteSpline.prototype.wrapTime = Spline_default.prototype.wrapTime;
+HermiteSpline.prototype.clampTime = Spline_default.prototype.clampTime;
+HermiteSpline.prototype.evaluate = function(time, result) {
+  const points = this.points;
+  const times = this.times;
+  const inTangents = this.inTangents;
+  const outTangents = this.outTangents;
+  this._lastTimeIndex = this.findTimeInterval(time, this._lastTimeIndex);
+  const i = this._lastTimeIndex;
+  const timesDelta = times[i + 1] - times[i];
+  const u = (time - times[i]) / timesDelta;
+  const timeVec = scratchTimeVec;
+  timeVec.z = u;
+  timeVec.y = u * u;
+  timeVec.x = timeVec.y * u;
+  timeVec.w = 1;
+  const coefs = Matrix4_default.multiplyByVector(
+    HermiteSpline.hermiteCoefficientMatrix,
+    timeVec,
+    timeVec
+  );
+  coefs.z *= timesDelta;
+  coefs.w *= timesDelta;
+  const PointType = this._pointType;
+  if (PointType === Number) {
+    return points[i] * coefs.x + points[i + 1] * coefs.y + outTangents[i] * coefs.z + inTangents[i] * coefs.w;
+  }
+  if (!defined_default(result)) {
+    result = new PointType();
+  }
+  result = PointType.multiplyByScalar(points[i], coefs.x, result);
+  PointType.multiplyByScalar(points[i + 1], coefs.y, scratchTemp);
+  PointType.add(result, scratchTemp, result);
+  PointType.multiplyByScalar(outTangents[i], coefs.z, scratchTemp);
+  PointType.add(result, scratchTemp, result);
+  PointType.multiplyByScalar(inTangents[i], coefs.w, scratchTemp);
+  return PointType.add(result, scratchTemp, result);
+};
+var HermiteSpline_default = HermiteSpline;
+
+// packages/engine/Source/Core/DoubleEndedPriorityQueue.js
+function DoubleEndedPriorityQueue(options) {
+  Check_default.typeOf.object("options", options);
+  Check_default.defined("options.comparator", options.comparator);
+  if (defined_default(options.maximumLength)) {
+    Check_default.typeOf.number.greaterThanOrEquals(
+      "options.maximumLength",
+      options.maximumLength,
+      0
+    );
+  }
+  this._comparator = options.comparator;
+  this._maximumLength = options.maximumLength;
+  this._array = defined_default(options.maximumLength) ? new Array(options.maximumLength) : [];
+  this._length = 0;
+}
+Object.defineProperties(DoubleEndedPriorityQueue.prototype, {
+  /**
+   * Gets the number of elements in the queue.
+   *
+   * @memberof DoubleEndedPriorityQueue.prototype
+   *
+   * @type {number}
+   * @readonly
+   */
+  length: {
+    get: function() {
+      return this._length;
+    }
+  },
+  /**
+   * Gets or sets the maximum number of elements in the queue.
+   * If set to a smaller value than the current length of the queue, the lowest priority elements are removed.
+   * If an element is inserted when the queue is at full capacity, the minimum element is removed.
+   * If set to undefined, the size of the queue is unlimited.
+   *
+   * @memberof DoubleEndedPriorityQueue.prototype
+   *
+   * @type {number}
+   * @readonly
+   */
+  maximumLength: {
+    get: function() {
+      return this._maximumLength;
+    },
+    set: function(value) {
+      if (defined_default(value)) {
+        Check_default.typeOf.number.greaterThanOrEquals("maximumLength", value, 0);
+        while (this._length > value) {
+          this.removeMinimum();
+        }
+        this._array.length = value;
+      }
+      this._maximumLength = value;
+    }
+  },
+  /**
+   * Gets the internal array.
+   *
+   * @memberof DoubleEndedPriorityQueue.prototype
+   *
+   * @type {Array}
+   * @readonly
+   */
+  internalArray: {
+    get: function() {
+      return this._array;
+    }
+  },
+  /**
+   * The comparator used by the queue.
+   * If comparator(a, b) is less than 0, a is lower priority than b.
+   *
+   * @memberof DoubleEndedPriorityQueue.prototype
+   *
+   * @type {DoubleEndedPriorityQueue.ComparatorCallback}
+   * @readonly
+   */
+  comparator: {
+    get: function() {
+      return this._comparator;
+    }
+  }
+});
+DoubleEndedPriorityQueue.prototype.clone = function() {
+  const maximumLength = this._maximumLength;
+  const comparator = this._comparator;
+  const array = this._array;
+  const length = this._length;
+  const result = new DoubleEndedPriorityQueue({
+    comparator,
+    maximumLength
+  });
+  result._length = length;
+  for (let i = 0; i < length; i++) {
+    result._array[i] = array[i];
+  }
+  return result;
+};
+DoubleEndedPriorityQueue.prototype.reset = function() {
+  this._length = 0;
+  const maximumLength = this._maximumLength;
+  if (defined_default(maximumLength)) {
+    for (let i = 0; i < maximumLength; i++) {
+      this._array[i] = void 0;
+    }
+  } else {
+    this._array.length = 0;
+  }
+};
+DoubleEndedPriorityQueue.prototype.resort = function() {
+  const length = this._length;
+  for (let i = 0; i < length; i++) {
+    pushUp(this, i);
+  }
+};
+DoubleEndedPriorityQueue.prototype.insert = function(element) {
+  let removedElement;
+  const maximumLength = this._maximumLength;
+  if (defined_default(maximumLength)) {
+    if (maximumLength === 0) {
+      return void 0;
+    } else if (this._length === maximumLength) {
+      const minimumElement = this._array[0];
+      if (this._comparator(element, minimumElement) <= 0) {
+        return element;
+      }
+      removedElement = this.removeMinimum();
+    }
+  }
+  const index = this._length;
+  this._array[index] = element;
+  this._length++;
+  pushUp(this, index);
+  return removedElement;
+};
+DoubleEndedPriorityQueue.prototype.removeMinimum = function() {
+  const length = this._length;
+  if (length === 0) {
+    return void 0;
+  }
+  this._length--;
+  const minimumElement = this._array[0];
+  if (length >= 2) {
+    this._array[0] = this._array[length - 1];
+    pushDown(this, 0);
+  }
+  this._array[length - 1] = void 0;
+  return minimumElement;
+};
+DoubleEndedPriorityQueue.prototype.removeMaximum = function() {
+  const length = this._length;
+  if (length === 0) {
+    return void 0;
+  }
+  this._length--;
+  let maximumElement;
+  if (length <= 2) {
+    maximumElement = this._array[length - 1];
+  } else {
+    const maximumElementIndex = greaterThan(this, 1, 2) ? 1 : 2;
+    maximumElement = this._array[maximumElementIndex];
+    this._array[maximumElementIndex] = this._array[length - 1];
+    if (length >= 4) {
+      pushDown(this, maximumElementIndex);
+    }
+  }
+  this._array[length - 1] = void 0;
+  return maximumElement;
+};
+DoubleEndedPriorityQueue.prototype.getMinimum = function() {
+  const length = this._length;
+  if (length === 0) {
+    return void 0;
+  }
+  return this._array[0];
+};
+DoubleEndedPriorityQueue.prototype.getMaximum = function() {
+  const length = this._length;
+  if (length === 0) {
+    return void 0;
+  }
+  if (length <= 2) {
+    return this._array[length - 1];
+  }
+  return this._array[greaterThan(this, 1, 2) ? 1 : 2];
+};
+function swap(that, indexA, indexB) {
+  const array = that._array;
+  const temp = array[indexA];
+  array[indexA] = array[indexB];
+  array[indexB] = temp;
+}
+function lessThan(that, indexA, indexB) {
+  return that._comparator(that._array[indexA], that._array[indexB]) < 0;
+}
+function greaterThan(that, indexA, indexB) {
+  return that._comparator(that._array[indexA], that._array[indexB]) > 0;
+}
+function pushUp(that, index) {
+  if (index === 0) {
+    return;
+  }
+  const onMinLevel = Math.floor(Math_default.log2(index + 1)) % 2 === 0;
+  const parentIndex = Math.floor((index - 1) / 2);
+  const lessThanParent = lessThan(that, index, parentIndex);
+  if (lessThanParent !== onMinLevel) {
+    swap(that, index, parentIndex);
+    index = parentIndex;
+  }
+  while (index >= 3) {
+    const grandparentIndex = Math.floor((index - 3) / 4);
+    if (lessThan(that, index, grandparentIndex) !== lessThanParent) {
+      break;
+    }
+    swap(that, index, grandparentIndex);
+    index = grandparentIndex;
+  }
+}
+function pushDown(that, index) {
+  const length = that._length;
+  const onMinLevel = Math.floor(Math_default.log2(index + 1)) % 2 === 0;
+  let leftChildIndex;
+  while ((leftChildIndex = 2 * index + 1) < length) {
+    let target = leftChildIndex;
+    const rightChildIndex = leftChildIndex + 1;
+    if (rightChildIndex < length) {
+      if (lessThan(that, rightChildIndex, target) === onMinLevel) {
+        target = rightChildIndex;
+      }
+      const grandChildStart = 2 * leftChildIndex + 1;
+      const grandChildCount = Math.max(
+        Math.min(length - grandChildStart, 4),
+        0
+      );
+      for (let i = 0; i < grandChildCount; i++) {
+        const grandChildIndex = grandChildStart + i;
+        if (lessThan(that, grandChildIndex, target) === onMinLevel) {
+          target = grandChildIndex;
+        }
+      }
+    }
+    if (lessThan(that, target, index) === onMinLevel) {
+      swap(that, target, index);
+      if (target !== leftChildIndex && target !== rightChildIndex) {
+        const parentOfGrandchildIndex = Math.floor((target - 1) / 2);
+        if (greaterThan(that, target, parentOfGrandchildIndex) === onMinLevel) {
+          swap(that, target, parentOfGrandchildIndex);
+        }
+      }
+    }
+    index = target;
+  }
+}
+var DoubleEndedPriorityQueue_default = DoubleEndedPriorityQueue;
 
 // packages/engine/Source/Core/getStringFromTypedArray.js
 function getStringFromTypedArray(uint8Array, byteOffset, byteLength) {
@@ -48032,17 +48431,6 @@ if (typeof TextDecoder !== "undefined") {
 }
 var getStringFromTypedArray_default = getStringFromTypedArray;
 
-// packages/engine/Source/Core/getMagic.js
-function getMagic(uint8Array, byteOffset) {
-  byteOffset = byteOffset ?? 0;
-  return getStringFromTypedArray_default(
-    uint8Array,
-    byteOffset,
-    Math.min(4, uint8Array.length)
-  );
-}
-var getMagic_default = getMagic;
-
 // packages/engine/Source/Core/getJsonFromTypedArray.js
 function getJsonFromTypedArray(uint8Array, byteOffset, byteLength) {
   return JSON.parse(
@@ -48050,1823 +48438,6 @@ function getJsonFromTypedArray(uint8Array, byteOffset, byteLength) {
   );
 }
 var getJsonFromTypedArray_default = getJsonFromTypedArray;
-
-// packages/engine/Source/Scene/BatchTexture.js
-function BatchTexture(options) {
-  Check_default.typeOf.number("options.featuresLength", options.featuresLength);
-  Check_default.typeOf.object("options.owner", options.owner);
-  this._id = createGuid_default();
-  const featuresLength = options.featuresLength;
-  this._showAlphaProperties = void 0;
-  this._batchValues = void 0;
-  this._batchValuesDirty = false;
-  this._batchTexture = void 0;
-  this._defaultTexture = void 0;
-  this._pickTexture = void 0;
-  this._pickIds = [];
-  let textureDimensions;
-  let textureStep;
-  if (featuresLength > 0) {
-    const width = Math.min(featuresLength, ContextLimits_default.maximumTextureSize);
-    const height = Math.ceil(featuresLength / ContextLimits_default.maximumTextureSize);
-    const stepX = 1 / width;
-    const centerX = stepX * 0.5;
-    const stepY = 1 / height;
-    const centerY = stepY * 0.5;
-    textureDimensions = new Cartesian2_default(width, height);
-    textureStep = new Cartesian4_default(stepX, centerX, stepY, centerY);
-  }
-  this._translucentFeaturesLength = 0;
-  this._featuresLength = featuresLength;
-  this._textureDimensions = textureDimensions;
-  this._textureStep = textureStep;
-  this._owner = options.owner;
-  this._statistics = options.statistics;
-  this._colorChangedCallback = options.colorChangedCallback;
-}
-Object.defineProperties(BatchTexture.prototype, {
-  /**
-   * Number of features that are translucent
-   *
-   * @memberof BatchTexture.prototype
-   * @type {number}
-   * @readonly
-   * @private
-   */
-  translucentFeaturesLength: {
-    get: function() {
-      return this._translucentFeaturesLength;
-    }
-  },
-  /**
-   * Total size of all GPU resources used by this batch texture.
-   *
-   * @memberof BatchTexture.prototype
-   * @type {number}
-   * @readonly
-   * @private
-   */
-  byteLength: {
-    get: function() {
-      let memory = 0;
-      if (defined_default(this._pickTexture)) {
-        memory += this._pickTexture.sizeInBytes;
-      }
-      if (defined_default(this._batchTexture)) {
-        memory += this._batchTexture.sizeInBytes;
-      }
-      return memory;
-    }
-  },
-  /**
-   * Dimensions of the underlying batch texture.
-   *
-   * @memberof BatchTexture.prototype
-   * @type {Cartesian2}
-   * @readonly
-   * @private
-   */
-  textureDimensions: {
-    get: function() {
-      return this._textureDimensions;
-    }
-  },
-  /**
-   * Size of each texture and distance from side to center of a texel in
-   * each direction. Stored as (stepX, centerX, stepY, centerY)
-   *
-   * @memberof BatchTexture.prototype
-   * @type {Cartesian4}
-   * @readonly
-   * @private
-   */
-  textureStep: {
-    get: function() {
-      return this._textureStep;
-    }
-  },
-  /**
-   * The underlying texture used for styling. The texels are accessed
-   * by batch ID, and the value is the color of this feature after accounting
-   * for show/hide settings.
-   *
-   * @memberof BatchTexture.prototype
-   * @type {Texture}
-   * @readonly
-   * @private
-   */
-  batchTexture: {
-    get: function() {
-      return this._batchTexture;
-    }
-  },
-  /**
-   * The default texture to use when there are no batch values
-   *
-   * @memberof BatchTexture.prototype
-   * @type {Texture}
-   * @readonly
-   * @private
-   */
-  defaultTexture: {
-    get: function() {
-      return this._defaultTexture;
-    }
-  },
-  /**
-   * The underlying texture used for picking. The texels are accessed by
-   * batch ID, and the value is the pick color.
-   *
-   * @memberof BatchTexture.prototype
-   * @type {Texture}
-   * @readonly
-   * @private
-   */
-  pickTexture: {
-    get: function() {
-      return this._pickTexture;
-    }
-  }
-});
-BatchTexture.DEFAULT_COLOR_VALUE = Color_default.WHITE;
-BatchTexture.DEFAULT_SHOW_VALUE = true;
-function getByteLength(batchTexture) {
-  const dimensions = batchTexture._textureDimensions;
-  return dimensions.x * dimensions.y * 4;
-}
-function getBatchValues(batchTexture) {
-  if (!defined_default(batchTexture._batchValues)) {
-    const byteLength = getByteLength(batchTexture);
-    const bytes = new Uint8Array(byteLength).fill(255);
-    batchTexture._batchValues = bytes;
-  }
-  return batchTexture._batchValues;
-}
-function getShowAlphaProperties(batchTexture) {
-  if (!defined_default(batchTexture._showAlphaProperties)) {
-    const byteLength = 2 * batchTexture._featuresLength;
-    const bytes = new Uint8Array(byteLength).fill(255);
-    batchTexture._showAlphaProperties = bytes;
-  }
-  return batchTexture._showAlphaProperties;
-}
-function checkBatchId(batchId, featuresLength) {
-  if (!defined_default(batchId) || batchId < 0 || batchId >= featuresLength) {
-    throw new DeveloperError_default(
-      `batchId is required and between zero and featuresLength - 1 (${featuresLength}` - +")."
-    );
-  }
-}
-BatchTexture.prototype.setShow = function(batchId, show) {
-  checkBatchId(batchId, this._featuresLength);
-  Check_default.typeOf.bool("show", show);
-  if (show && !defined_default(this._showAlphaProperties)) {
-    return;
-  }
-  const showAlphaProperties = getShowAlphaProperties(this);
-  const propertyOffset = batchId * 2;
-  const newShow = show ? 255 : 0;
-  if (showAlphaProperties[propertyOffset] !== newShow) {
-    showAlphaProperties[propertyOffset] = newShow;
-    const batchValues = getBatchValues(this);
-    const offset = batchId * 4 + 3;
-    batchValues[offset] = show ? showAlphaProperties[propertyOffset + 1] : 0;
-    this._batchValuesDirty = true;
-  }
-};
-BatchTexture.prototype.setAllShow = function(show) {
-  Check_default.typeOf.bool("show", show);
-  const featuresLength = this._featuresLength;
-  for (let i = 0; i < featuresLength; ++i) {
-    this.setShow(i, show);
-  }
-};
-BatchTexture.prototype.getShow = function(batchId) {
-  checkBatchId(batchId, this._featuresLength);
-  if (!defined_default(this._showAlphaProperties)) {
-    return true;
-  }
-  const offset = batchId * 2;
-  return this._showAlphaProperties[offset] === 255;
-};
-var scratchColorBytes = new Array(4);
-BatchTexture.prototype.setColor = function(batchId, color) {
-  checkBatchId(batchId, this._featuresLength);
-  Check_default.typeOf.object("color", color);
-  if (Color_default.equals(color, BatchTexture.DEFAULT_COLOR_VALUE) && !defined_default(this._batchValues)) {
-    return;
-  }
-  const newColor = color.toBytes(scratchColorBytes);
-  const newAlpha = newColor[3];
-  const batchValues = getBatchValues(this);
-  const offset = batchId * 4;
-  const showAlphaProperties = getShowAlphaProperties(this);
-  const propertyOffset = batchId * 2;
-  if (batchValues[offset] !== newColor[0] || batchValues[offset + 1] !== newColor[1] || batchValues[offset + 2] !== newColor[2] || showAlphaProperties[propertyOffset + 1] !== newAlpha) {
-    batchValues[offset] = newColor[0];
-    batchValues[offset + 1] = newColor[1];
-    batchValues[offset + 2] = newColor[2];
-    const wasTranslucent = showAlphaProperties[propertyOffset + 1] !== 255;
-    const show = showAlphaProperties[propertyOffset] !== 0;
-    batchValues[offset + 3] = show ? newAlpha : 0;
-    showAlphaProperties[propertyOffset + 1] = newAlpha;
-    const isTranslucent = newAlpha !== 255;
-    if (isTranslucent && !wasTranslucent) {
-      ++this._translucentFeaturesLength;
-    } else if (!isTranslucent && wasTranslucent) {
-      --this._translucentFeaturesLength;
-    }
-    this._batchValuesDirty = true;
-    if (defined_default(this._colorChangedCallback)) {
-      this._colorChangedCallback(batchId, color);
-    }
-  }
-};
-BatchTexture.prototype.setAllColor = function(color) {
-  Check_default.typeOf.object("color", color);
-  const featuresLength = this._featuresLength;
-  for (let i = 0; i < featuresLength; ++i) {
-    this.setColor(i, color);
-  }
-};
-BatchTexture.prototype.getColor = function(batchId, result) {
-  checkBatchId(batchId, this._featuresLength);
-  Check_default.typeOf.object("result", result);
-  if (!defined_default(this._batchValues)) {
-    return Color_default.clone(BatchTexture.DEFAULT_COLOR_VALUE, result);
-  }
-  const batchValues = this._batchValues;
-  const offset = batchId * 4;
-  const showAlphaProperties = this._showAlphaProperties;
-  const propertyOffset = batchId * 2;
-  return Color_default.fromBytes(
-    batchValues[offset],
-    batchValues[offset + 1],
-    batchValues[offset + 2],
-    showAlphaProperties[propertyOffset + 1],
-    result
-  );
-};
-BatchTexture.prototype.getPickColor = function(batchId) {
-  checkBatchId(batchId, this._featuresLength);
-  return this._pickIds[batchId];
-};
-function createTexture2(batchTexture, context, bytes) {
-  const dimensions = batchTexture._textureDimensions;
-  return new Texture_default({
-    context,
-    pixelFormat: PixelFormat_default.RGBA,
-    pixelDatatype: PixelDatatype_default.UNSIGNED_BYTE,
-    source: {
-      width: dimensions.x,
-      height: dimensions.y,
-      arrayBufferView: bytes
-    },
-    flipY: false,
-    sampler: Sampler_default.NEAREST
-  });
-}
-function createPickTexture(batchTexture, context) {
-  const featuresLength = batchTexture._featuresLength;
-  if (!defined_default(batchTexture._pickTexture) && featuresLength > 0) {
-    const pickIds = batchTexture._pickIds;
-    const byteLength = getByteLength(batchTexture);
-    const bytes = new Uint8Array(byteLength);
-    const owner = batchTexture._owner;
-    const statistics = batchTexture._statistics;
-    for (let i = 0; i < featuresLength; ++i) {
-      const pickId = context.createPickId(owner.getFeature(i));
-      pickIds.push(pickId);
-      const pickColor3 = pickId.color;
-      const offset = i * 4;
-      bytes[offset] = Color_default.floatToByte(pickColor3.red);
-      bytes[offset + 1] = Color_default.floatToByte(pickColor3.green);
-      bytes[offset + 2] = Color_default.floatToByte(pickColor3.blue);
-      bytes[offset + 3] = Color_default.floatToByte(pickColor3.alpha);
-    }
-    batchTexture._pickTexture = createTexture2(batchTexture, context, bytes);
-    if (defined_default(statistics)) {
-      statistics.batchTableByteLength += batchTexture._pickTexture.sizeInBytes;
-    }
-  }
-}
-function updateBatchTexture(batchTexture) {
-  const dimensions = batchTexture._textureDimensions;
-  batchTexture._batchTexture.copyFrom({
-    source: {
-      width: dimensions.x,
-      height: dimensions.y,
-      arrayBufferView: batchTexture._batchValues
-    }
-  });
-}
-BatchTexture.prototype.update = function(tileset, frameState) {
-  const context = frameState.context;
-  this._defaultTexture = context.defaultTexture;
-  const passes = frameState.passes;
-  if (passes.pick || passes.postProcess) {
-    createPickTexture(this, context);
-  }
-  if (this._batchValuesDirty) {
-    this._batchValuesDirty = false;
-    if (!defined_default(this._batchTexture)) {
-      this._batchTexture = createTexture2(this, context, this._batchValues);
-      if (defined_default(this._statistics)) {
-        this._statistics.batchTableByteLength += this._batchTexture.sizeInBytes;
-      }
-    }
-    updateBatchTexture(this);
-  }
-};
-BatchTexture.prototype.isDestroyed = function() {
-  return false;
-};
-BatchTexture.prototype.destroy = function() {
-  this._batchTexture = this._batchTexture && this._batchTexture.destroy();
-  this._pickTexture = this._pickTexture && this._pickTexture.destroy();
-  const pickIds = this._pickIds;
-  const length = pickIds.length;
-  for (let i = 0; i < length; ++i) {
-    pickIds[i].destroy();
-  }
-  return destroyObject_default(this);
-};
-var BatchTexture_default = BatchTexture;
-
-// packages/engine/Source/Scene/getBinaryAccessor.js
-var ComponentsPerAttribute = {
-  SCALAR: 1,
-  VEC2: 2,
-  VEC3: 3,
-  VEC4: 4,
-  MAT2: 4,
-  MAT3: 9,
-  MAT4: 16
-};
-var ClassPerType = {
-  SCALAR: void 0,
-  VEC2: Cartesian2_default,
-  VEC3: Cartesian3_default,
-  VEC4: Cartesian4_default,
-  MAT2: Matrix2_default,
-  MAT3: Matrix3_default,
-  MAT4: Matrix4_default
-};
-function getBinaryAccessor(accessor) {
-  const componentType = accessor.componentType;
-  let componentDatatype;
-  if (typeof componentType === "string") {
-    componentDatatype = ComponentDatatype_default.fromName(componentType);
-  } else {
-    componentDatatype = componentType;
-  }
-  const componentsPerAttribute = ComponentsPerAttribute[accessor.type];
-  const classType = ClassPerType[accessor.type];
-  return {
-    componentsPerAttribute,
-    classType,
-    createArrayBufferView: function(buffer, byteOffset, length) {
-      return ComponentDatatype_default.createArrayBufferView(
-        componentDatatype,
-        buffer,
-        byteOffset,
-        componentsPerAttribute * length
-      );
-    }
-  };
-}
-var getBinaryAccessor_default = getBinaryAccessor;
-
-// packages/engine/Source/Scene/BatchTableHierarchy.js
-function BatchTableHierarchy(options) {
-  this._classes = void 0;
-  this._classIds = void 0;
-  this._classIndexes = void 0;
-  this._parentCounts = void 0;
-  this._parentIndexes = void 0;
-  this._parentIds = void 0;
-  this._byteLength = 0;
-  Check_default.typeOf.object("options.extension", options.extension);
-  initialize2(this, options.extension, options.binaryBody);
-  validateHierarchy(this);
-}
-Object.defineProperties(BatchTableHierarchy.prototype, {
-  byteLength: {
-    get: function() {
-      return this._byteLength;
-    }
-  }
-});
-function initialize2(hierarchy, hierarchyJson, binaryBody) {
-  let i;
-  let classId;
-  let binaryAccessor;
-  const instancesLength = hierarchyJson.instancesLength;
-  const classes = hierarchyJson.classes;
-  let classIds = hierarchyJson.classIds;
-  let parentCounts = hierarchyJson.parentCounts;
-  let parentIds = hierarchyJson.parentIds;
-  let parentIdsLength = instancesLength;
-  let byteLength = 0;
-  if (defined_default(classIds.byteOffset)) {
-    classIds.componentType = classIds.componentType ?? ComponentDatatype_default.UNSIGNED_SHORT;
-    classIds.type = AttributeType_default.SCALAR;
-    binaryAccessor = getBinaryAccessor_default(classIds);
-    classIds = binaryAccessor.createArrayBufferView(
-      binaryBody.buffer,
-      binaryBody.byteOffset + classIds.byteOffset,
-      instancesLength
-    );
-    byteLength += classIds.byteLength;
-  }
-  let parentIndexes;
-  if (defined_default(parentCounts)) {
-    if (defined_default(parentCounts.byteOffset)) {
-      parentCounts.componentType = parentCounts.componentType ?? ComponentDatatype_default.UNSIGNED_SHORT;
-      parentCounts.type = AttributeType_default.SCALAR;
-      binaryAccessor = getBinaryAccessor_default(parentCounts);
-      parentCounts = binaryAccessor.createArrayBufferView(
-        binaryBody.buffer,
-        binaryBody.byteOffset + parentCounts.byteOffset,
-        instancesLength
-      );
-      byteLength += parentCounts.byteLength;
-    }
-    parentIndexes = new Uint16Array(instancesLength);
-    parentIdsLength = 0;
-    for (i = 0; i < instancesLength; ++i) {
-      parentIndexes[i] = parentIdsLength;
-      parentIdsLength += parentCounts[i];
-    }
-    byteLength += parentIndexes.byteLength;
-  }
-  if (defined_default(parentIds) && defined_default(parentIds.byteOffset)) {
-    parentIds.componentType = parentIds.componentType ?? ComponentDatatype_default.UNSIGNED_SHORT;
-    parentIds.type = AttributeType_default.SCALAR;
-    binaryAccessor = getBinaryAccessor_default(parentIds);
-    parentIds = binaryAccessor.createArrayBufferView(
-      binaryBody.buffer,
-      binaryBody.byteOffset + parentIds.byteOffset,
-      parentIdsLength
-    );
-    byteLength += parentIds.byteLength;
-  }
-  const classesLength = classes.length;
-  for (i = 0; i < classesLength; ++i) {
-    const classInstancesLength = classes[i].length;
-    const properties = classes[i].instances;
-    const binaryProperties = Cesium3DTileBatchTable_default.getBinaryProperties(
-      classInstancesLength,
-      properties,
-      binaryBody
-    );
-    byteLength += countBinaryPropertyMemory(binaryProperties);
-    classes[i].instances = combine_default(binaryProperties, properties);
-  }
-  const classCounts = new Array(classesLength).fill(0);
-  const classIndexes = new Uint16Array(instancesLength);
-  for (i = 0; i < instancesLength; ++i) {
-    classId = classIds[i];
-    classIndexes[i] = classCounts[classId];
-    ++classCounts[classId];
-  }
-  byteLength += classIndexes.byteLength;
-  hierarchy._classes = classes;
-  hierarchy._classIds = classIds;
-  hierarchy._classIndexes = classIndexes;
-  hierarchy._parentCounts = parentCounts;
-  hierarchy._parentIndexes = parentIndexes;
-  hierarchy._parentIds = parentIds;
-  hierarchy._byteLength = byteLength;
-}
-function countBinaryPropertyMemory(binaryProperties) {
-  let byteLength = 0;
-  for (const name in binaryProperties) {
-    if (binaryProperties.hasOwnProperty(name)) {
-      byteLength += binaryProperties[name].typedArray.byteLength;
-    }
-  }
-  return byteLength;
-}
-var scratchValidateStack = [];
-function validateHierarchy(hierarchy) {
-  const stack = scratchValidateStack;
-  stack.length = 0;
-  const classIds = hierarchy._classIds;
-  const instancesLength = classIds.length;
-  for (let i = 0; i < instancesLength; ++i) {
-    validateInstance(hierarchy, i, stack);
-  }
-}
-function validateInstance(hierarchy, instanceIndex, stack) {
-  const parentCounts = hierarchy._parentCounts;
-  const parentIds = hierarchy._parentIds;
-  const parentIndexes = hierarchy._parentIndexes;
-  const classIds = hierarchy._classIds;
-  const instancesLength = classIds.length;
-  if (!defined_default(parentIds)) {
-    return;
-  }
-  if (instanceIndex >= instancesLength) {
-    throw new DeveloperError_default(
-      `Parent index ${instanceIndex} exceeds the total number of instances: ${instancesLength}`
-    );
-  }
-  if (stack.indexOf(instanceIndex) > -1) {
-    throw new DeveloperError_default(
-      "Circular dependency detected in the batch table hierarchy."
-    );
-  }
-  stack.push(instanceIndex);
-  const parentCount = defined_default(parentCounts) ? parentCounts[instanceIndex] : 1;
-  const parentIndex = defined_default(parentCounts) ? parentIndexes[instanceIndex] : instanceIndex;
-  for (let i = 0; i < parentCount; ++i) {
-    const parentId = parentIds[parentIndex + i];
-    if (parentId !== instanceIndex) {
-      validateInstance(hierarchy, parentId, stack);
-    }
-  }
-  stack.pop(instanceIndex);
-}
-var scratchVisited = [];
-var scratchStack = [];
-var marker = 0;
-function traverseHierarchyMultipleParents(hierarchy, instanceIndex, endConditionCallback) {
-  const classIds = hierarchy._classIds;
-  const parentCounts = hierarchy._parentCounts;
-  const parentIds = hierarchy._parentIds;
-  const parentIndexes = hierarchy._parentIndexes;
-  const instancesLength = classIds.length;
-  const visited = scratchVisited;
-  visited.length = Math.max(visited.length, instancesLength);
-  const visitedMarker = ++marker;
-  const stack = scratchStack;
-  stack.length = 0;
-  stack.push(instanceIndex);
-  while (stack.length > 0) {
-    instanceIndex = stack.pop();
-    if (visited[instanceIndex] === visitedMarker) {
-      continue;
-    }
-    visited[instanceIndex] = visitedMarker;
-    const result = endConditionCallback(hierarchy, instanceIndex);
-    if (defined_default(result)) {
-      return result;
-    }
-    const parentCount = parentCounts[instanceIndex];
-    const parentIndex = parentIndexes[instanceIndex];
-    for (let i = 0; i < parentCount; ++i) {
-      const parentId = parentIds[parentIndex + i];
-      if (parentId !== instanceIndex) {
-        stack.push(parentId);
-      }
-    }
-  }
-}
-function traverseHierarchySingleParent(hierarchy, instanceIndex, endConditionCallback) {
-  let hasParent = true;
-  while (hasParent) {
-    const result = endConditionCallback(hierarchy, instanceIndex);
-    if (defined_default(result)) {
-      return result;
-    }
-    const parentId = hierarchy._parentIds[instanceIndex];
-    hasParent = parentId !== instanceIndex;
-    instanceIndex = parentId;
-  }
-}
-function traverseHierarchy(hierarchy, instanceIndex, endConditionCallback) {
-  const parentCounts = hierarchy._parentCounts;
-  const parentIds = hierarchy._parentIds;
-  if (!defined_default(parentIds)) {
-    return endConditionCallback(hierarchy, instanceIndex);
-  } else if (defined_default(parentCounts)) {
-    return traverseHierarchyMultipleParents(
-      hierarchy,
-      instanceIndex,
-      endConditionCallback
-    );
-  }
-  return traverseHierarchySingleParent(
-    hierarchy,
-    instanceIndex,
-    endConditionCallback
-  );
-}
-BatchTableHierarchy.prototype.hasProperty = function(batchId, propertyId) {
-  const result = traverseHierarchy(
-    this,
-    batchId,
-    function(hierarchy, instanceIndex) {
-      const classId = hierarchy._classIds[instanceIndex];
-      const instances = hierarchy._classes[classId].instances;
-      if (defined_default(instances[propertyId])) {
-        return true;
-      }
-    }
-  );
-  return defined_default(result);
-};
-BatchTableHierarchy.prototype.propertyExists = function(propertyId) {
-  const classes = this._classes;
-  const classesLength = classes.length;
-  for (let i = 0; i < classesLength; ++i) {
-    const instances = classes[i].instances;
-    if (defined_default(instances[propertyId])) {
-      return true;
-    }
-  }
-  return false;
-};
-BatchTableHierarchy.prototype.getPropertyIds = function(batchId, results) {
-  results = defined_default(results) ? results : [];
-  results.length = 0;
-  traverseHierarchy(this, batchId, function(hierarchy, instanceIndex) {
-    const classId = hierarchy._classIds[instanceIndex];
-    const instances = hierarchy._classes[classId].instances;
-    for (const name in instances) {
-      if (instances.hasOwnProperty(name)) {
-        if (results.indexOf(name) === -1) {
-          results.push(name);
-        }
-      }
-    }
-  });
-  return results;
-};
-BatchTableHierarchy.prototype.getProperty = function(batchId, propertyId) {
-  return traverseHierarchy(this, batchId, function(hierarchy, instanceIndex) {
-    const classId = hierarchy._classIds[instanceIndex];
-    const instanceClass = hierarchy._classes[classId];
-    const indexInClass = hierarchy._classIndexes[instanceIndex];
-    const propertyValues = instanceClass.instances[propertyId];
-    if (defined_default(propertyValues)) {
-      if (defined_default(propertyValues.typedArray)) {
-        return getBinaryProperty(propertyValues, indexInClass);
-      }
-      return clone_default(propertyValues[indexInClass], true);
-    }
-  });
-};
-function getBinaryProperty(binaryProperty, index) {
-  const typedArray = binaryProperty.typedArray;
-  const componentCount = binaryProperty.componentCount;
-  if (componentCount === 1) {
-    return typedArray[index];
-  }
-  return binaryProperty.type.unpack(typedArray, index * componentCount);
-}
-BatchTableHierarchy.prototype.setProperty = function(batchId, propertyId, value) {
-  const result = traverseHierarchy(
-    this,
-    batchId,
-    function(hierarchy, instanceIndex) {
-      const classId = hierarchy._classIds[instanceIndex];
-      const instanceClass = hierarchy._classes[classId];
-      const indexInClass = hierarchy._classIndexes[instanceIndex];
-      const propertyValues = instanceClass.instances[propertyId];
-      if (defined_default(propertyValues)) {
-        if (instanceIndex !== batchId) {
-          throw new DeveloperError_default(
-            `Inherited property "${propertyId}" is read-only.`
-          );
-        }
-        if (defined_default(propertyValues.typedArray)) {
-          setBinaryProperty(propertyValues, indexInClass, value);
-        } else {
-          propertyValues[indexInClass] = clone_default(value, true);
-        }
-        return true;
-      }
-    }
-  );
-  return defined_default(result);
-};
-function setBinaryProperty(binaryProperty, index, value) {
-  const typedArray = binaryProperty.typedArray;
-  const componentCount = binaryProperty.componentCount;
-  if (componentCount === 1) {
-    typedArray[index] = value;
-  } else {
-    binaryProperty.type.pack(value, typedArray, index * componentCount);
-  }
-}
-BatchTableHierarchy.prototype.isClass = function(batchId, className) {
-  const result = traverseHierarchy(
-    this,
-    batchId,
-    function(hierarchy, instanceIndex) {
-      const classId = hierarchy._classIds[instanceIndex];
-      const instanceClass = hierarchy._classes[classId];
-      if (instanceClass.name === className) {
-        return true;
-      }
-    }
-  );
-  return defined_default(result);
-};
-BatchTableHierarchy.prototype.getClassName = function(batchId) {
-  const classId = this._classIds[batchId];
-  const instanceClass = this._classes[classId];
-  return instanceClass.name;
-};
-var BatchTableHierarchy_default = BatchTableHierarchy;
-
-// packages/engine/Source/Scene/Cesium3DTileColorBlendMode.js
-var Cesium3DTileColorBlendMode = {
-  /**
-   * Multiplies the source color by the feature color.
-   *
-   * @type {number}
-   * @constant
-   */
-  HIGHLIGHT: 0,
-  /**
-   * Replaces the source color with the feature color.
-   *
-   * @type {number}
-   * @constant
-   */
-  REPLACE: 1,
-  /**
-   * Blends the source color and feature color together.
-   *
-   * @type {number}
-   * @constant
-   */
-  MIX: 2
-};
-Object.freeze(Cesium3DTileColorBlendMode);
-var Cesium3DTileColorBlendMode_default = Cesium3DTileColorBlendMode;
-
-// packages/engine/Source/Core/addAllToArray.js
-function addAllToArray(target, source) {
-  if (!defined_default(source)) {
-    return;
-  }
-  const sourceLength = source.length;
-  if (sourceLength === 0) {
-    return;
-  }
-  const targetLength = target.length;
-  target.length += sourceLength;
-  for (let i = 0; i < sourceLength; i++) {
-    target[targetLength + i] = source[i];
-  }
-}
-var addAllToArray_default = addAllToArray;
-
-// packages/engine/Source/Scene/Cesium3DTileBatchTable.js
-var DEFAULT_COLOR_VALUE = BatchTexture_default.DEFAULT_COLOR_VALUE;
-var DEFAULT_SHOW_VALUE = BatchTexture_default.DEFAULT_SHOW_VALUE;
-function Cesium3DTileBatchTable(content, featuresLength, batchTableJson, batchTableBinary, colorChangedCallback) {
-  this.featuresLength = featuresLength;
-  let extensions;
-  if (defined_default(batchTableJson)) {
-    extensions = batchTableJson.extensions;
-  }
-  this._extensions = extensions ?? {};
-  const properties = initializeProperties(batchTableJson);
-  this._properties = properties;
-  this._batchTableHierarchy = initializeHierarchy(
-    this,
-    batchTableJson,
-    batchTableBinary
-  );
-  const binaryProperties = getBinaryProperties(
-    featuresLength,
-    properties,
-    batchTableBinary
-  );
-  this._binaryPropertiesByteLength = countBinaryPropertyMemory2(binaryProperties);
-  this._batchTableBinaryProperties = binaryProperties;
-  this._content = content;
-  this._batchTexture = new BatchTexture_default({
-    featuresLength,
-    colorChangedCallback,
-    owner: content,
-    statistics: content.tileset.statistics
-  });
-}
-Cesium3DTileBatchTable._deprecationWarning = deprecationWarning_default;
-Object.defineProperties(Cesium3DTileBatchTable.prototype, {
-  /**
-   * Size of the batch table, including the batch table hierarchy's binary
-   * buffers and any binary properties. JSON data is not counted.
-   *
-   * @memberof Cesium3DTileBatchTable.prototype
-   * @type {number}
-   * @readonly
-   * @private
-   */
-  batchTableByteLength: {
-    get: function() {
-      let totalByteLength = this._binaryPropertiesByteLength;
-      if (defined_default(this._batchTableHierarchy)) {
-        totalByteLength += this._batchTableHierarchy.byteLength;
-      }
-      totalByteLength += this._batchTexture.byteLength;
-      return totalByteLength;
-    }
-  }
-});
-function initializeProperties(jsonHeader) {
-  const properties = {};
-  if (!defined_default(jsonHeader)) {
-    return properties;
-  }
-  for (const propertyName in jsonHeader) {
-    if (jsonHeader.hasOwnProperty(propertyName) && propertyName !== "HIERARCHY" && // Deprecated HIERARCHY property
-    propertyName !== "extensions" && propertyName !== "extras") {
-      properties[propertyName] = clone_default(jsonHeader[propertyName], true);
-    }
-  }
-  return properties;
-}
-function initializeHierarchy(batchTable, jsonHeader, binaryBody) {
-  if (!defined_default(jsonHeader)) {
-    return;
-  }
-  let hierarchy = batchTable._extensions["3DTILES_batch_table_hierarchy"];
-  const legacyHierarchy = jsonHeader.HIERARCHY;
-  if (defined_default(legacyHierarchy)) {
-    Cesium3DTileBatchTable._deprecationWarning(
-      "batchTableHierarchyExtension",
-      "The batch table HIERARCHY property has been moved to an extension. Use extensions.3DTILES_batch_table_hierarchy instead."
-    );
-    batchTable._extensions["3DTILES_batch_table_hierarchy"] = legacyHierarchy;
-    hierarchy = legacyHierarchy;
-  }
-  if (!defined_default(hierarchy)) {
-    return;
-  }
-  return new BatchTableHierarchy_default({
-    extension: hierarchy,
-    binaryBody
-  });
-}
-function getBinaryProperties(featuresLength, properties, binaryBody) {
-  let binaryProperties;
-  for (const name in properties) {
-    if (properties.hasOwnProperty(name)) {
-      const property = properties[name];
-      const byteOffset = property.byteOffset;
-      if (defined_default(byteOffset)) {
-        const componentType = property.componentType;
-        const type = property.type;
-        if (!defined_default(componentType)) {
-          throw new RuntimeError_default("componentType is required.");
-        }
-        if (!defined_default(type)) {
-          throw new RuntimeError_default("type is required.");
-        }
-        if (!defined_default(binaryBody)) {
-          throw new RuntimeError_default(
-            `Property ${name} requires a batch table binary.`
-          );
-        }
-        const binaryAccessor = getBinaryAccessor_default(property);
-        const componentCount = binaryAccessor.componentsPerAttribute;
-        const classType = binaryAccessor.classType;
-        const typedArray = binaryAccessor.createArrayBufferView(
-          binaryBody.buffer,
-          binaryBody.byteOffset + byteOffset,
-          featuresLength
-        );
-        if (!defined_default(binaryProperties)) {
-          binaryProperties = {};
-        }
-        binaryProperties[name] = {
-          typedArray,
-          componentCount,
-          type: classType
-        };
-      }
-    }
-  }
-  return binaryProperties;
-}
-function countBinaryPropertyMemory2(binaryProperties) {
-  if (!defined_default(binaryProperties)) {
-    return 0;
-  }
-  let byteLength = 0;
-  for (const name in binaryProperties) {
-    if (binaryProperties.hasOwnProperty(name)) {
-      byteLength += binaryProperties[name].typedArray.byteLength;
-    }
-  }
-  return byteLength;
-}
-Cesium3DTileBatchTable.getBinaryProperties = function(featuresLength, batchTableJson, batchTableBinary) {
-  return getBinaryProperties(featuresLength, batchTableJson, batchTableBinary);
-};
-Cesium3DTileBatchTable.prototype.setShow = function(batchId, show) {
-  this._batchTexture.setShow(batchId, show);
-};
-Cesium3DTileBatchTable.prototype.setAllShow = function(show) {
-  this._batchTexture.setAllShow(show);
-};
-Cesium3DTileBatchTable.prototype.getShow = function(batchId) {
-  return this._batchTexture.getShow(batchId);
-};
-Cesium3DTileBatchTable.prototype.setColor = function(batchId, color) {
-  this._batchTexture.setColor(batchId, color);
-};
-Cesium3DTileBatchTable.prototype.setAllColor = function(color) {
-  this._batchTexture.setAllColor(color);
-};
-Cesium3DTileBatchTable.prototype.getColor = function(batchId, result) {
-  return this._batchTexture.getColor(batchId, result);
-};
-Cesium3DTileBatchTable.prototype.getPickColor = function(batchId) {
-  return this._batchTexture.getPickColor(batchId);
-};
-var scratchColor2 = new Color_default();
-Cesium3DTileBatchTable.prototype.applyStyle = function(style) {
-  if (!defined_default(style)) {
-    this.setAllColor(DEFAULT_COLOR_VALUE);
-    this.setAllShow(DEFAULT_SHOW_VALUE);
-    return;
-  }
-  const content = this._content;
-  const length = this.featuresLength;
-  for (let i = 0; i < length; ++i) {
-    const feature = content.getFeature(i);
-    const color = defined_default(style.color) ? style.color.evaluateColor(feature, scratchColor2) ?? DEFAULT_COLOR_VALUE : DEFAULT_COLOR_VALUE;
-    const show = defined_default(style.show) ? style.show.evaluate(feature) ?? DEFAULT_SHOW_VALUE : DEFAULT_SHOW_VALUE;
-    this.setColor(i, color);
-    this.setShow(i, show);
-  }
-};
-function getBinaryProperty2(binaryProperty, index) {
-  const typedArray = binaryProperty.typedArray;
-  const componentCount = binaryProperty.componentCount;
-  if (componentCount === 1) {
-    return typedArray[index];
-  }
-  return binaryProperty.type.unpack(typedArray, index * componentCount);
-}
-function setBinaryProperty2(binaryProperty, index, value) {
-  const typedArray = binaryProperty.typedArray;
-  const componentCount = binaryProperty.componentCount;
-  if (componentCount === 1) {
-    typedArray[index] = value;
-  } else {
-    binaryProperty.type.pack(value, typedArray, index * componentCount);
-  }
-}
-function checkBatchId2(batchId, featuresLength) {
-  if (!defined_default(batchId) || batchId < 0 || batchId >= featuresLength) {
-    throw new DeveloperError_default(
-      `batchId is required and must be between zero and featuresLength - 1 (${featuresLength}` - +")."
-    );
-  }
-}
-Cesium3DTileBatchTable.prototype.isClass = function(batchId, className) {
-  checkBatchId2(batchId, this.featuresLength);
-  Check_default.typeOf.string("className", className);
-  const hierarchy = this._batchTableHierarchy;
-  if (!defined_default(hierarchy)) {
-    return false;
-  }
-  return hierarchy.isClass(batchId, className);
-};
-Cesium3DTileBatchTable.prototype.isExactClass = function(batchId, className) {
-  Check_default.typeOf.string("className", className);
-  return this.getExactClassName(batchId) === className;
-};
-Cesium3DTileBatchTable.prototype.getExactClassName = function(batchId) {
-  checkBatchId2(batchId, this.featuresLength);
-  const hierarchy = this._batchTableHierarchy;
-  if (!defined_default(hierarchy)) {
-    return void 0;
-  }
-  return hierarchy.getClassName(batchId);
-};
-Cesium3DTileBatchTable.prototype.hasProperty = function(batchId, name) {
-  checkBatchId2(batchId, this.featuresLength);
-  Check_default.typeOf.string("name", name);
-  return defined_default(this._properties[name]) || defined_default(this._batchTableHierarchy) && this._batchTableHierarchy.hasProperty(batchId, name);
-};
-Cesium3DTileBatchTable.prototype.hasPropertyBySemantic = function() {
-  return false;
-};
-Cesium3DTileBatchTable.prototype.getPropertyIds = function(batchId, results) {
-  checkBatchId2(batchId, this.featuresLength);
-  results = defined_default(results) ? results : [];
-  results.length = 0;
-  const scratchPropertyIds = Object.keys(this._properties);
-  addAllToArray_default(results, scratchPropertyIds);
-  if (defined_default(this._batchTableHierarchy)) {
-    const propertyIds = this._batchTableHierarchy.getPropertyIds(
-      batchId,
-      scratchPropertyIds
-    );
-    addAllToArray_default(results, propertyIds);
-  }
-  return results;
-};
-Cesium3DTileBatchTable.prototype.getPropertyBySemantic = function(batchId, name) {
-  return void 0;
-};
-Cesium3DTileBatchTable.prototype.getProperty = function(batchId, name) {
-  checkBatchId2(batchId, this.featuresLength);
-  Check_default.typeOf.string("name", name);
-  if (defined_default(this._batchTableBinaryProperties)) {
-    const binaryProperty = this._batchTableBinaryProperties[name];
-    if (defined_default(binaryProperty)) {
-      return getBinaryProperty2(binaryProperty, batchId);
-    }
-  }
-  const propertyValues = this._properties[name];
-  if (defined_default(propertyValues)) {
-    return clone_default(propertyValues[batchId], true);
-  }
-  if (defined_default(this._batchTableHierarchy)) {
-    const hierarchyProperty = this._batchTableHierarchy.getProperty(
-      batchId,
-      name
-    );
-    if (defined_default(hierarchyProperty)) {
-      return hierarchyProperty;
-    }
-  }
-  return void 0;
-};
-Cesium3DTileBatchTable.prototype.setProperty = function(batchId, name, value) {
-  const featuresLength = this.featuresLength;
-  checkBatchId2(batchId, featuresLength);
-  Check_default.typeOf.string("name", name);
-  if (defined_default(this._batchTableBinaryProperties)) {
-    const binaryProperty = this._batchTableBinaryProperties[name];
-    if (defined_default(binaryProperty)) {
-      setBinaryProperty2(binaryProperty, batchId, value);
-      return;
-    }
-  }
-  if (defined_default(this._batchTableHierarchy)) {
-    if (this._batchTableHierarchy.setProperty(batchId, name, value)) {
-      return;
-    }
-  }
-  let propertyValues = this._properties[name];
-  if (!defined_default(propertyValues)) {
-    this._properties[name] = new Array(featuresLength);
-    propertyValues = this._properties[name];
-  }
-  propertyValues[batchId] = clone_default(value, true);
-};
-function getGlslComputeSt2(batchTable) {
-  if (batchTable._batchTexture.textureDimensions.y === 1) {
-    return "uniform vec4 tile_textureStep; \nvec2 computeSt(float batchId) \n{ \n    float stepX = tile_textureStep.x; \n    float centerX = tile_textureStep.y; \n    return vec2(centerX + (batchId * stepX), 0.5); \n} \n";
-  }
-  return "uniform vec4 tile_textureStep; \nuniform vec2 tile_textureDimensions; \nvec2 computeSt(float batchId) \n{ \n    float stepX = tile_textureStep.x; \n    float centerX = tile_textureStep.y; \n    float stepY = tile_textureStep.z; \n    float centerY = tile_textureStep.w; \n    float xId = mod(batchId, tile_textureDimensions.x); \n    float yId = floor(batchId / tile_textureDimensions.x); \n    return vec2(centerX + (xId * stepX), centerY + (yId * stepY)); \n} \n";
-}
-Cesium3DTileBatchTable.prototype.getVertexShaderCallback = function(handleTranslucent, batchIdAttributeName, diffuseAttributeOrUniformName) {
-  if (this.featuresLength === 0) {
-    return;
-  }
-  const that = this;
-  return function(source) {
-    const renamedSource = modifyDiffuse(
-      source,
-      diffuseAttributeOrUniformName,
-      false
-    );
-    let newMain;
-    if (ContextLimits_default.maximumVertexTextureImageUnits > 0) {
-      newMain = "";
-      if (handleTranslucent) {
-        newMain += "uniform bool tile_translucentCommand; \n";
-      }
-      newMain += `${"uniform sampler2D tile_batchTexture; \nout vec4 tile_featureColor; \nout vec2 tile_featureSt; \nvoid main() \n{ \n    vec2 st = computeSt("}${batchIdAttributeName}); 
-    vec4 featureProperties = texture(tile_batchTexture, st); 
-    tile_color(featureProperties); 
-    float show = ceil(featureProperties.a); 
-    gl_Position *= show; 
-`;
-      if (handleTranslucent) {
-        newMain += "    bool isStyleTranslucent = (featureProperties.a != 1.0); \n    if (czm_pass == czm_passTranslucent) \n    { \n        if (!isStyleTranslucent && !tile_translucentCommand) \n        { \n            gl_Position *= 0.0; \n        } \n    } \n    else \n    { \n        if (isStyleTranslucent) \n        { \n            gl_Position *= 0.0; \n        } \n    } \n";
-      }
-      newMain += "    tile_featureColor = featureProperties; \n    tile_featureSt = st; \n}";
-    } else {
-      newMain = `${"out vec2 tile_featureSt; \nvoid main() \n{ \n    tile_color(vec4(1.0)); \n    tile_featureSt = computeSt("}${batchIdAttributeName}); 
-}`;
-    }
-    return `${renamedSource}
-${getGlslComputeSt2(that)}${newMain}`;
-  };
-};
-function getDefaultShader(source, applyHighlight) {
-  source = ShaderSource_default.replaceMain(source, "tile_main");
-  if (!applyHighlight) {
-    return `${source}void tile_color(vec4 tile_featureColor) 
-{ 
-    tile_main(); 
-} 
-`;
-  }
-  return `${source}uniform float tile_colorBlend; 
-void tile_color(vec4 tile_featureColor) 
-{ 
-    tile_main(); 
-    tile_featureColor = czm_gammaCorrect(tile_featureColor); 
-    out_FragColor.a *= tile_featureColor.a; 
-    float highlight = ceil(tile_colorBlend); 
-    out_FragColor.rgb *= mix(tile_featureColor.rgb, vec3(1.0), highlight); 
-} 
-`;
-}
-function replaceDiffuseTextureCalls(source, diffuseAttributeOrUniformName) {
-  const functionCall = `texture(${diffuseAttributeOrUniformName}`;
-  let fromIndex = 0;
-  let startIndex = source.indexOf(functionCall, fromIndex);
-  let endIndex;
-  while (startIndex > -1) {
-    let nestedLevel = 0;
-    for (let i = startIndex; i < source.length; ++i) {
-      const character = source.charAt(i);
-      if (character === "(") {
-        ++nestedLevel;
-      } else if (character === ")") {
-        --nestedLevel;
-        if (nestedLevel === 0) {
-          endIndex = i + 1;
-          break;
-        }
-      }
-    }
-    const extractedFunction = source.slice(startIndex, endIndex);
-    const replacedFunction = `tile_diffuse_final(${extractedFunction}, tile_diffuse)`;
-    source = source.slice(0, startIndex) + replacedFunction + source.slice(endIndex);
-    fromIndex = startIndex + replacedFunction.length;
-    startIndex = source.indexOf(functionCall, fromIndex);
-  }
-  return source;
-}
-function modifyDiffuse(source, diffuseAttributeOrUniformName, applyHighlight) {
-  if (!defined_default(diffuseAttributeOrUniformName)) {
-    return getDefaultShader(source, applyHighlight);
-  }
-  let regex = new RegExp(
-    `(uniform|attribute|in)\\s+(vec[34]|sampler2D)\\s+${diffuseAttributeOrUniformName};`
-  );
-  const uniformMatch = source.match(regex);
-  if (!defined_default(uniformMatch)) {
-    return getDefaultShader(source, applyHighlight);
-  }
-  const declaration = uniformMatch[0];
-  const type = uniformMatch[2];
-  source = ShaderSource_default.replaceMain(source, "tile_main");
-  source = source.replace(declaration, "");
-  const finalDiffuseFunction = "bool isWhite(vec3 color) \n{ \n    return all(greaterThan(color, vec3(1.0 - czm_epsilon3))); \n} \nvec4 tile_diffuse_final(vec4 sourceDiffuse, vec4 tileDiffuse) \n{ \n    vec4 blendDiffuse = mix(sourceDiffuse, tileDiffuse, tile_colorBlend); \n    vec4 diffuse = isWhite(tileDiffuse.rgb) ? sourceDiffuse : blendDiffuse; \n    return vec4(diffuse.rgb, sourceDiffuse.a); \n} \n";
-  const highlight = "    tile_featureColor = czm_gammaCorrect(tile_featureColor); \n    out_FragColor.a *= tile_featureColor.a; \n    float highlight = ceil(tile_colorBlend); \n    out_FragColor.rgb *= mix(tile_featureColor.rgb, vec3(1.0), highlight); \n";
-  let setColor;
-  if (type === "vec3" || type === "vec4") {
-    const sourceDiffuse = type === "vec3" ? `vec4(${diffuseAttributeOrUniformName}, 1.0)` : diffuseAttributeOrUniformName;
-    const replaceDiffuse = type === "vec3" ? "tile_diffuse.xyz" : "tile_diffuse";
-    regex = new RegExp(diffuseAttributeOrUniformName, "g");
-    source = source.replace(regex, replaceDiffuse);
-    setColor = `    vec4 source = ${sourceDiffuse}; 
-    tile_diffuse = tile_diffuse_final(source, tile_featureColor); 
-    tile_main(); 
-`;
-  } else if (type === "sampler2D") {
-    source = replaceDiffuseTextureCalls(source, diffuseAttributeOrUniformName);
-    setColor = "    tile_diffuse = tile_featureColor; \n    tile_main(); \n";
-  }
-  source = `${"uniform float tile_colorBlend; \nvec4 tile_diffuse = vec4(1.0); \n"}${finalDiffuseFunction}${declaration}
-${source}
-void tile_color(vec4 tile_featureColor) 
-{ 
-${setColor}`;
-  if (applyHighlight) {
-    source += highlight;
-  }
-  source += "} \n";
-  return source;
-}
-Cesium3DTileBatchTable.prototype.getFragmentShaderCallback = function(handleTranslucent, diffuseAttributeOrUniformName, hasPremultipliedAlpha) {
-  if (this.featuresLength === 0) {
-    return;
-  }
-  return function(source) {
-    source = modifyDiffuse(source, diffuseAttributeOrUniformName, true);
-    if (ContextLimits_default.maximumVertexTextureImageUnits > 0) {
-      source += "uniform sampler2D tile_pickTexture; \nin vec2 tile_featureSt; \nin vec4 tile_featureColor; \nvoid main() \n{ \n    tile_color(tile_featureColor); \n";
-      if (hasPremultipliedAlpha) {
-        source += "    out_FragColor.rgb *= out_FragColor.a; \n";
-      }
-      source += "}";
-    } else {
-      if (handleTranslucent) {
-        source += "uniform bool tile_translucentCommand; \n";
-      }
-      source += "uniform sampler2D tile_pickTexture; \nuniform sampler2D tile_batchTexture; \nin vec2 tile_featureSt; \nvoid main() \n{ \n    vec4 featureProperties = texture(tile_batchTexture, tile_featureSt); \n    if (featureProperties.a == 0.0) { \n        discard; \n    } \n";
-      if (handleTranslucent) {
-        source += "    bool isStyleTranslucent = (featureProperties.a != 1.0); \n    if (czm_pass == czm_passTranslucent) \n    { \n        if (!isStyleTranslucent && !tile_translucentCommand) \n        { \n            discard; \n        } \n    } \n    else \n    { \n        if (isStyleTranslucent) \n        { \n            discard; \n        } \n    } \n";
-      }
-      source += "    tile_color(featureProperties); \n";
-      if (hasPremultipliedAlpha) {
-        source += "    out_FragColor.rgb *= out_FragColor.a; \n";
-      }
-      source += "} \n";
-    }
-    return source;
-  };
-};
-function getColorBlend(batchTable) {
-  const tileset = batchTable._content.tileset;
-  const colorBlendMode = tileset.colorBlendMode;
-  const colorBlendAmount = tileset.colorBlendAmount;
-  if (colorBlendMode === Cesium3DTileColorBlendMode_default.HIGHLIGHT) {
-    return 0;
-  }
-  if (colorBlendMode === Cesium3DTileColorBlendMode_default.REPLACE) {
-    return 1;
-  }
-  if (colorBlendMode === Cesium3DTileColorBlendMode_default.MIX) {
-    return Math_default.clamp(colorBlendAmount, Math_default.EPSILON4, 1);
-  }
-  throw new DeveloperError_default(`Invalid color blend mode "${colorBlendMode}".`);
-}
-Cesium3DTileBatchTable.prototype.getUniformMapCallback = function() {
-  if (this.featuresLength === 0) {
-    return;
-  }
-  const that = this;
-  return function(uniformMap2) {
-    const batchUniformMap = {
-      tile_batchTexture: function() {
-        return that._batchTexture.batchTexture ?? that._batchTexture.defaultTexture;
-      },
-      tile_textureDimensions: function() {
-        return that._batchTexture.textureDimensions;
-      },
-      tile_textureStep: function() {
-        return that._batchTexture.textureStep;
-      },
-      tile_colorBlend: function() {
-        return getColorBlend(that);
-      },
-      tile_pickTexture: function() {
-        return that._batchTexture.pickTexture;
-      }
-    };
-    return combine_default(uniformMap2, batchUniformMap);
-  };
-};
-Cesium3DTileBatchTable.prototype.getPickId = function() {
-  return "texture(tile_pickTexture, tile_featureSt)";
-};
-var StyleCommandsNeeded = {
-  ALL_OPAQUE: 0,
-  ALL_TRANSLUCENT: 1,
-  OPAQUE_AND_TRANSLUCENT: 2
-};
-Cesium3DTileBatchTable.prototype.addDerivedCommands = function(frameState, commandStart) {
-  const commandList = frameState.commandList;
-  const commandEnd = commandList.length;
-  const tile = this._content._tile;
-  const finalResolution = tile._finalResolution;
-  const tileset = tile.tileset;
-  const bivariateVisibilityTest = tileset.isSkippingLevelOfDetail && tileset.hasMixedContent && frameState.context.stencilBuffer;
-  const styleCommandsNeeded = getStyleCommandsNeeded(this);
-  for (let i = commandStart; i < commandEnd; ++i) {
-    const command = commandList[i];
-    if (command.pass === Pass_default.COMPUTE) {
-      continue;
-    }
-    let derivedCommands = command.derivedCommands.tileset;
-    if (!defined_default(derivedCommands) || command.dirty) {
-      derivedCommands = {};
-      command.derivedCommands.tileset = derivedCommands;
-      derivedCommands.originalCommand = deriveCommand(command);
-      command.dirty = false;
-    }
-    const originalCommand = derivedCommands.originalCommand;
-    if (styleCommandsNeeded !== StyleCommandsNeeded.ALL_OPAQUE && command.pass !== Pass_default.TRANSLUCENT) {
-      if (!defined_default(derivedCommands.translucent)) {
-        derivedCommands.translucent = deriveTranslucentCommand(originalCommand);
-      }
-    }
-    if (styleCommandsNeeded !== StyleCommandsNeeded.ALL_TRANSLUCENT && command.pass !== Pass_default.TRANSLUCENT) {
-      if (!defined_default(derivedCommands.opaque)) {
-        derivedCommands.opaque = deriveOpaqueCommand(originalCommand);
-      }
-      if (bivariateVisibilityTest) {
-        if (!finalResolution) {
-          if (!defined_default(derivedCommands.zback)) {
-            derivedCommands.zback = deriveZBackfaceCommand(
-              frameState.context,
-              originalCommand
-            );
-          }
-          tileset._backfaceCommands.push(derivedCommands.zback);
-        }
-        if (!defined_default(derivedCommands.stencil) || tile._selectionDepth !== getLastSelectionDepth(derivedCommands.stencil)) {
-          if (command.renderState.depthMask) {
-            derivedCommands.stencil = deriveStencilCommand(
-              originalCommand,
-              tile._selectionDepth
-            );
-          } else {
-            derivedCommands.stencil = derivedCommands.opaque;
-          }
-        }
-      }
-    }
-    const opaqueCommand = bivariateVisibilityTest ? derivedCommands.stencil : derivedCommands.opaque;
-    const translucentCommand = derivedCommands.translucent;
-    if (command.pass !== Pass_default.TRANSLUCENT) {
-      if (styleCommandsNeeded === StyleCommandsNeeded.ALL_OPAQUE) {
-        commandList[i] = opaqueCommand;
-      }
-      if (styleCommandsNeeded === StyleCommandsNeeded.ALL_TRANSLUCENT) {
-        commandList[i] = translucentCommand;
-      }
-      if (styleCommandsNeeded === StyleCommandsNeeded.OPAQUE_AND_TRANSLUCENT) {
-        commandList[i] = opaqueCommand;
-        commandList.push(translucentCommand);
-      }
-    } else {
-      commandList[i] = originalCommand;
-    }
-  }
-};
-function getStyleCommandsNeeded(batchTable) {
-  const translucentFeaturesLength = batchTable._batchTexture.translucentFeaturesLength;
-  if (translucentFeaturesLength === 0) {
-    return StyleCommandsNeeded.ALL_OPAQUE;
-  } else if (translucentFeaturesLength === batchTable.featuresLength) {
-    return StyleCommandsNeeded.ALL_TRANSLUCENT;
-  }
-  return StyleCommandsNeeded.OPAQUE_AND_TRANSLUCENT;
-}
-function deriveCommand(command) {
-  const derivedCommand = DrawCommand_default.shallowClone(command);
-  const translucentCommand = derivedCommand.pass === Pass_default.TRANSLUCENT;
-  derivedCommand.uniformMap = defined_default(derivedCommand.uniformMap) ? derivedCommand.uniformMap : {};
-  derivedCommand.uniformMap.tile_translucentCommand = function() {
-    return translucentCommand;
-  };
-  return derivedCommand;
-}
-function deriveTranslucentCommand(command) {
-  const derivedCommand = DrawCommand_default.shallowClone(command);
-  derivedCommand.pass = Pass_default.TRANSLUCENT;
-  derivedCommand.renderState = getTranslucentRenderState(command.renderState);
-  return derivedCommand;
-}
-function deriveOpaqueCommand(command) {
-  const derivedCommand = DrawCommand_default.shallowClone(command);
-  derivedCommand.renderState = getOpaqueRenderState(command.renderState);
-  return derivedCommand;
-}
-function getLogDepthPolygonOffsetFragmentShaderProgram(context, shaderProgram) {
-  let shader = context.shaderCache.getDerivedShaderProgram(
-    shaderProgram,
-    "zBackfaceLogDepth"
-  );
-  if (!defined_default(shader)) {
-    const fs = shaderProgram.fragmentShaderSource.clone();
-    fs.defines = defined_default(fs.defines) ? fs.defines.slice(0) : [];
-    fs.defines.push("POLYGON_OFFSET");
-    shader = context.shaderCache.createDerivedShaderProgram(
-      shaderProgram,
-      "zBackfaceLogDepth",
-      {
-        vertexShaderSource: shaderProgram.vertexShaderSource,
-        fragmentShaderSource: fs,
-        attributeLocations: shaderProgram._attributeLocations
-      }
-    );
-  }
-  return shader;
-}
-function deriveZBackfaceCommand(context, command) {
-  const derivedCommand = DrawCommand_default.shallowClone(command);
-  const rs = clone_default(derivedCommand.renderState, true);
-  rs.cull.enabled = true;
-  rs.cull.face = CullFace_default.FRONT;
-  rs.colorMask = {
-    red: false,
-    green: false,
-    blue: false,
-    alpha: false
-  };
-  rs.polygonOffset = {
-    enabled: true,
-    factor: 5,
-    units: 5
-  };
-  rs.stencilTest = StencilConstants_default.setCesium3DTileBit();
-  rs.stencilMask = StencilConstants_default.CESIUM_3D_TILE_MASK;
-  derivedCommand.renderState = RenderState_default.fromCache(rs);
-  derivedCommand.castShadows = false;
-  derivedCommand.receiveShadows = false;
-  derivedCommand.uniformMap = clone_default(command.uniformMap);
-  const polygonOffset = new Cartesian2_default(5, 5);
-  derivedCommand.uniformMap.u_polygonOffset = function() {
-    return polygonOffset;
-  };
-  derivedCommand.shaderProgram = getLogDepthPolygonOffsetFragmentShaderProgram(
-    context,
-    command.shaderProgram
-  );
-  return derivedCommand;
-}
-function deriveStencilCommand(command, reference) {
-  const derivedCommand = DrawCommand_default.shallowClone(command);
-  const rs = clone_default(derivedCommand.renderState, true);
-  rs.stencilTest.enabled = true;
-  rs.stencilTest.mask = StencilConstants_default.SKIP_LOD_MASK;
-  rs.stencilTest.reference = StencilConstants_default.CESIUM_3D_TILE_MASK | reference << StencilConstants_default.SKIP_LOD_BIT_SHIFT;
-  rs.stencilTest.frontFunction = StencilFunction_default.GREATER_OR_EQUAL;
-  rs.stencilTest.frontOperation.zPass = StencilOperation_default.REPLACE;
-  rs.stencilTest.backFunction = StencilFunction_default.GREATER_OR_EQUAL;
-  rs.stencilTest.backOperation.zPass = StencilOperation_default.REPLACE;
-  rs.stencilMask = StencilConstants_default.CESIUM_3D_TILE_MASK | StencilConstants_default.SKIP_LOD_MASK;
-  derivedCommand.renderState = RenderState_default.fromCache(rs);
-  return derivedCommand;
-}
-function getLastSelectionDepth(stencilCommand) {
-  const reference = stencilCommand.renderState.stencilTest.reference;
-  return (reference & StencilConstants_default.SKIP_LOD_MASK) >>> StencilConstants_default.SKIP_LOD_BIT_SHIFT;
-}
-function getTranslucentRenderState(renderState) {
-  const rs = clone_default(renderState, true);
-  rs.cull.enabled = false;
-  rs.depthTest.enabled = true;
-  rs.depthMask = false;
-  rs.blending = BlendingState_default.ALPHA_BLEND;
-  rs.stencilTest = StencilConstants_default.setCesium3DTileBit();
-  rs.stencilMask = StencilConstants_default.CESIUM_3D_TILE_MASK;
-  return RenderState_default.fromCache(rs);
-}
-function getOpaqueRenderState(renderState) {
-  const rs = clone_default(renderState, true);
-  rs.stencilTest = StencilConstants_default.setCesium3DTileBit();
-  rs.stencilMask = StencilConstants_default.CESIUM_3D_TILE_MASK;
-  return RenderState_default.fromCache(rs);
-}
-Cesium3DTileBatchTable.prototype.update = function(tileset, frameState) {
-  this._batchTexture.update(tileset, frameState);
-};
-Cesium3DTileBatchTable.prototype.isDestroyed = function() {
-  return false;
-};
-Cesium3DTileBatchTable.prototype.destroy = function() {
-  this._batchTexture = this._batchTexture && this._batchTexture.destroy();
-  return destroyObject_default(this);
-};
-var Cesium3DTileBatchTable_default = Cesium3DTileBatchTable;
-
-// packages/engine/Source/Scene/Cesium3DTileFeature.js
-var Cesium3DTileFeature = class _Cesium3DTileFeature {
-  /**
-   * @param {Cesium3DTileContent} content
-   * @param {number} batchId
-   */
-  constructor(content, batchId) {
-    this._content = content;
-    this._batchId = batchId;
-    this._color = void 0;
-  }
-  /**
-   * Gets or sets if the feature will be shown. This is set for all features
-   * when a style's show is evaluated.
-   *
-   * @type {boolean}
-   *
-   * @default true
-   */
-  get show() {
-    return this._content.batchTable.getShow(this._batchId);
-  }
-  set show(value) {
-    this._content.batchTable.setShow(this._batchId, value);
-  }
-  /**
-   * Gets or sets the highlight color multiplied with the feature's color.  When
-   * this is white, the feature's color is not changed. This is set for all features
-   * when a style's color is evaluated.
-   *
-   * @type {Color}
-   *
-   * @default {@link Color.WHITE}
-   */
-  get color() {
-    if (!defined_default(this._color)) {
-      this._color = new Color_default();
-    }
-    return this._content.batchTable.getColor(this._batchId, this._color);
-  }
-  set color(value) {
-    this._content.batchTable.setColor(this._batchId, value);
-  }
-  /**
-   * Gets a typed array containing the ECEF positions of the polyline.
-   * Returns undefined if {@link Cesium3DTileset#vectorKeepDecodedPositions} is false
-   * or the feature is not a polyline in a vector tile.
-   *
-   * @experimental This feature is using part of the 3D Tiles spec that is not final and is subject to change without Cesium's standard deprecation policy.
-   *
-   * @type {Float64Array}
-   */
-  get polylinePositions() {
-    if (!defined_default(this._content.getPolylinePositions)) {
-      return void 0;
-    }
-    return this._content.getPolylinePositions(this._batchId);
-  }
-  /**
-   * Gets the content of the tile containing the feature.
-   *
-   * @type {Cesium3DTileContent}
-   *
-   * @readonly
-   * @private
-   */
-  get content() {
-    return this._content;
-  }
-  /**
-   * Gets the tileset containing the feature.
-   *
-   * @type {Cesium3DTileset}
-   *
-   * @readonly
-   */
-  get tileset() {
-    return this._content.tileset;
-  }
-  /**
-   * All objects returned by {@link Scene#pick} have a <code>primitive</code> property. This returns
-   * the tileset containing the feature.
-   *
-   * @type {Cesium3DTileset}
-   *
-   * @readonly
-   */
-  get primitive() {
-    return this._content.tileset;
-  }
-  /**
-   * Get the feature ID associated with this feature. For 3D Tiles 1.0, the
-   * batch ID is returned. For EXT_mesh_features, this is the feature ID from
-   * the selected feature ID set.
-   *
-   * @type {number}
-   *
-   * @readonly
-   * @experimental This feature is using part of the 3D Tiles spec that is not final and is subject to change without Cesium's standard deprecation policy.
-   */
-  get featureId() {
-    return this._batchId;
-  }
-  /**
-   * @private
-   */
-  get pickId() {
-    return this._content.batchTable.getPickColor(this._batchId);
-  }
-  /**
-   * Returns whether the feature contains this property. This includes properties from this feature's
-   * class and inherited classes when using a batch table hierarchy.
-   *
-   * @see {@link https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_batch_table_hierarchy}
-   *
-   * @param {string} name The case-sensitive name of the property.
-   * @returns {boolean} Whether the feature contains this property.
-   */
-  hasProperty(name) {
-    return this._content.batchTable.hasProperty(this._batchId, name);
-  }
-  /**
-   * Returns an array of property IDs for the feature. This includes properties from this feature's
-   * class and inherited classes when using a batch table hierarchy.
-   *
-   * @see {@link https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_batch_table_hierarchy}
-   *
-   * @param {string[]} [results] An array into which to store the results.
-   * @returns {string[]} The IDs of the feature's properties.
-   */
-  getPropertyIds(results) {
-    return this._content.batchTable.getPropertyIds(this._batchId, results);
-  }
-  /**
-   * Returns a copy of the value of the feature's property with the given name. This includes properties from this feature's
-   * class and inherited classes when using a batch table hierarchy.
-   *
-   * @see {@link https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_batch_table_hierarchy}
-   *
-   * @param {string} name The case-sensitive name of the property.
-   * @returns {*} The value of the property or <code>undefined</code> if the feature does not have this property.
-   *
-   * @example
-   * // Display all the properties for a feature in the console log.
-   * const propertyIds = feature.getPropertyIds();
-   * const length = propertyIds.length;
-   * for (let i = 0; i < length; ++i) {
-   *     const propertyId = propertyIds[i];
-   *     console.log(`{propertyId}: ${feature.getProperty(propertyId)}`);
-   * }
-   */
-  getProperty(name) {
-    return this._content.batchTable.getProperty(this._batchId, name);
-  }
-  /**
-   * Returns a copy of the feature's property with the given name, examining all
-   * the metadata from 3D Tiles 1.0 formats, the EXT_structural_metadata and legacy
-   * EXT_feature_metadata glTF extensions, and the metadata present either in the
-   * tileset JSON (3D Tiles 1.1) or in the 3DTILES_metadata 3D Tiles extension.
-   * Metadata is checked against name from most specific to most general and the
-   * first match is returned. Metadata is checked in this order:
-   *
-   * <ol>
-   *   <li>Batch table (structural metadata) property by semantic</li>
-   *   <li>Batch table (structural metadata) property by property ID</li>
-   *   <li>Content metadata property by semantic</li>
-   *   <li>Content metadata property by property</li>
-   *   <li>Tile metadata property by semantic</li>
-   *   <li>Tile metadata property by property ID</li>
-   *   <li>Subtree metadata property by semantic</li>
-   *   <li>Subtree metadata property by property ID</li>
-   *   <li>Group metadata property by semantic</li>
-   *   <li>Group metadata property by property ID</li>
-   *   <li>Tileset metadata property by semantic</li>
-   *   <li>Tileset metadata property by property ID</li>
-   *   <li>Otherwise, return undefined</li>
-   * </ol>
-   * <p>
-   * For 3D Tiles Next details, see the {@link https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_metadata|3DTILES_metadata Extension}
-   * for 3D Tiles, as well as the {@link https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata|EXT_structural_metadata Extension}
-   * for glTF. For the legacy glTF extension, see {@link https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata|EXT_feature_metadata Extension}
-   * </p>
-   *
-   * @param {Cesium3DTileContent} content The content for accessing the metadata
-   * @param {number} batchId The batch ID (or feature ID) of the feature to get a property for
-   * @param {string} name The semantic or property ID of the feature. Semantics are checked before property IDs in each granularity of metadata.
-   * @privateParam {Cesium3DTileBatchTable} [batchTable] Batch table in which to look up the feature property. If unspecified, `content.batchTable` is used.
-   * @return {*} The value of the property or <code>undefined</code> if the feature does not have this property.
-   *
-   * @experimental This feature is using part of the 3D Tiles spec that is not final and is subject to change without Cesium's standard deprecation policy.
-   */
-  static getPropertyInherited(content, batchId, name, batchTable = content.batchTable) {
-    if (defined_default(batchTable)) {
-      if (batchTable.hasPropertyBySemantic(batchId, name)) {
-        return batchTable.getPropertyBySemantic(batchId, name);
-      }
-      if (batchTable.hasProperty(batchId, name)) {
-        return batchTable.getProperty(batchId, name);
-      }
-    }
-    const contentMetadata = content.metadata;
-    if (defined_default(contentMetadata)) {
-      if (contentMetadata.hasPropertyBySemantic(name)) {
-        return contentMetadata.getPropertyBySemantic(name);
-      }
-      if (contentMetadata.hasProperty(name)) {
-        return contentMetadata.getProperty(name);
-      }
-    }
-    const tile = content.tile;
-    const tileMetadata = tile.metadata;
-    if (defined_default(tileMetadata)) {
-      if (tileMetadata.hasPropertyBySemantic(name)) {
-        return tileMetadata.getPropertyBySemantic(name);
-      }
-      if (tileMetadata.hasProperty(name)) {
-        return tileMetadata.getProperty(name);
-      }
-    }
-    let subtreeMetadata;
-    if (defined_default(tile.implicitSubtree)) {
-      subtreeMetadata = tile.implicitSubtree.metadata;
-    }
-    if (defined_default(subtreeMetadata)) {
-      if (subtreeMetadata.hasPropertyBySemantic(name)) {
-        return subtreeMetadata.getPropertyBySemantic(name);
-      }
-      if (subtreeMetadata.hasProperty(name)) {
-        return subtreeMetadata.getProperty(name);
-      }
-    }
-    const groupMetadata = defined_default(content.group) ? content.group.metadata : void 0;
-    if (defined_default(groupMetadata)) {
-      if (groupMetadata.hasPropertyBySemantic(name)) {
-        return groupMetadata.getPropertyBySemantic(name);
-      }
-      if (groupMetadata.hasProperty(name)) {
-        return groupMetadata.getProperty(name);
-      }
-    }
-    const tilesetMetadata = content.tileset.metadata;
-    if (defined_default(tilesetMetadata)) {
-      if (tilesetMetadata.hasPropertyBySemantic(name)) {
-        return tilesetMetadata.getPropertyBySemantic(name);
-      }
-      if (tilesetMetadata.hasProperty(name)) {
-        return tilesetMetadata.getProperty(name);
-      }
-    }
-    return void 0;
-  }
-  /**
-   * Returns a copy of the value of the feature's property with the given name.
-   * If the feature is contained within a tileset that has metadata (3D Tiles 1.1)
-   * or uses the <code>3DTILES_metadata</code> extension, tileset, group and tile
-   * metadata is inherited.
-   * <p>
-   * To resolve name conflicts, this method resolves names from most specific to
-   * least specific by metadata granularity in the order: feature, tile, group,
-   * tileset. Within each granularity, semantics are resolved first, then other
-   * properties.
-   * </p>
-   * @param {string} name The case-sensitive name of the property.
-   * @returns {*} The value of the property or <code>undefined</code> if the feature does not have this property.
-   * @private
-   */
-  getPropertyInherited(name) {
-    return _Cesium3DTileFeature.getPropertyInherited(
-      this._content,
-      this._batchId,
-      name
-    );
-  }
-  /**
-   * Sets the value of the feature's property with the given name.
-   * <p>
-   * If a property with the given name doesn't exist, it is created.
-   * </p>
-   *
-   * @param {string} name The case-sensitive name of the property.
-   * @param {*} value The value of the property that will be copied.
-   *
-   * @exception {DeveloperError} Inherited batch table hierarchy property is read only.
-   *
-   * @example
-   * const height = feature.getProperty('Height'); // e.g., the height of a building
-   *
-   * @example
-   * const name = 'clicked';
-   * if (feature.getProperty(name)) {
-   *     console.log('already clicked');
-   * } else {
-   *     feature.setProperty(name, true);
-   *     console.log('first click');
-   * }
-   */
-  setProperty(name, value) {
-    this._content.batchTable.setProperty(this._batchId, name, value);
-    this._content.featurePropertiesDirty = true;
-  }
-  /**
-   * Returns whether the feature's class name equals <code>className</code>. Unlike {@link Cesium3DTileFeature#isClass}
-   * this function only checks the feature's exact class and not inherited classes.
-   * <p>
-   * This function returns <code>false</code> if no batch table hierarchy is present.
-   * </p>
-   *
-   * @param {string} className The name to check against.
-   * @returns {boolean} Whether the feature's class name equals <code>className</code>
-   *
-   * @private
-   */
-  isExactClass(className) {
-    return this._content.batchTable.isExactClass(this._batchId, className);
-  }
-  /**
-   * Returns whether the feature's class or any inherited classes are named <code>className</code>.
-   * <p>
-   * This function returns <code>false</code> if no batch table hierarchy is present.
-   * </p>
-   *
-   * @param {string} className The name to check against.
-   * @returns {boolean} Whether the feature's class or inherited classes are named <code>className</code>
-   *
-   * @private
-   */
-  isClass(className) {
-    return this._content.batchTable.isClass(this._batchId, className);
-  }
-  /**
-   * Returns the feature's class name.
-   * <p>
-   * This function returns <code>undefined</code> if no batch table hierarchy is present.
-   * </p>
-   *
-   * @returns {string} The feature's class name.
-   *
-   * @private
-   */
-  getExactClassName() {
-    return this._content.batchTable.getExactClassName(this._batchId);
-  }
-};
-var Cesium3DTileFeature_default = Cesium3DTileFeature;
 
 // packages/engine/Source/Scene/hasExtension.js
 function hasExtension(json, extensionName) {
@@ -51474,6 +50045,23 @@ MetadataClassProperty.prototype.unpackTextureInShaderWebGL1 = function(sampledTe
   return `${glslType}(255.0 * ${sampledTextureExpression})`;
 };
 var MetadataClassProperty_default = MetadataClassProperty;
+
+// packages/engine/Source/Core/addAllToArray.js
+function addAllToArray(target, source) {
+  if (!defined_default(source)) {
+    return;
+  }
+  const sourceLength = source.length;
+  if (sourceLength === 0) {
+    return;
+  }
+  const targetLength = target.length;
+  target.length += sourceLength;
+  for (let i = 0; i < sourceLength; i++) {
+    target[targetLength + i] = source[i];
+  }
+}
+var addAllToArray_default = addAllToArray;
 
 // packages/engine/Source/Scene/MetadataTableProperty.js
 function MetadataTableProperty(options) {
@@ -53520,6 +52108,15 @@ function loadImageFromUri(resource) {
 GltfImageLoader._loadImageFromTypedArray = loadImageFromTypedArray_default;
 var GltfImageLoader_default = GltfImageLoader;
 
+// packages/engine/Source/Core/deprecationWarning.js
+function deprecationWarning(identifier, message) {
+  if (!defined_default(identifier) || !defined_default(message)) {
+    throw new DeveloperError_default("identifier and message are required.");
+  }
+  oneTimeWarning_default(identifier, message);
+}
+var deprecationWarning_default = deprecationWarning;
+
 // packages/engine/Source/Scene/JobType.js
 var JobType = {
   TEXTURE: 0,
@@ -53851,6 +52448,17 @@ function handleError4(indexBufferLoader, error) {
   throw indexBufferLoader.getError(errorMessage, error);
 }
 var GltfIndexBufferLoader_default = GltfIndexBufferLoader;
+
+// packages/engine/Source/Core/getMagic.js
+function getMagic(uint8Array, byteOffset) {
+  byteOffset = byteOffset ?? 0;
+  return getStringFromTypedArray_default(
+    uint8Array,
+    byteOffset,
+    Math.min(4, uint8Array.length)
+  );
+}
+var getMagic_default = getMagic;
 
 // packages/engine/Source/Scene/GltfPipeline/addToArray.js
 function addToArray(array, element, checkDuplicates) {
@@ -57798,7 +56406,7 @@ GltfLoaderUtil.createSampler = function(options) {
     magnificationFilter: magFilter
   });
 };
-var defaultScale2 = new Cartesian2_default(1, 1);
+var defaultScale = new Cartesian2_default(1, 1);
 GltfLoaderUtil.createModelTextureReader = function(options) {
   options = options ?? Frozen_default.EMPTY_OBJECT;
   const { textureInfo, channels, texture } = options;
@@ -57810,7 +56418,7 @@ GltfLoaderUtil.createModelTextureReader = function(options) {
     texCoord = textureTransform.texCoord ?? texCoord;
     const offset = defined_default(textureTransform.offset) ? Cartesian2_default.unpack(textureTransform.offset) : Cartesian2_default.ZERO;
     let rotation = textureTransform.rotation ?? 0;
-    const scale = defined_default(textureTransform.scale) ? Cartesian2_default.unpack(textureTransform.scale) : defaultScale2;
+    const scale = defined_default(textureTransform.scale) ? Cartesian2_default.unpack(textureTransform.scale) : defaultScale;
     rotation = -rotation;
     transform2 = new Matrix3_default(
       Math.cos(rotation) * scale.x,
@@ -57990,7 +56598,7 @@ var GltfTextureLoader = class extends ResourceLoader_default {
       }
       texture = textureJob.texture;
     } else {
-      texture = createTexture3(
+      texture = createTexture2(
         this._gltf,
         this._textureInfo,
         this._cacheKey,
@@ -58041,7 +56649,7 @@ var CreateTextureJob = class {
     this.context = context;
   }
   execute() {
-    this.texture = createTexture3(
+    this.texture = createTexture2(
       this.gltf,
       this.textureInfo,
       this.textureId,
@@ -58051,7 +56659,7 @@ var CreateTextureJob = class {
     );
   }
 };
-function createTexture3(gltf, textureInfo, textureId, image, mipLevels, context) {
+function createTexture2(gltf, textureInfo, textureId, image, mipLevels, context) {
   const internalFormat = image.internalFormat;
   let compressedTextureNoMipmap = false;
   if (PixelFormat_default.isCompressedFormat(internalFormat) && !defined_default(mipLevels)) {
@@ -62279,6 +60887,5304 @@ ResourceCache.clearForSpecs = function() {
 };
 var ResourceCache_default = ResourceCache;
 
+// packages/engine/Source/Core/QuantizedMeshTerrainData.js
+function QuantizedMeshTerrainData(options) {
+  options = options ?? Frozen_default.EMPTY_OBJECT;
+  Check_default.typeOf.object("options.quantizedVertices", options.quantizedVertices);
+  Check_default.typeOf.object("options.indices", options.indices);
+  Check_default.typeOf.number("options.minimumHeight", options.minimumHeight);
+  Check_default.typeOf.number("options.maximumHeight", options.maximumHeight);
+  Check_default.typeOf.object("options.boundingSphere", options.boundingSphere);
+  Check_default.typeOf.object(
+    "options.horizonOcclusionPoint",
+    options.horizonOcclusionPoint
+  );
+  Check_default.typeOf.object("options.westIndices", options.westIndices);
+  Check_default.typeOf.object("options.southIndices", options.southIndices);
+  Check_default.typeOf.object("options.eastIndices", options.eastIndices);
+  Check_default.typeOf.object("options.northIndices", options.northIndices);
+  Check_default.typeOf.number("options.westSkirtHeight", options.westSkirtHeight);
+  Check_default.typeOf.number("options.southSkirtHeight", options.southSkirtHeight);
+  Check_default.typeOf.number("options.eastSkirtHeight", options.eastSkirtHeight);
+  Check_default.typeOf.number("options.northSkirtHeight", options.northSkirtHeight);
+  this._quantizedVertices = options.quantizedVertices;
+  this._encodedNormals = options.encodedNormals;
+  this._indices = options.indices;
+  this._minimumHeight = options.minimumHeight;
+  this._maximumHeight = options.maximumHeight;
+  this._boundingSphere = options.boundingSphere;
+  this._orientedBoundingBox = options.orientedBoundingBox;
+  this._horizonOcclusionPoint = options.horizonOcclusionPoint;
+  this._credits = options.credits;
+  const vertexCount = this._quantizedVertices.length / 3;
+  const uValues = this._uValues = this._quantizedVertices.subarray(
+    0,
+    vertexCount
+  );
+  const vValues = this._vValues = this._quantizedVertices.subarray(
+    vertexCount,
+    2 * vertexCount
+  );
+  this._heightValues = this._quantizedVertices.subarray(
+    2 * vertexCount,
+    3 * vertexCount
+  );
+  function sortByV(a, b) {
+    return vValues[a] - vValues[b];
+  }
+  function sortByU(a, b) {
+    return uValues[a] - uValues[b];
+  }
+  this._westIndices = sortIndicesIfNecessary(
+    options.westIndices,
+    sortByV,
+    vertexCount
+  );
+  this._southIndices = sortIndicesIfNecessary(
+    options.southIndices,
+    sortByU,
+    vertexCount
+  );
+  this._eastIndices = sortIndicesIfNecessary(
+    options.eastIndices,
+    sortByV,
+    vertexCount
+  );
+  this._northIndices = sortIndicesIfNecessary(
+    options.northIndices,
+    sortByU,
+    vertexCount
+  );
+  this._westSkirtHeight = options.westSkirtHeight;
+  this._southSkirtHeight = options.southSkirtHeight;
+  this._eastSkirtHeight = options.eastSkirtHeight;
+  this._northSkirtHeight = options.northSkirtHeight;
+  this._childTileMask = options.childTileMask ?? 15;
+  this._createdByUpsampling = options.createdByUpsampling ?? false;
+  this._waterMask = options.waterMask;
+  this._mesh = void 0;
+}
+Object.defineProperties(QuantizedMeshTerrainData.prototype, {
+  /**
+   * An array of credits for this tile.
+   * @memberof QuantizedMeshTerrainData.prototype
+   * @type {Credit[]}
+   */
+  credits: {
+    get: function() {
+      return this._credits;
+    }
+  },
+  /**
+   * The water mask included in this terrain data, if any.  A water mask is a rectangular
+   * Uint8Array or image where a value of 255 indicates water and a value of 0 indicates land.
+   * Values in between 0 and 255 are allowed as well to smoothly blend between land and water.
+   * @memberof QuantizedMeshTerrainData.prototype
+   * @type {Uint8Array|HTMLImageElement|HTMLCanvasElement|undefined}
+   */
+  waterMask: {
+    get: function() {
+      return this._waterMask;
+    }
+  },
+  childTileMask: {
+    get: function() {
+      return this._childTileMask;
+    }
+  },
+  canUpsample: {
+    get: function() {
+      return defined_default(this._mesh);
+    }
+  }
+});
+var arrayScratch = [];
+function sortIndicesIfNecessary(indices, sortFunction, vertexCount) {
+  arrayScratch.length = indices.length;
+  let needsSort = false;
+  for (let i = 0, len = indices.length; i < len; ++i) {
+    arrayScratch[i] = indices[i];
+    needsSort = needsSort || i > 0 && sortFunction(indices[i - 1], indices[i]) > 0;
+  }
+  if (needsSort) {
+    arrayScratch.sort(sortFunction);
+    return IndexDatatype_default.createTypedArray(vertexCount, arrayScratch);
+  }
+  return indices;
+}
+var createMeshTaskName2 = "createVerticesFromQuantizedTerrainMesh";
+var createMeshTaskProcessorNoThrottle2 = new TaskProcessor_default(createMeshTaskName2);
+var createMeshTaskProcessorThrottle2 = new TaskProcessor_default(
+  createMeshTaskName2,
+  TerrainData_default.maximumAsynchronousTasks
+);
+QuantizedMeshTerrainData.prototype.createMesh = function(options) {
+  options = options ?? Frozen_default.EMPTY_OBJECT;
+  Check_default.typeOf.object("options.tilingScheme", options.tilingScheme);
+  Check_default.typeOf.number("options.x", options.x);
+  Check_default.typeOf.number("options.y", options.y);
+  Check_default.typeOf.number("options.level", options.level);
+  const tilingScheme = options.tilingScheme;
+  const x = options.x;
+  const y = options.y;
+  const level = options.level;
+  const exaggeration = options.exaggeration ?? 1;
+  const exaggerationRelativeHeight = options.exaggerationRelativeHeight ?? 0;
+  const throttle = options.throttle ?? true;
+  const ellipsoid = tilingScheme.ellipsoid;
+  const rectangle = tilingScheme.tileXYToRectangle(x, y, level);
+  const createMeshTaskProcessor = throttle ? createMeshTaskProcessorThrottle2 : createMeshTaskProcessorNoThrottle2;
+  const verticesPromise = createMeshTaskProcessor.scheduleTask({
+    minimumHeight: this._minimumHeight,
+    maximumHeight: this._maximumHeight,
+    quantizedVertices: this._quantizedVertices,
+    octEncodedNormals: this._encodedNormals,
+    includeWebMercatorT: true,
+    indices: this._indices,
+    westIndices: this._westIndices,
+    southIndices: this._southIndices,
+    eastIndices: this._eastIndices,
+    northIndices: this._northIndices,
+    westSkirtHeight: this._westSkirtHeight,
+    southSkirtHeight: this._southSkirtHeight,
+    eastSkirtHeight: this._eastSkirtHeight,
+    northSkirtHeight: this._northSkirtHeight,
+    rectangle,
+    relativeToCenter: this._boundingSphere.center,
+    ellipsoid,
+    exaggeration,
+    exaggerationRelativeHeight
+  });
+  if (!defined_default(verticesPromise)) {
+    return void 0;
+  }
+  const that = this;
+  return Promise.resolve(verticesPromise).then(function(result) {
+    const vertexCountWithoutSkirts = that._quantizedVertices.length / 3;
+    const vertexCount = vertexCountWithoutSkirts + that._westIndices.length + that._southIndices.length + that._eastIndices.length + that._northIndices.length;
+    const indicesTypedArray = IndexDatatype_default.createTypedArray(
+      vertexCount,
+      result.indices
+    );
+    const vertices = new Float32Array(result.vertices);
+    const rtc = result.center;
+    const minimumHeight = result.minimumHeight;
+    const maximumHeight = result.maximumHeight;
+    const boundingSphere = that._boundingSphere;
+    const obb = that._orientedBoundingBox;
+    const occludeePointInScaledSpace = Cartesian3_default.clone(result.occludeePointInScaledSpace) ?? that._horizonOcclusionPoint;
+    const stride = result.vertexStride;
+    const terrainEncoding = TerrainEncoding_default.clone(result.encoding);
+    that._mesh = new TerrainMesh_default(
+      rtc,
+      vertices,
+      indicesTypedArray,
+      result.indexCountWithoutSkirts,
+      vertexCountWithoutSkirts,
+      minimumHeight,
+      maximumHeight,
+      rectangle,
+      boundingSphere,
+      occludeePointInScaledSpace,
+      stride,
+      obb,
+      terrainEncoding,
+      result.westIndicesSouthToNorth,
+      result.southIndicesEastToWest,
+      result.eastIndicesNorthToSouth,
+      result.northIndicesWestToEast
+    );
+    that._quantizedVertices = void 0;
+    that._encodedNormals = void 0;
+    that._indices = void 0;
+    that._uValues = void 0;
+    that._vValues = void 0;
+    that._heightValues = void 0;
+    that._westIndices = void 0;
+    that._southIndices = void 0;
+    that._eastIndices = void 0;
+    that._northIndices = void 0;
+    return that._mesh;
+  });
+};
+var upsampleTaskProcessor = new TaskProcessor_default(
+  "upsampleQuantizedTerrainMesh",
+  TerrainData_default.maximumAsynchronousTasks
+);
+QuantizedMeshTerrainData.prototype.upsample = function(tilingScheme, thisX, thisY, thisLevel, descendantX, descendantY, descendantLevel) {
+  if (!defined_default(tilingScheme)) {
+    throw new DeveloperError_default("tilingScheme is required.");
+  }
+  if (!defined_default(thisX)) {
+    throw new DeveloperError_default("thisX is required.");
+  }
+  if (!defined_default(thisY)) {
+    throw new DeveloperError_default("thisY is required.");
+  }
+  if (!defined_default(thisLevel)) {
+    throw new DeveloperError_default("thisLevel is required.");
+  }
+  if (!defined_default(descendantX)) {
+    throw new DeveloperError_default("descendantX is required.");
+  }
+  if (!defined_default(descendantY)) {
+    throw new DeveloperError_default("descendantY is required.");
+  }
+  if (!defined_default(descendantLevel)) {
+    throw new DeveloperError_default("descendantLevel is required.");
+  }
+  const levelDifference = descendantLevel - thisLevel;
+  if (levelDifference > 1) {
+    throw new DeveloperError_default(
+      "Upsampling through more than one level at a time is not currently supported."
+    );
+  }
+  const mesh = this._mesh;
+  if (!defined_default(this._mesh)) {
+    return void 0;
+  }
+  const isEastChild = thisX * 2 !== descendantX;
+  const isNorthChild = thisY * 2 === descendantY;
+  const ellipsoid = tilingScheme.ellipsoid;
+  const childRectangle = tilingScheme.tileXYToRectangle(
+    descendantX,
+    descendantY,
+    descendantLevel
+  );
+  const upsamplePromise = upsampleTaskProcessor.scheduleTask({
+    vertices: mesh.vertices,
+    vertexCountWithoutSkirts: mesh.vertexCountWithoutSkirts,
+    indices: mesh.indices,
+    indexCountWithoutSkirts: mesh.indexCountWithoutSkirts,
+    encoding: mesh.encoding,
+    minimumHeight: this._minimumHeight,
+    maximumHeight: this._maximumHeight,
+    isEastChild,
+    isNorthChild,
+    childRectangle,
+    ellipsoid
+  });
+  if (!defined_default(upsamplePromise)) {
+    return void 0;
+  }
+  let shortestSkirt = Math.min(this._westSkirtHeight, this._eastSkirtHeight);
+  shortestSkirt = Math.min(shortestSkirt, this._southSkirtHeight);
+  shortestSkirt = Math.min(shortestSkirt, this._northSkirtHeight);
+  const westSkirtHeight = isEastChild ? shortestSkirt * 0.5 : this._westSkirtHeight;
+  const southSkirtHeight = isNorthChild ? shortestSkirt * 0.5 : this._southSkirtHeight;
+  const eastSkirtHeight = isEastChild ? this._eastSkirtHeight : shortestSkirt * 0.5;
+  const northSkirtHeight = isNorthChild ? this._northSkirtHeight : shortestSkirt * 0.5;
+  const credits = this._credits;
+  return Promise.resolve(upsamplePromise).then(function(result) {
+    const quantizedVertices = new Uint16Array(result.vertices);
+    const indicesTypedArray = IndexDatatype_default.createTypedArray(
+      quantizedVertices.length / 3,
+      result.indices
+    );
+    let encodedNormals;
+    if (defined_default(result.encodedNormals)) {
+      encodedNormals = new Uint8Array(result.encodedNormals);
+    }
+    return new QuantizedMeshTerrainData({
+      quantizedVertices,
+      indices: indicesTypedArray,
+      encodedNormals,
+      minimumHeight: result.minimumHeight,
+      maximumHeight: result.maximumHeight,
+      boundingSphere: BoundingSphere_default.clone(result.boundingSphere),
+      orientedBoundingBox: OrientedBoundingBox_default.clone(
+        result.orientedBoundingBox
+      ),
+      horizonOcclusionPoint: Cartesian3_default.clone(result.horizonOcclusionPoint),
+      westIndices: result.westIndices,
+      southIndices: result.southIndices,
+      eastIndices: result.eastIndices,
+      northIndices: result.northIndices,
+      westSkirtHeight,
+      southSkirtHeight,
+      eastSkirtHeight,
+      northSkirtHeight,
+      childTileMask: 0,
+      credits,
+      createdByUpsampling: true
+    });
+  });
+};
+var maxShort = 32767;
+var barycentricCoordinateScratch = new Cartesian3_default();
+QuantizedMeshTerrainData.prototype.interpolateHeight = function(rectangle, longitude, latitude) {
+  let u = Math_default.clamp(
+    (longitude - rectangle.west) / rectangle.width,
+    0,
+    1
+  );
+  u *= maxShort;
+  let v = Math_default.clamp(
+    (latitude - rectangle.south) / rectangle.height,
+    0,
+    1
+  );
+  v *= maxShort;
+  if (!defined_default(this._mesh)) {
+    return interpolateHeight2(this, u, v);
+  }
+  return interpolateMeshHeight2(this, u, v);
+};
+function pointInBoundingBox(u, v, u0, v0, u1, v1, u2, v2) {
+  const minU = Math.min(u0, u1, u2);
+  const maxU = Math.max(u0, u1, u2);
+  const minV = Math.min(v0, v1, v2);
+  const maxV = Math.max(v0, v1, v2);
+  return u >= minU && u <= maxU && v >= minV && v <= maxV;
+}
+var texCoordScratch0 = new Cartesian2_default();
+var texCoordScratch1 = new Cartesian2_default();
+var texCoordScratch2 = new Cartesian2_default();
+function interpolateMeshHeight2(terrainData, u, v) {
+  const mesh = terrainData._mesh;
+  const vertices = mesh.vertices;
+  const encoding = mesh.encoding;
+  const indices = mesh.indices;
+  for (let i = 0, len = indices.length; i < len; i += 3) {
+    const i0 = indices[i];
+    const i1 = indices[i + 1];
+    const i2 = indices[i + 2];
+    const uv0 = encoding.decodeTextureCoordinates(
+      vertices,
+      i0,
+      texCoordScratch0
+    );
+    const uv1 = encoding.decodeTextureCoordinates(
+      vertices,
+      i1,
+      texCoordScratch1
+    );
+    const uv2 = encoding.decodeTextureCoordinates(
+      vertices,
+      i2,
+      texCoordScratch2
+    );
+    if (pointInBoundingBox(u, v, uv0.x, uv0.y, uv1.x, uv1.y, uv2.x, uv2.y)) {
+      const barycentric = Intersections2D_default.computeBarycentricCoordinates(
+        u,
+        v,
+        uv0.x,
+        uv0.y,
+        uv1.x,
+        uv1.y,
+        uv2.x,
+        uv2.y,
+        barycentricCoordinateScratch
+      );
+      if (barycentric.x >= -1e-15 && barycentric.y >= -1e-15 && barycentric.z >= -1e-15) {
+        const h0 = encoding.decodeHeight(vertices, i0);
+        const h1 = encoding.decodeHeight(vertices, i1);
+        const h2 = encoding.decodeHeight(vertices, i2);
+        return barycentric.x * h0 + barycentric.y * h1 + barycentric.z * h2;
+      }
+    }
+  }
+  return void 0;
+}
+function interpolateHeight2(terrainData, u, v) {
+  const uBuffer = terrainData._uValues;
+  const vBuffer = terrainData._vValues;
+  const heightBuffer = terrainData._heightValues;
+  const indices = terrainData._indices;
+  for (let i = 0, len = indices.length; i < len; i += 3) {
+    const i0 = indices[i];
+    const i1 = indices[i + 1];
+    const i2 = indices[i + 2];
+    const u0 = uBuffer[i0];
+    const u1 = uBuffer[i1];
+    const u2 = uBuffer[i2];
+    const v0 = vBuffer[i0];
+    const v1 = vBuffer[i1];
+    const v2 = vBuffer[i2];
+    if (pointInBoundingBox(u, v, u0, v0, u1, v1, u2, v2)) {
+      const barycentric = Intersections2D_default.computeBarycentricCoordinates(
+        u,
+        v,
+        u0,
+        v0,
+        u1,
+        v1,
+        u2,
+        v2,
+        barycentricCoordinateScratch
+      );
+      if (barycentric.x >= -1e-15 && barycentric.y >= -1e-15 && barycentric.z >= -1e-15) {
+        const quantizedHeight = barycentric.x * heightBuffer[i0] + barycentric.y * heightBuffer[i1] + barycentric.z * heightBuffer[i2];
+        return Math_default.lerp(
+          terrainData._minimumHeight,
+          terrainData._maximumHeight,
+          quantizedHeight / maxShort
+        );
+      }
+    }
+  }
+  return void 0;
+}
+QuantizedMeshTerrainData.prototype.isChildAvailable = function(thisX, thisY, childX, childY) {
+  Check_default.typeOf.number("thisX", thisX);
+  Check_default.typeOf.number("thisY", thisY);
+  Check_default.typeOf.number("childX", childX);
+  Check_default.typeOf.number("childY", childY);
+  let bitNumber = 2;
+  if (childX !== thisX * 2) {
+    ++bitNumber;
+  }
+  if (childY !== thisY * 2) {
+    bitNumber -= 2;
+  }
+  return (this._childTileMask & 1 << bitNumber) !== 0;
+};
+QuantizedMeshTerrainData.prototype.wasCreatedByUpsampling = function() {
+  return this._createdByUpsampling;
+};
+var QuantizedMeshTerrainData_default = QuantizedMeshTerrainData;
+
+// packages/engine/Source/Core/CesiumTerrainProvider.js
+function LayerInformation(layer) {
+  this.resource = layer.resource;
+  this.version = layer.version;
+  this.isHeightmap = layer.isHeightmap;
+  this.tileUrlTemplates = layer.tileUrlTemplates;
+  this.availability = layer.availability;
+  this.hasVertexNormals = layer.hasVertexNormals;
+  this.hasWaterMask = layer.hasWaterMask;
+  this.hasMetadata = layer.hasMetadata;
+  this.availabilityLevels = layer.availabilityLevels;
+  this.availabilityTilesLoaded = layer.availabilityTilesLoaded;
+  this.littleEndianExtensionSize = layer.littleEndianExtensionSize;
+  this.availabilityPromiseCache = {};
+}
+function TerrainProviderBuilder(options) {
+  this.requestVertexNormals = options.requestVertexNormals ?? false;
+  this.requestWaterMask = options.requestWaterMask ?? false;
+  this.requestMetadata = options.requestMetadata ?? true;
+  this.ellipsoid = options.ellipsoid ?? Ellipsoid_default.default;
+  this.heightmapWidth = 65;
+  this.heightmapStructure = void 0;
+  this.hasWaterMask = false;
+  this.hasMetadata = false;
+  this.hasVertexNormals = false;
+  this.scheme = void 0;
+  this.lastResource = void 0;
+  this.layerJsonResource = void 0;
+  this.previousError = void 0;
+  this.availability = void 0;
+  this.tilingScheme = void 0;
+  this.levelZeroMaximumGeometricError = void 0;
+  this.heightmapStructure = void 0;
+  this.layers = [];
+  this.attribution = "";
+  this.overallAvailability = [];
+  this.overallMaxZoom = 0;
+  this.tileCredits = [];
+}
+TerrainProviderBuilder.prototype.build = function(provider) {
+  provider._heightmapWidth = this.heightmapWidth;
+  provider._scheme = this.scheme;
+  const credits = defined_default(this.lastResource.credits) ? this.lastResource.credits : [];
+  provider._tileCredits = credits.concat(this.tileCredits);
+  provider._availability = this.availability;
+  provider._tilingScheme = this.tilingScheme;
+  provider._requestWaterMask = this.requestWaterMask;
+  provider._levelZeroMaximumGeometricError = this.levelZeroMaximumGeometricError;
+  provider._heightmapStructure = this.heightmapStructure;
+  provider._layers = this.layers;
+  provider._hasWaterMask = this.hasWaterMask;
+  provider._hasVertexNormals = this.hasVertexNormals;
+  provider._hasMetadata = this.hasMetadata;
+};
+async function parseMetadataSuccess(terrainProviderBuilder, data, provider) {
+  if (!data.format) {
+    const message = "The tile format is not specified in the layer.json file.";
+    terrainProviderBuilder.previousError = TileProviderError_default.reportError(
+      terrainProviderBuilder.previousError,
+      provider,
+      defined_default(provider) ? provider._errorEvent : void 0,
+      message
+    );
+    throw new RuntimeError_default(message);
+  }
+  if (!data.tiles || data.tiles.length === 0) {
+    const message = "The layer.json file does not specify any tile URL templates.";
+    terrainProviderBuilder.previousError = TileProviderError_default.reportError(
+      terrainProviderBuilder.previousError,
+      provider,
+      defined_default(provider) ? provider._errorEvent : void 0,
+      message
+    );
+    throw new RuntimeError_default(message);
+  }
+  let hasVertexNormals = false;
+  let hasWaterMask = false;
+  let hasMetadata = false;
+  let littleEndianExtensionSize = true;
+  let isHeightmap = false;
+  if (data.format === "heightmap-1.0") {
+    isHeightmap = true;
+    if (!defined_default(terrainProviderBuilder.heightmapStructure)) {
+      terrainProviderBuilder.heightmapStructure = {
+        heightScale: 1 / 5,
+        heightOffset: -1e3,
+        elementsPerHeight: 1,
+        stride: 1,
+        elementMultiplier: 256,
+        isBigEndian: false,
+        lowestEncodedHeight: 0,
+        highestEncodedHeight: 256 * 256 - 1
+      };
+    }
+    hasWaterMask = true;
+    terrainProviderBuilder.requestWaterMask = true;
+  } else if (data.format.indexOf("quantized-mesh-1.") !== 0) {
+    const message = `The tile format "${data.format}" is invalid or not supported.`;
+    terrainProviderBuilder.previousError = TileProviderError_default.reportError(
+      terrainProviderBuilder.previousError,
+      provider,
+      defined_default(provider) ? provider._errorEvent : void 0,
+      message
+    );
+    throw new RuntimeError_default(message);
+  }
+  const tileUrlTemplates = data.tiles;
+  const maxZoom = data.maxzoom;
+  terrainProviderBuilder.overallMaxZoom = Math.max(
+    terrainProviderBuilder.overallMaxZoom,
+    maxZoom
+  );
+  if (!data.projection || data.projection === "EPSG:4326") {
+    terrainProviderBuilder.tilingScheme = new GeographicTilingScheme_default({
+      numberOfLevelZeroTilesX: 2,
+      numberOfLevelZeroTilesY: 1,
+      ellipsoid: terrainProviderBuilder.ellipsoid
+    });
+  } else if (data.projection === "EPSG:3857") {
+    terrainProviderBuilder.tilingScheme = new WebMercatorTilingScheme_default({
+      numberOfLevelZeroTilesX: 1,
+      numberOfLevelZeroTilesY: 1,
+      ellipsoid: terrainProviderBuilder.ellipsoid
+    });
+  } else {
+    const message = `The projection "${data.projection}" is invalid or not supported.`;
+    terrainProviderBuilder.previousError = TileProviderError_default.reportError(
+      terrainProviderBuilder.previousError,
+      provider,
+      defined_default(provider) ? provider._errorEvent : void 0,
+      message
+    );
+    throw new RuntimeError_default(message);
+  }
+  terrainProviderBuilder.levelZeroMaximumGeometricError = TerrainProvider_default.getEstimatedLevelZeroGeometricErrorForAHeightmap(
+    terrainProviderBuilder.tilingScheme.ellipsoid,
+    terrainProviderBuilder.heightmapWidth,
+    terrainProviderBuilder.tilingScheme.getNumberOfXTilesAtLevel(0)
+  );
+  if (!data.scheme || data.scheme === "tms" || data.scheme === "slippyMap") {
+    terrainProviderBuilder.scheme = data.scheme;
+  } else {
+    const message = `The scheme "${data.scheme}" is invalid or not supported.`;
+    terrainProviderBuilder.previousError = TileProviderError_default.reportError(
+      terrainProviderBuilder.previousError,
+      provider,
+      defined_default(provider) ? provider._errorEvent : void 0,
+      message
+    );
+    throw new RuntimeError_default(message);
+  }
+  let availabilityTilesLoaded;
+  if (defined_default(data.extensions) && data.extensions.indexOf("octvertexnormals") !== -1) {
+    hasVertexNormals = true;
+  } else if (defined_default(data.extensions) && data.extensions.indexOf("vertexnormals") !== -1) {
+    hasVertexNormals = true;
+    littleEndianExtensionSize = false;
+  }
+  if (defined_default(data.extensions) && data.extensions.indexOf("watermask") !== -1) {
+    hasWaterMask = true;
+  }
+  if (defined_default(data.extensions) && data.extensions.indexOf("metadata") !== -1) {
+    hasMetadata = true;
+  }
+  const availabilityLevels = data.metadataAvailability;
+  const availableTiles = data.available;
+  let availability;
+  if (defined_default(availableTiles) && !defined_default(availabilityLevels)) {
+    availability = new TileAvailability_default(
+      terrainProviderBuilder.tilingScheme,
+      availableTiles.length
+    );
+    for (let level = 0; level < availableTiles.length; ++level) {
+      const rangesAtLevel = availableTiles[level];
+      const yTiles = terrainProviderBuilder.tilingScheme.getNumberOfYTilesAtLevel(level);
+      if (!defined_default(terrainProviderBuilder.overallAvailability[level])) {
+        terrainProviderBuilder.overallAvailability[level] = [];
+      }
+      for (let rangeIndex = 0; rangeIndex < rangesAtLevel.length; ++rangeIndex) {
+        const range = rangesAtLevel[rangeIndex];
+        const yStart = yTiles - range.endY - 1;
+        const yEnd = yTiles - range.startY - 1;
+        terrainProviderBuilder.overallAvailability[level].push([
+          range.startX,
+          yStart,
+          range.endX,
+          yEnd
+        ]);
+        availability.addAvailableTileRange(
+          level,
+          range.startX,
+          yStart,
+          range.endX,
+          yEnd
+        );
+      }
+    }
+  } else if (defined_default(availabilityLevels)) {
+    availabilityTilesLoaded = new TileAvailability_default(
+      terrainProviderBuilder.tilingScheme,
+      maxZoom
+    );
+    availability = new TileAvailability_default(
+      terrainProviderBuilder.tilingScheme,
+      maxZoom
+    );
+    terrainProviderBuilder.overallAvailability[0] = [[0, 0, 1, 0]];
+    availability.addAvailableTileRange(0, 0, 0, 1, 0);
+  }
+  terrainProviderBuilder.hasWaterMask = terrainProviderBuilder.hasWaterMask || hasWaterMask;
+  terrainProviderBuilder.hasVertexNormals = terrainProviderBuilder.hasVertexNormals || hasVertexNormals;
+  terrainProviderBuilder.hasMetadata = terrainProviderBuilder.hasMetadata || hasMetadata;
+  if (defined_default(data.attribution)) {
+    if (terrainProviderBuilder.attribution.length > 0) {
+      terrainProviderBuilder.attribution += " ";
+    }
+    terrainProviderBuilder.attribution += data.attribution;
+  }
+  terrainProviderBuilder.layers.push(
+    new LayerInformation({
+      resource: terrainProviderBuilder.lastResource,
+      version: data.version,
+      isHeightmap,
+      tileUrlTemplates,
+      availability,
+      hasVertexNormals,
+      hasWaterMask,
+      hasMetadata,
+      availabilityLevels,
+      availabilityTilesLoaded,
+      littleEndianExtensionSize
+    })
+  );
+  const parentUrl = data.parentUrl;
+  if (defined_default(parentUrl)) {
+    if (!defined_default(availability)) {
+      console.log(
+        "A layer.json can't have a parentUrl if it does't have an available array."
+      );
+      return true;
+    }
+    terrainProviderBuilder.lastResource = terrainProviderBuilder.lastResource.getDerivedResource({
+      url: parentUrl
+    });
+    terrainProviderBuilder.lastResource.appendForwardSlash();
+    terrainProviderBuilder.layerJsonResource = terrainProviderBuilder.lastResource.getDerivedResource({
+      url: "layer.json"
+    });
+    await requestLayerJson(terrainProviderBuilder);
+    return true;
+  }
+  return true;
+}
+function parseMetadataFailure(terrainProviderBuilder, error, provider) {
+  let message = `An error occurred while accessing ${terrainProviderBuilder.layerJsonResource.url}.`;
+  if (defined_default(error)) {
+    message += `
+${error.message}`;
+  }
+  terrainProviderBuilder.previousError = TileProviderError_default.reportError(
+    terrainProviderBuilder.previousError,
+    provider,
+    defined_default(provider) ? provider._errorEvent : void 0,
+    message
+  );
+  if (terrainProviderBuilder.previousError.retry) {
+    return requestLayerJson(terrainProviderBuilder, provider);
+  }
+  throw new RuntimeError_default(message);
+}
+async function metadataSuccess4(terrainProviderBuilder, data, provider) {
+  await parseMetadataSuccess(terrainProviderBuilder, data, provider);
+  const length = terrainProviderBuilder.overallAvailability.length;
+  if (length > 0) {
+    const availability = terrainProviderBuilder.availability = new TileAvailability_default(
+      terrainProviderBuilder.tilingScheme,
+      terrainProviderBuilder.overallMaxZoom
+    );
+    for (let level = 0; level < length; ++level) {
+      const levelRanges = terrainProviderBuilder.overallAvailability[level];
+      for (let i = 0; i < levelRanges.length; ++i) {
+        const range = levelRanges[i];
+        availability.addAvailableTileRange(
+          level,
+          range[0],
+          range[1],
+          range[2],
+          range[3]
+        );
+      }
+    }
+  }
+  if (terrainProviderBuilder.attribution.length > 0) {
+    const layerJsonCredit = new Credit_default(terrainProviderBuilder.attribution);
+    terrainProviderBuilder.tileCredits.push(layerJsonCredit);
+  }
+  return true;
+}
+async function requestLayerJson(terrainProviderBuilder, provider) {
+  try {
+    const data = await terrainProviderBuilder.layerJsonResource.fetchJson();
+    return metadataSuccess4(terrainProviderBuilder, data, provider);
+  } catch (error) {
+    if (defined_default(error) && error.statusCode === 404) {
+      await parseMetadataSuccess(
+        terrainProviderBuilder,
+        {
+          tilejson: "2.1.0",
+          format: "heightmap-1.0",
+          version: "1.0.0",
+          scheme: "tms",
+          tiles: ["{z}/{x}/{y}.terrain?v={version}"]
+        },
+        provider
+      );
+      return true;
+    }
+    return parseMetadataFailure(terrainProviderBuilder, error, provider);
+  }
+}
+function CesiumTerrainProvider(options) {
+  options = options ?? Frozen_default.EMPTY_OBJECT;
+  this._heightmapWidth = void 0;
+  this._heightmapStructure = void 0;
+  this._hasWaterMask = false;
+  this._hasVertexNormals = false;
+  this._hasMetadata = false;
+  this._scheme = void 0;
+  this._ellipsoid = options.ellipsoid;
+  this._requestVertexNormals = options.requestVertexNormals ?? false;
+  this._requestWaterMask = options.requestWaterMask ?? false;
+  this._requestMetadata = options.requestMetadata ?? true;
+  this._errorEvent = new Event_default();
+  let credit = options.credit;
+  if (typeof credit === "string") {
+    credit = new Credit_default(credit);
+  }
+  this._credit = credit;
+  this._availability = void 0;
+  this._tilingScheme = void 0;
+  this._levelZeroMaximumGeometricError = void 0;
+  this._layers = void 0;
+  this._tileCredits = void 0;
+}
+var QuantizedMeshExtensionIds = {
+  /**
+   * Oct-Encoded Per-Vertex Normals are included as an extension to the tile mesh
+   *
+   * @type {number}
+   * @constant
+   * @default 1
+   */
+  OCT_VERTEX_NORMALS: 1,
+  /**
+   * A watermask is included as an extension to the tile mesh
+   *
+   * @type {number}
+   * @constant
+   * @default 2
+   */
+  WATER_MASK: 2,
+  /**
+   * A json object contain metadata about the tile
+   *
+   * @type {number}
+   * @constant
+   * @default 4
+   */
+  METADATA: 4
+};
+function getRequestHeader(extensionsList) {
+  if (!defined_default(extensionsList) || extensionsList.length === 0) {
+    return {
+      Accept: "application/vnd.quantized-mesh,application/octet-stream;q=0.9,*/*;q=0.01"
+    };
+  }
+  const extensions = extensionsList.join("-");
+  return {
+    Accept: `application/vnd.quantized-mesh;extensions=${extensions},application/octet-stream;q=0.9,*/*;q=0.01`
+  };
+}
+function createHeightmapTerrainData(provider, buffer, level, x, y) {
+  const heightBuffer = new Uint16Array(
+    buffer,
+    0,
+    provider._heightmapWidth * provider._heightmapWidth
+  );
+  return new HeightmapTerrainData_default({
+    buffer: heightBuffer,
+    childTileMask: new Uint8Array(buffer, heightBuffer.byteLength, 1)[0],
+    waterMask: new Uint8Array(
+      buffer,
+      heightBuffer.byteLength + 1,
+      buffer.byteLength - heightBuffer.byteLength - 1
+    ),
+    width: provider._heightmapWidth,
+    height: provider._heightmapWidth,
+    structure: provider._heightmapStructure,
+    credits: provider._tileCredits
+  });
+}
+function createQuantizedMeshTerrainData(provider, buffer, level, x, y, layer) {
+  const littleEndianExtensionSize = layer.littleEndianExtensionSize;
+  let pos = 0;
+  const cartesian3Elements = 3;
+  const boundingSphereElements = cartesian3Elements + 1;
+  const cartesian3Length = Float64Array.BYTES_PER_ELEMENT * cartesian3Elements;
+  const boundingSphereLength = Float64Array.BYTES_PER_ELEMENT * boundingSphereElements;
+  const encodedVertexElements = 3;
+  const encodedVertexLength = Uint16Array.BYTES_PER_ELEMENT * encodedVertexElements;
+  const triangleElements = 3;
+  let bytesPerIndex = Uint16Array.BYTES_PER_ELEMENT;
+  let triangleLength = bytesPerIndex * triangleElements;
+  const view = new DataView(buffer);
+  const center = new Cartesian3_default(
+    view.getFloat64(pos, true),
+    view.getFloat64(pos + 8, true),
+    view.getFloat64(pos + 16, true)
+  );
+  pos += cartesian3Length;
+  const minimumHeight = view.getFloat32(pos, true);
+  pos += Float32Array.BYTES_PER_ELEMENT;
+  const maximumHeight = view.getFloat32(pos, true);
+  pos += Float32Array.BYTES_PER_ELEMENT;
+  const boundingSphere = new BoundingSphere_default(
+    new Cartesian3_default(
+      view.getFloat64(pos, true),
+      view.getFloat64(pos + 8, true),
+      view.getFloat64(pos + 16, true)
+    ),
+    view.getFloat64(pos + cartesian3Length, true)
+  );
+  pos += boundingSphereLength;
+  const horizonOcclusionPoint = new Cartesian3_default(
+    view.getFloat64(pos, true),
+    view.getFloat64(pos + 8, true),
+    view.getFloat64(pos + 16, true)
+  );
+  pos += cartesian3Length;
+  const vertexCount = view.getUint32(pos, true);
+  pos += Uint32Array.BYTES_PER_ELEMENT;
+  const encodedVertexBuffer = new Uint16Array(buffer, pos, vertexCount * 3);
+  pos += vertexCount * encodedVertexLength;
+  if (vertexCount > 64 * 1024) {
+    bytesPerIndex = Uint32Array.BYTES_PER_ELEMENT;
+    triangleLength = bytesPerIndex * triangleElements;
+  }
+  const uBuffer = encodedVertexBuffer.subarray(0, vertexCount);
+  const vBuffer = encodedVertexBuffer.subarray(vertexCount, 2 * vertexCount);
+  const heightBuffer = encodedVertexBuffer.subarray(
+    vertexCount * 2,
+    3 * vertexCount
+  );
+  AttributeCompression_default.zigZagDeltaDecode(uBuffer, vBuffer, heightBuffer);
+  if (pos % bytesPerIndex !== 0) {
+    pos += bytesPerIndex - pos % bytesPerIndex;
+  }
+  const triangleCount = view.getUint32(pos, true);
+  pos += Uint32Array.BYTES_PER_ELEMENT;
+  const indices = IndexDatatype_default.createTypedArrayFromArrayBuffer(
+    vertexCount,
+    buffer,
+    pos,
+    triangleCount * triangleElements
+  );
+  pos += triangleCount * triangleLength;
+  let highest = 0;
+  const length = indices.length;
+  for (let i = 0; i < length; ++i) {
+    const code = indices[i];
+    indices[i] = highest - code;
+    if (code === 0) {
+      ++highest;
+    }
+  }
+  const westVertexCount = view.getUint32(pos, true);
+  pos += Uint32Array.BYTES_PER_ELEMENT;
+  const westIndices = IndexDatatype_default.createTypedArrayFromArrayBuffer(
+    vertexCount,
+    buffer,
+    pos,
+    westVertexCount
+  );
+  pos += westVertexCount * bytesPerIndex;
+  const southVertexCount = view.getUint32(pos, true);
+  pos += Uint32Array.BYTES_PER_ELEMENT;
+  const southIndices = IndexDatatype_default.createTypedArrayFromArrayBuffer(
+    vertexCount,
+    buffer,
+    pos,
+    southVertexCount
+  );
+  pos += southVertexCount * bytesPerIndex;
+  const eastVertexCount = view.getUint32(pos, true);
+  pos += Uint32Array.BYTES_PER_ELEMENT;
+  const eastIndices = IndexDatatype_default.createTypedArrayFromArrayBuffer(
+    vertexCount,
+    buffer,
+    pos,
+    eastVertexCount
+  );
+  pos += eastVertexCount * bytesPerIndex;
+  const northVertexCount = view.getUint32(pos, true);
+  pos += Uint32Array.BYTES_PER_ELEMENT;
+  const northIndices = IndexDatatype_default.createTypedArrayFromArrayBuffer(
+    vertexCount,
+    buffer,
+    pos,
+    northVertexCount
+  );
+  pos += northVertexCount * bytesPerIndex;
+  let encodedNormalBuffer;
+  let waterMaskBuffer;
+  while (pos < view.byteLength) {
+    const extensionId = view.getUint8(pos, true);
+    pos += Uint8Array.BYTES_PER_ELEMENT;
+    const extensionLength = view.getUint32(pos, littleEndianExtensionSize);
+    pos += Uint32Array.BYTES_PER_ELEMENT;
+    if (extensionId === QuantizedMeshExtensionIds.OCT_VERTEX_NORMALS && provider._requestVertexNormals) {
+      encodedNormalBuffer = new Uint8Array(buffer, pos, vertexCount * 2);
+    } else if (extensionId === QuantizedMeshExtensionIds.WATER_MASK && provider._requestWaterMask) {
+      waterMaskBuffer = new Uint8Array(buffer, pos, extensionLength);
+    } else if (extensionId === QuantizedMeshExtensionIds.METADATA && provider._requestMetadata) {
+      const stringLength = view.getUint32(pos, true);
+      if (stringLength > 0) {
+        const metadata = getJsonFromTypedArray_default(
+          new Uint8Array(buffer),
+          pos + Uint32Array.BYTES_PER_ELEMENT,
+          stringLength
+        );
+        const availableTiles = metadata.available;
+        if (defined_default(availableTiles)) {
+          for (let offset = 0; offset < availableTiles.length; ++offset) {
+            const availableLevel = level + offset + 1;
+            const rangesAtLevel = availableTiles[offset];
+            const yTiles = provider._tilingScheme.getNumberOfYTilesAtLevel(availableLevel);
+            for (let rangeIndex = 0; rangeIndex < rangesAtLevel.length; ++rangeIndex) {
+              const range = rangesAtLevel[rangeIndex];
+              const yStart = yTiles - range.endY - 1;
+              const yEnd = yTiles - range.startY - 1;
+              provider.availability.addAvailableTileRange(
+                availableLevel,
+                range.startX,
+                yStart,
+                range.endX,
+                yEnd
+              );
+              layer.availability.addAvailableTileRange(
+                availableLevel,
+                range.startX,
+                yStart,
+                range.endX,
+                yEnd
+              );
+            }
+          }
+        }
+      }
+      layer.availabilityTilesLoaded.addAvailableTileRange(level, x, y, x, y);
+    }
+    pos += extensionLength;
+  }
+  const skirtHeight = provider.getLevelMaximumGeometricError(level) * 5;
+  const rectangle = provider._tilingScheme.tileXYToRectangle(x, y, level);
+  const orientedBoundingBox = OrientedBoundingBox_default.fromRectangle(
+    rectangle,
+    minimumHeight,
+    maximumHeight,
+    provider._tilingScheme.ellipsoid
+  );
+  return new QuantizedMeshTerrainData_default({
+    center,
+    minimumHeight,
+    maximumHeight,
+    boundingSphere,
+    orientedBoundingBox,
+    horizonOcclusionPoint,
+    quantizedVertices: encodedVertexBuffer,
+    encodedNormals: encodedNormalBuffer,
+    indices,
+    westIndices,
+    southIndices,
+    eastIndices,
+    northIndices,
+    westSkirtHeight: skirtHeight,
+    southSkirtHeight: skirtHeight,
+    eastSkirtHeight: skirtHeight,
+    northSkirtHeight: skirtHeight,
+    childTileMask: provider.availability.computeChildMaskForTile(level, x, y),
+    waterMask: waterMaskBuffer,
+    credits: provider._tileCredits
+  });
+}
+CesiumTerrainProvider.prototype.requestTileGeometry = function(x, y, level, request) {
+  const layers = this._layers;
+  let layerToUse;
+  const layerCount = layers.length;
+  let unknownAvailability = false;
+  let availabilityPromise = Promise.resolve();
+  if (layerCount === 1) {
+    layerToUse = layers[0];
+  } else {
+    for (let i = 0; i < layerCount; ++i) {
+      const layer = layers[i];
+      if (!defined_default(layer.availability) || layer.availability.isTileAvailable(level, x, y)) {
+        layerToUse = layer;
+        break;
+      }
+      const availabilityUnloaded = checkLayer(
+        this,
+        x,
+        y,
+        level,
+        layer,
+        i === 0
+      );
+      if (availabilityUnloaded.result) {
+        unknownAvailability = true;
+        availabilityPromise = availabilityPromise.then(
+          () => availabilityUnloaded.promise
+        );
+      }
+    }
+  }
+  if (!defined_default(layerToUse) && unknownAvailability) {
+    return availabilityPromise.then(() => {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const promise = this.requestTileGeometry(x, y, level, request);
+          resolve(promise);
+        }, 0);
+      });
+    });
+  }
+  return requestTileGeometry2(this, x, y, level, layerToUse, request);
+};
+function requestTileGeometry2(provider, x, y, level, layerToUse, request) {
+  if (!defined_default(layerToUse)) {
+    return Promise.reject(new RuntimeError_default("Terrain tile doesn't exist"));
+  }
+  const urlTemplates = layerToUse.tileUrlTemplates;
+  if (urlTemplates.length === 0) {
+    return void 0;
+  }
+  let terrainY;
+  if (!provider._scheme || provider._scheme === "tms") {
+    const yTiles = provider._tilingScheme.getNumberOfYTilesAtLevel(level);
+    terrainY = yTiles - y - 1;
+  } else {
+    terrainY = y;
+  }
+  const extensionList = [];
+  if (provider._requestVertexNormals && layerToUse.hasVertexNormals) {
+    extensionList.push(
+      layerToUse.littleEndianExtensionSize ? "octvertexnormals" : "vertexnormals"
+    );
+  }
+  if (provider._requestWaterMask && layerToUse.hasWaterMask) {
+    extensionList.push("watermask");
+  }
+  if (provider._requestMetadata && layerToUse.hasMetadata) {
+    extensionList.push("metadata");
+  }
+  let headers;
+  let query;
+  const url = urlTemplates[(x + terrainY + level) % urlTemplates.length];
+  const resource = layerToUse.resource;
+  if (defined_default(resource._ionEndpoint) && !defined_default(resource._ionEndpoint.externalType)) {
+    if (extensionList.length !== 0) {
+      query = { extensions: extensionList.join("-") };
+    }
+    headers = getRequestHeader(void 0);
+  } else {
+    headers = getRequestHeader(extensionList);
+  }
+  const promise = resource.getDerivedResource({
+    url,
+    templateValues: {
+      version: layerToUse.version,
+      z: level,
+      x,
+      y: terrainY
+    },
+    queryParameters: query,
+    headers,
+    request
+  }).fetchArrayBuffer();
+  if (!defined_default(promise)) {
+    return void 0;
+  }
+  return promise.then(function(buffer) {
+    if (!defined_default(buffer)) {
+      return Promise.reject(new RuntimeError_default("Mesh buffer doesn't exist."));
+    }
+    if (defined_default(provider._heightmapStructure)) {
+      return createHeightmapTerrainData(provider, buffer, level, x, y);
+    }
+    return createQuantizedMeshTerrainData(
+      provider,
+      buffer,
+      level,
+      x,
+      y,
+      layerToUse
+    );
+  });
+}
+Object.defineProperties(CesiumTerrainProvider.prototype, {
+  /**
+   * Gets an event that is raised when the terrain provider encounters an asynchronous error.  By subscribing
+   * to the event, you will be notified of the error and can potentially recover from it.  Event listeners
+   * are passed an instance of {@link TileProviderError}.
+   * @memberof CesiumTerrainProvider.prototype
+   * @type {Event}
+   * @readonly
+   */
+  errorEvent: {
+    get: function() {
+      return this._errorEvent;
+    }
+  },
+  /**
+   * Gets the credit to display when this terrain provider is active.  Typically this is used to credit
+   * the source of the terrain.
+   * @memberof CesiumTerrainProvider.prototype
+   * @type {Credit}
+   * @readonly
+   */
+  credit: {
+    get: function() {
+      return this._credit;
+    }
+  },
+  /**
+   * Gets the tiling scheme used by this provider.
+   * @memberof CesiumTerrainProvider.prototype
+   * @type {GeographicTilingScheme}
+   * @readonly
+   */
+  tilingScheme: {
+    get: function() {
+      return this._tilingScheme;
+    }
+  },
+  /**
+   * Gets a value indicating whether or not the provider includes a water mask.  The water mask
+   * indicates which areas of the globe are water rather than land, so they can be rendered
+   * as a reflective surface with animated waves.
+   * @memberof CesiumTerrainProvider.prototype
+   * @type {boolean}
+   * @readonly
+   */
+  hasWaterMask: {
+    get: function() {
+      return this._hasWaterMask && this._requestWaterMask;
+    }
+  },
+  /**
+   * Gets a value indicating whether or not the requested tiles include vertex normals.
+   * @memberof CesiumTerrainProvider.prototype
+   * @type {boolean}
+   * @readonly
+   */
+  hasVertexNormals: {
+    get: function() {
+      return this._hasVertexNormals && this._requestVertexNormals;
+    }
+  },
+  /**
+   * Gets a value indicating whether or not the requested tiles include metadata.
+   * @memberof CesiumTerrainProvider.prototype
+   * @type {boolean}
+   * @readonly
+   */
+  hasMetadata: {
+    get: function() {
+      return this._hasMetadata && this._requestMetadata;
+    }
+  },
+  /**
+   * Boolean flag that indicates if the client should request vertex normals from the server.
+   * Vertex normals data is appended to the standard tile mesh data only if the client requests the vertex normals and
+   * if the server provides vertex normals.
+   * @memberof CesiumTerrainProvider.prototype
+   * @type {boolean}
+   * @readonly
+   */
+  requestVertexNormals: {
+    get: function() {
+      return this._requestVertexNormals;
+    }
+  },
+  /**
+   * Boolean flag that indicates if the client should request a watermask from the server.
+   * Watermask data is appended to the standard tile mesh data only if the client requests the watermask and
+   * if the server provides a watermask.
+   * @memberof CesiumTerrainProvider.prototype
+   * @type {boolean}
+   * @readonly
+   */
+  requestWaterMask: {
+    get: function() {
+      return this._requestWaterMask;
+    }
+  },
+  /**
+   * Boolean flag that indicates if the client should request metadata from the server.
+   * Metadata is appended to the standard tile mesh data only if the client requests the metadata and
+   * if the server provides a metadata.
+   * @memberof CesiumTerrainProvider.prototype
+   * @type {boolean}
+   * @readonly
+   */
+  requestMetadata: {
+    get: function() {
+      return this._requestMetadata;
+    }
+  },
+  /**
+   * Gets an object that can be used to determine availability of terrain from this provider, such as
+   * at points and in rectangles. This property may be undefined if availability
+   * information is not available. Note that this reflects tiles that are known to be available currently.
+   * Additional tiles may be discovered to be available in the future, e.g. if availability information
+   * exists deeper in the tree rather than it all being discoverable at the root. However, a tile that
+   * is available now will not become unavailable in the future.
+   * @memberof CesiumTerrainProvider.prototype
+   * @type {TileAvailability|undefined}
+   * @readonly
+   */
+  availability: {
+    get: function() {
+      return this._availability;
+    }
+  }
+});
+CesiumTerrainProvider.prototype.getLevelMaximumGeometricError = function(level) {
+  return this._levelZeroMaximumGeometricError / (1 << level);
+};
+CesiumTerrainProvider.fromIonAssetId = async function(assetId, options) {
+  Check_default.defined("assetId", assetId);
+  const resource = await IonResource_default.fromAssetId(assetId);
+  return CesiumTerrainProvider.fromUrl(resource, options);
+};
+CesiumTerrainProvider.fromUrl = async function(url, options) {
+  Check_default.defined("url", url);
+  options = options ?? Frozen_default.EMPTY_OBJECT;
+  url = await Promise.resolve(url);
+  const resource = Resource_default.createIfNeeded(url);
+  resource.appendForwardSlash();
+  const terrainProviderBuilder = new TerrainProviderBuilder(options);
+  terrainProviderBuilder.lastResource = resource;
+  terrainProviderBuilder.layerJsonResource = terrainProviderBuilder.lastResource.getDerivedResource({
+    url: "layer.json"
+  });
+  await requestLayerJson(terrainProviderBuilder);
+  const provider = new CesiumTerrainProvider(options);
+  terrainProviderBuilder.build(provider);
+  return provider;
+};
+CesiumTerrainProvider.prototype.getTileDataAvailable = function(x, y, level) {
+  if (!defined_default(this._availability)) {
+    return void 0;
+  }
+  if (level > this._availability._maximumLevel) {
+    return false;
+  }
+  if (this._availability.isTileAvailable(level, x, y)) {
+    return true;
+  }
+  if (!this._hasMetadata) {
+    return false;
+  }
+  const layers = this._layers;
+  const count = layers.length;
+  for (let i = 0; i < count; ++i) {
+    const layerResult = checkLayer(this, x, y, level, layers[i], i === 0);
+    if (layerResult.result) {
+      return void 0;
+    }
+  }
+  return false;
+};
+CesiumTerrainProvider.prototype.loadTileDataAvailability = function(x, y, level) {
+  if (!defined_default(this._availability) || level > this._availability._maximumLevel || this._availability.isTileAvailable(level, x, y) || !this._hasMetadata) {
+    return void 0;
+  }
+  const layers = this._layers;
+  const count = layers.length;
+  for (let i = 0; i < count; ++i) {
+    const layerResult = checkLayer(this, x, y, level, layers[i], i === 0);
+    if (defined_default(layerResult.promise)) {
+      return layerResult.promise;
+    }
+  }
+};
+function getAvailabilityTile(layer, x, y, level) {
+  if (level === 0) {
+    return;
+  }
+  const availabilityLevels = layer.availabilityLevels;
+  const parentLevel = level % availabilityLevels === 0 ? level - availabilityLevels : (level / availabilityLevels | 0) * availabilityLevels;
+  const divisor = 1 << level - parentLevel;
+  const parentX = x / divisor | 0;
+  const parentY = y / divisor | 0;
+  return {
+    level: parentLevel,
+    x: parentX,
+    y: parentY
+  };
+}
+function checkLayer(provider, x, y, level, layer, topLayer) {
+  if (!defined_default(layer.availabilityLevels)) {
+    return {
+      result: false
+    };
+  }
+  let cacheKey;
+  const deleteFromCache = function() {
+    delete layer.availabilityPromiseCache[cacheKey];
+  };
+  const availabilityTilesLoaded = layer.availabilityTilesLoaded;
+  const availability = layer.availability;
+  let tile = getAvailabilityTile(layer, x, y, level);
+  while (defined_default(tile)) {
+    if (availability.isTileAvailable(tile.level, tile.x, tile.y) && !availabilityTilesLoaded.isTileAvailable(tile.level, tile.x, tile.y)) {
+      let requestPromise;
+      if (!topLayer) {
+        cacheKey = `${tile.level}-${tile.x}-${tile.y}`;
+        requestPromise = layer.availabilityPromiseCache[cacheKey];
+        if (!defined_default(requestPromise)) {
+          const request = new Request_default({
+            throttle: false,
+            throttleByServer: true,
+            type: RequestType_default.TERRAIN
+          });
+          requestPromise = requestTileGeometry2(
+            provider,
+            tile.x,
+            tile.y,
+            tile.level,
+            layer,
+            request
+          );
+          if (defined_default(requestPromise)) {
+            layer.availabilityPromiseCache[cacheKey] = requestPromise;
+            requestPromise.then(deleteFromCache);
+          }
+        }
+      }
+      return {
+        result: true,
+        promise: requestPromise
+      };
+    }
+    tile = getAvailabilityTile(layer, tile.x, tile.y, tile.level);
+  }
+  return {
+    result: false
+  };
+}
+CesiumTerrainProvider._getAvailabilityTile = getAvailabilityTile;
+var CesiumTerrainProvider_default = CesiumTerrainProvider;
+
+// packages/engine/Source/Core/ConstantSpline.js
+function ConstantSpline(value) {
+  this._value = value;
+  this._valueType = Spline_default.getPointType(value);
+}
+Object.defineProperties(ConstantSpline.prototype, {
+  /**
+   * The constant value that the spline evaluates to.
+   *
+   * @memberof ConstantSpline.prototype
+   *
+   * @type {number|Cartesian3|Quaternion}
+   * @readonly
+   */
+  value: {
+    get: function() {
+      return this._value;
+    }
+  }
+});
+ConstantSpline.prototype.findTimeInterval = function(time) {
+  throw new DeveloperError_default(
+    "findTimeInterval cannot be called on a ConstantSpline."
+  );
+};
+ConstantSpline.prototype.wrapTime = function(time) {
+  Check_default.typeOf.number("time", time);
+  return 0;
+};
+ConstantSpline.prototype.clampTime = function(time) {
+  Check_default.typeOf.number("time", time);
+  return 0;
+};
+ConstantSpline.prototype.evaluate = function(time, result) {
+  Check_default.typeOf.number("time", time);
+  const value = this._value;
+  const ValueType = this._valueType;
+  if (ValueType === Number) {
+    return value;
+  }
+  return ValueType.clone(value, result);
+};
+var ConstantSpline_default = ConstantSpline;
+
+// packages/engine/Source/Core/DistanceDisplayCondition.js
+function DistanceDisplayCondition(near, far) {
+  near = near ?? 0;
+  this._near = near;
+  far = far ?? Number.MAX_VALUE;
+  this._far = far;
+}
+Object.defineProperties(DistanceDisplayCondition.prototype, {
+  /**
+   * The smallest distance in the interval where the object is visible.
+   * @memberof DistanceDisplayCondition.prototype
+   * @type {number}
+   * @default 0.0
+   */
+  near: {
+    get: function() {
+      return this._near;
+    },
+    set: function(value) {
+      this._near = value;
+    }
+  },
+  /**
+   * The largest distance in the interval where the object is visible.
+   * @memberof DistanceDisplayCondition.prototype
+   * @type {number}
+   * @default Number.MAX_VALUE
+   */
+  far: {
+    get: function() {
+      return this._far;
+    },
+    set: function(value) {
+      this._far = value;
+    }
+  }
+});
+DistanceDisplayCondition.packedLength = 2;
+DistanceDisplayCondition.pack = function(value, array, startingIndex) {
+  if (!defined_default(value)) {
+    throw new DeveloperError_default("value is required");
+  }
+  if (!defined_default(array)) {
+    throw new DeveloperError_default("array is required");
+  }
+  startingIndex = startingIndex ?? 0;
+  array[startingIndex++] = value.near;
+  array[startingIndex] = value.far;
+  return array;
+};
+DistanceDisplayCondition.unpack = function(array, startingIndex, result) {
+  if (!defined_default(array)) {
+    throw new DeveloperError_default("array is required");
+  }
+  startingIndex = startingIndex ?? 0;
+  if (!defined_default(result)) {
+    result = new DistanceDisplayCondition();
+  }
+  result.near = array[startingIndex++];
+  result.far = array[startingIndex];
+  return result;
+};
+DistanceDisplayCondition.equals = function(left, right) {
+  return left === right || defined_default(left) && defined_default(right) && left.near === right.near && left.far === right.far;
+};
+DistanceDisplayCondition.clone = function(value, result) {
+  if (!defined_default(value)) {
+    return void 0;
+  }
+  if (!defined_default(result)) {
+    result = new DistanceDisplayCondition();
+  }
+  result.near = value.near;
+  result.far = value.far;
+  return result;
+};
+DistanceDisplayCondition.prototype.clone = function(result) {
+  return DistanceDisplayCondition.clone(this, result);
+};
+DistanceDisplayCondition.prototype.equals = function(other) {
+  return DistanceDisplayCondition.equals(this, other);
+};
+var DistanceDisplayCondition_default = DistanceDisplayCondition;
+
+// packages/engine/Source/Core/InterpolationType.js
+var InterpolationType = {
+  STEP: 0,
+  LINEAR: 1,
+  CUBICSPLINE: 2
+};
+Object.freeze(InterpolationType);
+var InterpolationType_default = InterpolationType;
+
+// packages/engine/Source/Core/KeyboardEventModifier.js
+var KeyboardEventModifier = {
+  /**
+   * Represents the shift key being held down.
+   *
+   * @type {number}
+   * @constant
+   */
+  SHIFT: 0,
+  /**
+   * Represents the control key being held down.
+   *
+   * @type {number}
+   * @constant
+   */
+  CTRL: 1,
+  /**
+   * Represents the alt key being held down.
+   *
+   * @type {number}
+   * @constant
+   */
+  ALT: 2
+};
+Object.freeze(KeyboardEventModifier);
+var KeyboardEventModifier_default = KeyboardEventModifier;
+
+// packages/engine/Source/Core/QuaternionSpline.js
+function createEvaluateFunction(spline) {
+  const points = spline.points;
+  const times = spline.times;
+  return function(time, result) {
+    if (!defined_default(result)) {
+      result = new Quaternion_default();
+    }
+    const i = spline._lastTimeIndex = spline.findTimeInterval(
+      time,
+      spline._lastTimeIndex
+    );
+    const u = (time - times[i]) / (times[i + 1] - times[i]);
+    const q0 = points[i];
+    const q1 = points[i + 1];
+    return Quaternion_default.fastSlerp(q0, q1, u, result);
+  };
+}
+function QuaternionSpline(options) {
+  options = options ?? Frozen_default.EMPTY_OBJECT;
+  const points = options.points;
+  const times = options.times;
+  if (!defined_default(points) || !defined_default(times)) {
+    throw new DeveloperError_default("points and times are required.");
+  }
+  if (points.length < 2) {
+    throw new DeveloperError_default(
+      "points.length must be greater than or equal to 2."
+    );
+  }
+  if (times.length !== points.length) {
+    throw new DeveloperError_default("times.length must be equal to points.length.");
+  }
+  this._times = times;
+  this._points = points;
+  this._evaluateFunction = createEvaluateFunction(this);
+  this._lastTimeIndex = 0;
+}
+Object.defineProperties(QuaternionSpline.prototype, {
+  /**
+   * An array of times for the control points.
+   *
+   * @memberof QuaternionSpline.prototype
+   *
+   * @type {number[]}
+   * @readonly
+   */
+  times: {
+    get: function() {
+      return this._times;
+    }
+  },
+  /**
+   * An array of {@link Quaternion} control points.
+   *
+   * @memberof QuaternionSpline.prototype
+   *
+   * @type {Quaternion[]}
+   * @readonly
+   */
+  points: {
+    get: function() {
+      return this._points;
+    }
+  }
+});
+QuaternionSpline.prototype.findTimeInterval = Spline_default.prototype.findTimeInterval;
+QuaternionSpline.prototype.wrapTime = Spline_default.prototype.wrapTime;
+QuaternionSpline.prototype.clampTime = Spline_default.prototype.clampTime;
+QuaternionSpline.prototype.evaluate = function(time, result) {
+  return this._evaluateFunction(time, result);
+};
+var QuaternionSpline_default = QuaternionSpline;
+
+// packages/engine/Source/Core/ScreenSpaceEventType.js
+var ScreenSpaceEventType = {
+  /**
+   * Represents a mouse left button down event.
+   *
+   * @type {number}
+   * @constant
+   */
+  LEFT_DOWN: 0,
+  /**
+   * Represents a mouse left button up event.
+   *
+   * @type {number}
+   * @constant
+   */
+  LEFT_UP: 1,
+  /**
+   * Represents a mouse left click event.
+   *
+   * @type {number}
+   * @constant
+   */
+  LEFT_CLICK: 2,
+  /**
+   * Represents a mouse left double click event.
+   *
+   * @type {number}
+   * @constant
+   */
+  LEFT_DOUBLE_CLICK: 3,
+  /**
+   * Represents a mouse left button down event.
+   *
+   * @type {number}
+   * @constant
+   */
+  RIGHT_DOWN: 5,
+  /**
+   * Represents a mouse right button up event.
+   *
+   * @type {number}
+   * @constant
+   */
+  RIGHT_UP: 6,
+  /**
+   * Represents a mouse right click event.
+   *
+   * @type {number}
+   * @constant
+   */
+  RIGHT_CLICK: 7,
+  /**
+   * Represents a mouse middle button down event.
+   *
+   * @type {number}
+   * @constant
+   */
+  MIDDLE_DOWN: 10,
+  /**
+   * Represents a mouse middle button up event.
+   *
+   * @type {number}
+   * @constant
+   */
+  MIDDLE_UP: 11,
+  /**
+   * Represents a mouse middle click event.
+   *
+   * @type {number}
+   * @constant
+   */
+  MIDDLE_CLICK: 12,
+  /**
+   * Represents a mouse move event.
+   *
+   * @type {number}
+   * @constant
+   */
+  MOUSE_MOVE: 15,
+  /**
+   * Represents a mouse wheel event.
+   *
+   * @type {number}
+   * @constant
+   */
+  WHEEL: 16,
+  /**
+   * Represents the start of a two-finger event on a touch surface.
+   *
+   * @type {number}
+   * @constant
+   */
+  PINCH_START: 17,
+  /**
+   * Represents the end of a two-finger event on a touch surface.
+   *
+   * @type {number}
+   * @constant
+   */
+  PINCH_END: 18,
+  /**
+   * Represents a change of a two-finger event on a touch surface.
+   *
+   * @type {number}
+   * @constant
+   */
+  PINCH_MOVE: 19
+};
+Object.freeze(ScreenSpaceEventType);
+var ScreenSpaceEventType_default = ScreenSpaceEventType;
+
+// packages/engine/Source/Core/ScreenSpaceEventHandler.js
+function getPosition(screenSpaceEventHandler, event, result) {
+  const element = screenSpaceEventHandler._element;
+  if (element === document) {
+    result.x = event.clientX;
+    result.y = event.clientY;
+    return result;
+  }
+  const rect = element.getBoundingClientRect();
+  result.x = event.clientX - rect.left;
+  result.y = event.clientY - rect.top;
+  return result;
+}
+function getInputEventKey(type, modifiers) {
+  if (!defined_default(modifiers)) {
+    return `${type}`;
+  }
+  const modifierList = Array.isArray(modifiers) ? modifiers.toSorted() : [modifiers];
+  return `${type}+${modifierList.join("+")}`;
+}
+function getModifiers(event) {
+  const modifiers = [];
+  if (event.shiftKey) {
+    modifiers.push(KeyboardEventModifier_default.SHIFT);
+  }
+  if (event.ctrlKey) {
+    modifiers.push(KeyboardEventModifier_default.CTRL);
+  }
+  if (event.altKey) {
+    modifiers.push(KeyboardEventModifier_default.ALT);
+  }
+  if (modifiers.length) {
+    return modifiers;
+  }
+  return void 0;
+}
+var MouseButton = {
+  LEFT: 0,
+  MIDDLE: 1,
+  RIGHT: 2
+};
+function registerListener(screenSpaceEventHandler, domType, element, callback) {
+  function listener(e) {
+    callback(screenSpaceEventHandler, e);
+  }
+  element.addEventListener(domType, listener, {
+    capture: false,
+    passive: false
+  });
+  screenSpaceEventHandler._removalFunctions.push(function() {
+    element.removeEventListener(domType, listener, false);
+  });
+}
+function registerListeners(screenSpaceEventHandler) {
+  const element = screenSpaceEventHandler._element;
+  const alternateElement = !defined_default(element.disableRootEvents) ? document : element;
+  if (FeatureDetection_default.supportsPointerEvents()) {
+    registerListener(
+      screenSpaceEventHandler,
+      "pointerdown",
+      element,
+      handlePointerDown
+    );
+    registerListener(
+      screenSpaceEventHandler,
+      "pointerup",
+      element,
+      handlePointerUp
+    );
+    registerListener(
+      screenSpaceEventHandler,
+      "pointermove",
+      element,
+      handlePointerMove
+    );
+    registerListener(
+      screenSpaceEventHandler,
+      "pointercancel",
+      element,
+      handlePointerUp
+    );
+  } else {
+    registerListener(
+      screenSpaceEventHandler,
+      "mousedown",
+      element,
+      handleMouseDown
+    );
+    registerListener(
+      screenSpaceEventHandler,
+      "mouseup",
+      alternateElement,
+      handleMouseUp
+    );
+    registerListener(
+      screenSpaceEventHandler,
+      "mousemove",
+      alternateElement,
+      handleMouseMove
+    );
+    registerListener(
+      screenSpaceEventHandler,
+      "touchstart",
+      element,
+      handleTouchStart
+    );
+    registerListener(
+      screenSpaceEventHandler,
+      "touchend",
+      alternateElement,
+      handleTouchEnd
+    );
+    registerListener(
+      screenSpaceEventHandler,
+      "touchmove",
+      alternateElement,
+      handleTouchMove
+    );
+    registerListener(
+      screenSpaceEventHandler,
+      "touchcancel",
+      alternateElement,
+      handleTouchEnd
+    );
+  }
+  registerListener(
+    screenSpaceEventHandler,
+    "dblclick",
+    element,
+    handleDblClick
+  );
+  let wheelEvent;
+  if ("onwheel" in element) {
+    wheelEvent = "wheel";
+  } else if (document.onmousewheel !== void 0) {
+    wheelEvent = "mousewheel";
+  } else {
+    wheelEvent = "DOMMouseScroll";
+  }
+  registerListener(screenSpaceEventHandler, wheelEvent, element, handleWheel);
+}
+function unregisterListeners(screenSpaceEventHandler) {
+  const removalFunctions = screenSpaceEventHandler._removalFunctions;
+  for (let i = 0; i < removalFunctions.length; ++i) {
+    removalFunctions[i]();
+  }
+}
+var mouseDownEvent = {
+  position: new Cartesian2_default()
+};
+function gotTouchEvent(screenSpaceEventHandler) {
+  screenSpaceEventHandler._lastSeenTouchEvent = getTimestamp_default();
+}
+function canProcessMouseEvent(screenSpaceEventHandler) {
+  return getTimestamp_default() - screenSpaceEventHandler._lastSeenTouchEvent > ScreenSpaceEventHandler.mouseEmulationIgnoreMilliseconds;
+}
+function checkPixelTolerance(startPosition, endPosition, pixelTolerance) {
+  const xDiff = startPosition.x - endPosition.x;
+  const yDiff = startPosition.y - endPosition.y;
+  const totalPixels = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+  return totalPixels < pixelTolerance;
+}
+function handleMouseDown(screenSpaceEventHandler, event) {
+  if (!canProcessMouseEvent(screenSpaceEventHandler)) {
+    return;
+  }
+  const button = event.button;
+  screenSpaceEventHandler._buttonDown[button] = true;
+  let screenSpaceEventType;
+  if (button === MouseButton.LEFT) {
+    screenSpaceEventType = ScreenSpaceEventType_default.LEFT_DOWN;
+  } else if (button === MouseButton.MIDDLE) {
+    screenSpaceEventType = ScreenSpaceEventType_default.MIDDLE_DOWN;
+  } else if (button === MouseButton.RIGHT) {
+    screenSpaceEventType = ScreenSpaceEventType_default.RIGHT_DOWN;
+  } else {
+    return;
+  }
+  const position = getPosition(
+    screenSpaceEventHandler,
+    event,
+    screenSpaceEventHandler._primaryPosition
+  );
+  Cartesian2_default.clone(position, screenSpaceEventHandler._primaryStartPosition);
+  Cartesian2_default.clone(position, screenSpaceEventHandler._primaryPreviousPosition);
+  const modifiers = getModifiers(event);
+  const action = screenSpaceEventHandler.getInputAction(
+    screenSpaceEventType,
+    modifiers
+  );
+  if (defined_default(action)) {
+    Cartesian2_default.clone(position, mouseDownEvent.position);
+    action(mouseDownEvent);
+    event.preventDefault();
+  }
+}
+var mouseUpEvent = {
+  position: new Cartesian2_default()
+};
+var mouseClickEvent = {
+  position: new Cartesian2_default()
+};
+function cancelMouseEvent(screenSpaceEventHandler, screenSpaceEventType, clickScreenSpaceEventType, event) {
+  const modifiers = getModifiers(event);
+  const action = screenSpaceEventHandler.getInputAction(
+    screenSpaceEventType,
+    modifiers
+  );
+  const clickAction = screenSpaceEventHandler.getInputAction(
+    clickScreenSpaceEventType,
+    modifiers
+  );
+  if (defined_default(action) || defined_default(clickAction)) {
+    const position = getPosition(
+      screenSpaceEventHandler,
+      event,
+      screenSpaceEventHandler._primaryPosition
+    );
+    if (defined_default(action)) {
+      Cartesian2_default.clone(position, mouseUpEvent.position);
+      action(mouseUpEvent);
+    }
+    if (defined_default(clickAction)) {
+      const startPosition = screenSpaceEventHandler._primaryStartPosition;
+      if (checkPixelTolerance(
+        startPosition,
+        position,
+        screenSpaceEventHandler._clickPixelTolerance
+      )) {
+        Cartesian2_default.clone(position, mouseClickEvent.position);
+        clickAction(mouseClickEvent);
+      }
+    }
+  }
+}
+function handleMouseUp(screenSpaceEventHandler, event) {
+  if (!canProcessMouseEvent(screenSpaceEventHandler)) {
+    return;
+  }
+  const button = event.button;
+  if (button !== MouseButton.LEFT && button !== MouseButton.MIDDLE && button !== MouseButton.RIGHT) {
+    return;
+  }
+  if (screenSpaceEventHandler._buttonDown[MouseButton.LEFT]) {
+    cancelMouseEvent(
+      screenSpaceEventHandler,
+      ScreenSpaceEventType_default.LEFT_UP,
+      ScreenSpaceEventType_default.LEFT_CLICK,
+      event
+    );
+    screenSpaceEventHandler._buttonDown[MouseButton.LEFT] = false;
+  }
+  if (screenSpaceEventHandler._buttonDown[MouseButton.MIDDLE]) {
+    cancelMouseEvent(
+      screenSpaceEventHandler,
+      ScreenSpaceEventType_default.MIDDLE_UP,
+      ScreenSpaceEventType_default.MIDDLE_CLICK,
+      event
+    );
+    screenSpaceEventHandler._buttonDown[MouseButton.MIDDLE] = false;
+  }
+  if (screenSpaceEventHandler._buttonDown[MouseButton.RIGHT]) {
+    cancelMouseEvent(
+      screenSpaceEventHandler,
+      ScreenSpaceEventType_default.RIGHT_UP,
+      ScreenSpaceEventType_default.RIGHT_CLICK,
+      event
+    );
+    screenSpaceEventHandler._buttonDown[MouseButton.RIGHT] = false;
+  }
+}
+var mouseMoveEvent = {
+  startPosition: new Cartesian2_default(),
+  endPosition: new Cartesian2_default()
+};
+function handleMouseMove(screenSpaceEventHandler, event) {
+  if (!canProcessMouseEvent(screenSpaceEventHandler)) {
+    return;
+  }
+  const modifiers = getModifiers(event);
+  const position = getPosition(
+    screenSpaceEventHandler,
+    event,
+    screenSpaceEventHandler._primaryPosition
+  );
+  const previousPosition = screenSpaceEventHandler._primaryPreviousPosition;
+  const action = screenSpaceEventHandler.getInputAction(
+    ScreenSpaceEventType_default.MOUSE_MOVE,
+    modifiers
+  );
+  if (defined_default(action)) {
+    Cartesian2_default.clone(previousPosition, mouseMoveEvent.startPosition);
+    Cartesian2_default.clone(position, mouseMoveEvent.endPosition);
+    action(mouseMoveEvent);
+  }
+  Cartesian2_default.clone(position, previousPosition);
+  if (screenSpaceEventHandler._buttonDown[MouseButton.LEFT] || screenSpaceEventHandler._buttonDown[MouseButton.MIDDLE] || screenSpaceEventHandler._buttonDown[MouseButton.RIGHT]) {
+    event.preventDefault();
+  }
+}
+var mouseDblClickEvent = {
+  position: new Cartesian2_default()
+};
+function handleDblClick(screenSpaceEventHandler, event) {
+  const button = event.button;
+  let screenSpaceEventType;
+  if (button === MouseButton.LEFT) {
+    screenSpaceEventType = ScreenSpaceEventType_default.LEFT_DOUBLE_CLICK;
+  } else {
+    return;
+  }
+  const modifiers = getModifiers(event);
+  const action = screenSpaceEventHandler.getInputAction(
+    screenSpaceEventType,
+    modifiers
+  );
+  if (defined_default(action)) {
+    getPosition(screenSpaceEventHandler, event, mouseDblClickEvent.position);
+    action(mouseDblClickEvent);
+  }
+}
+function handleWheel(screenSpaceEventHandler, event) {
+  let delta;
+  if (defined_default(event.deltaY)) {
+    const deltaMode = event.deltaMode;
+    if (deltaMode === event.DOM_DELTA_PIXEL) {
+      delta = -event.deltaY;
+    } else if (deltaMode === event.DOM_DELTA_LINE) {
+      delta = -event.deltaY * 40;
+    } else {
+      delta = -event.deltaY * 120;
+    }
+  } else if (event.detail > 0) {
+    delta = event.detail * -120;
+  } else {
+    delta = event.wheelDelta;
+  }
+  if (!defined_default(delta)) {
+    return;
+  }
+  const modifiers = getModifiers(event);
+  const action = screenSpaceEventHandler.getInputAction(
+    ScreenSpaceEventType_default.WHEEL,
+    modifiers
+  );
+  if (defined_default(action)) {
+    action(delta);
+    event.preventDefault();
+  }
+}
+function handleTouchStart(screenSpaceEventHandler, event) {
+  gotTouchEvent(screenSpaceEventHandler);
+  const changedTouches = event.changedTouches;
+  let i;
+  const length = changedTouches.length;
+  let touch;
+  let identifier;
+  const positions = screenSpaceEventHandler._positions;
+  for (i = 0; i < length; ++i) {
+    touch = changedTouches[i];
+    identifier = touch.identifier;
+    positions.set(
+      identifier,
+      getPosition(screenSpaceEventHandler, touch, new Cartesian2_default())
+    );
+  }
+  fireTouchEvents(screenSpaceEventHandler, event);
+  const previousPositions = screenSpaceEventHandler._previousPositions;
+  for (i = 0; i < length; ++i) {
+    touch = changedTouches[i];
+    identifier = touch.identifier;
+    previousPositions.set(
+      identifier,
+      Cartesian2_default.clone(positions.get(identifier))
+    );
+  }
+}
+function handleTouchEnd(screenSpaceEventHandler, event) {
+  gotTouchEvent(screenSpaceEventHandler);
+  const changedTouches = event.changedTouches;
+  let i;
+  const length = changedTouches.length;
+  let touch;
+  let identifier;
+  const positions = screenSpaceEventHandler._positions;
+  for (i = 0; i < length; ++i) {
+    touch = changedTouches[i];
+    identifier = touch.identifier;
+    positions.remove(identifier);
+  }
+  fireTouchEvents(screenSpaceEventHandler, event);
+  const previousPositions = screenSpaceEventHandler._previousPositions;
+  for (i = 0; i < length; ++i) {
+    touch = changedTouches[i];
+    identifier = touch.identifier;
+    previousPositions.remove(identifier);
+  }
+}
+var touchStartEvent = {
+  position: new Cartesian2_default()
+};
+var touch2StartEvent = {
+  position1: new Cartesian2_default(),
+  position2: new Cartesian2_default()
+};
+var touchEndEvent = {
+  position: new Cartesian2_default()
+};
+var touchClickEvent = {
+  position: new Cartesian2_default()
+};
+var touchHoldEvent = {
+  position: new Cartesian2_default()
+};
+function fireTouchEvents(screenSpaceEventHandler, event) {
+  const modifiers = getModifiers(event);
+  const positions = screenSpaceEventHandler._positions;
+  const numberOfTouches = positions.length;
+  let action;
+  let clickAction;
+  const pinching = screenSpaceEventHandler._isPinching;
+  if (numberOfTouches !== 1 && screenSpaceEventHandler._buttonDown[MouseButton.LEFT]) {
+    screenSpaceEventHandler._buttonDown[MouseButton.LEFT] = false;
+    if (defined_default(screenSpaceEventHandler._touchHoldTimer)) {
+      clearTimeout(screenSpaceEventHandler._touchHoldTimer);
+      screenSpaceEventHandler._touchHoldTimer = void 0;
+    }
+    action = screenSpaceEventHandler.getInputAction(
+      ScreenSpaceEventType_default.LEFT_UP,
+      modifiers
+    );
+    if (defined_default(action)) {
+      Cartesian2_default.clone(
+        screenSpaceEventHandler._primaryPosition,
+        touchEndEvent.position
+      );
+      action(touchEndEvent);
+    }
+    if (numberOfTouches === 0 && !screenSpaceEventHandler._isTouchHolding) {
+      clickAction = screenSpaceEventHandler.getInputAction(
+        ScreenSpaceEventType_default.LEFT_CLICK,
+        modifiers
+      );
+      if (defined_default(clickAction)) {
+        const startPosition = screenSpaceEventHandler._primaryStartPosition;
+        const endPosition = screenSpaceEventHandler._previousPositions.values[0];
+        if (checkPixelTolerance(
+          startPosition,
+          endPosition,
+          screenSpaceEventHandler._clickPixelTolerance
+        )) {
+          Cartesian2_default.clone(
+            screenSpaceEventHandler._primaryPosition,
+            touchClickEvent.position
+          );
+          clickAction(touchClickEvent);
+        }
+      }
+    }
+    screenSpaceEventHandler._isTouchHolding = false;
+  }
+  if (numberOfTouches === 0 && pinching) {
+    screenSpaceEventHandler._isPinching = false;
+    action = screenSpaceEventHandler.getInputAction(
+      ScreenSpaceEventType_default.PINCH_END,
+      modifiers
+    );
+    if (defined_default(action)) {
+      action();
+    }
+  }
+  if (numberOfTouches === 1 && !pinching) {
+    const position = positions.values[0];
+    Cartesian2_default.clone(position, screenSpaceEventHandler._primaryPosition);
+    Cartesian2_default.clone(position, screenSpaceEventHandler._primaryStartPosition);
+    Cartesian2_default.clone(
+      position,
+      screenSpaceEventHandler._primaryPreviousPosition
+    );
+    screenSpaceEventHandler._buttonDown[MouseButton.LEFT] = true;
+    action = screenSpaceEventHandler.getInputAction(
+      ScreenSpaceEventType_default.LEFT_DOWN,
+      modifiers
+    );
+    if (defined_default(action)) {
+      Cartesian2_default.clone(position, touchStartEvent.position);
+      action(touchStartEvent);
+    }
+    screenSpaceEventHandler._touchHoldTimer = setTimeout(function() {
+      if (!screenSpaceEventHandler.isDestroyed()) {
+        screenSpaceEventHandler._touchHoldTimer = void 0;
+        screenSpaceEventHandler._isTouchHolding = true;
+        clickAction = screenSpaceEventHandler.getInputAction(
+          ScreenSpaceEventType_default.RIGHT_CLICK,
+          modifiers
+        );
+        if (defined_default(clickAction)) {
+          const startPosition = screenSpaceEventHandler._primaryStartPosition;
+          const endPosition = screenSpaceEventHandler._previousPositions.values[0];
+          if (checkPixelTolerance(
+            startPosition,
+            endPosition,
+            screenSpaceEventHandler._holdPixelTolerance
+          )) {
+            Cartesian2_default.clone(
+              screenSpaceEventHandler._primaryPosition,
+              touchHoldEvent.position
+            );
+            clickAction(touchHoldEvent);
+          }
+        }
+      }
+    }, ScreenSpaceEventHandler.touchHoldDelayMilliseconds);
+    event.preventDefault();
+  }
+  if (numberOfTouches === 2 && !pinching) {
+    screenSpaceEventHandler._isPinching = true;
+    action = screenSpaceEventHandler.getInputAction(
+      ScreenSpaceEventType_default.PINCH_START,
+      modifiers
+    );
+    if (defined_default(action)) {
+      Cartesian2_default.clone(positions.values[0], touch2StartEvent.position1);
+      Cartesian2_default.clone(positions.values[1], touch2StartEvent.position2);
+      action(touch2StartEvent);
+      event.preventDefault();
+    }
+  }
+}
+function handleTouchMove(screenSpaceEventHandler, event) {
+  gotTouchEvent(screenSpaceEventHandler);
+  const changedTouches = event.changedTouches;
+  let i;
+  const length = changedTouches.length;
+  let touch;
+  let identifier;
+  const positions = screenSpaceEventHandler._positions;
+  for (i = 0; i < length; ++i) {
+    touch = changedTouches[i];
+    identifier = touch.identifier;
+    const position = positions.get(identifier);
+    if (defined_default(position)) {
+      getPosition(screenSpaceEventHandler, touch, position);
+    }
+  }
+  fireTouchMoveEvents(screenSpaceEventHandler, event);
+  const previousPositions = screenSpaceEventHandler._previousPositions;
+  for (i = 0; i < length; ++i) {
+    touch = changedTouches[i];
+    identifier = touch.identifier;
+    Cartesian2_default.clone(
+      positions.get(identifier),
+      previousPositions.get(identifier)
+    );
+  }
+}
+var touchMoveEvent = {
+  startPosition: new Cartesian2_default(),
+  endPosition: new Cartesian2_default()
+};
+var touchPinchMovementEvent = {
+  distance: {
+    startPosition: new Cartesian2_default(),
+    endPosition: new Cartesian2_default()
+  },
+  angleAndHeight: {
+    startPosition: new Cartesian2_default(),
+    endPosition: new Cartesian2_default()
+  }
+};
+function fireTouchMoveEvents(screenSpaceEventHandler, event) {
+  const modifiers = getModifiers(event);
+  const positions = screenSpaceEventHandler._positions;
+  const previousPositions = screenSpaceEventHandler._previousPositions;
+  const numberOfTouches = positions.length;
+  let action;
+  if (numberOfTouches === 1 && screenSpaceEventHandler._buttonDown[MouseButton.LEFT]) {
+    const position = positions.values[0];
+    Cartesian2_default.clone(position, screenSpaceEventHandler._primaryPosition);
+    const previousPosition = screenSpaceEventHandler._primaryPreviousPosition;
+    action = screenSpaceEventHandler.getInputAction(
+      ScreenSpaceEventType_default.MOUSE_MOVE,
+      modifiers
+    );
+    if (defined_default(action)) {
+      Cartesian2_default.clone(previousPosition, touchMoveEvent.startPosition);
+      Cartesian2_default.clone(position, touchMoveEvent.endPosition);
+      action(touchMoveEvent);
+    }
+    Cartesian2_default.clone(position, previousPosition);
+    event.preventDefault();
+  } else if (numberOfTouches === 2 && screenSpaceEventHandler._isPinching) {
+    action = screenSpaceEventHandler.getInputAction(
+      ScreenSpaceEventType_default.PINCH_MOVE,
+      modifiers
+    );
+    if (defined_default(action)) {
+      const position1 = positions.values[0];
+      const position2 = positions.values[1];
+      const previousPosition1 = previousPositions.values[0];
+      const previousPosition2 = previousPositions.values[1];
+      const dX = position2.x - position1.x;
+      const dY = position2.y - position1.y;
+      const dist = Math.sqrt(dX * dX + dY * dY) * 0.25;
+      const prevDX = previousPosition2.x - previousPosition1.x;
+      const prevDY = previousPosition2.y - previousPosition1.y;
+      const prevDist = Math.sqrt(prevDX * prevDX + prevDY * prevDY) * 0.25;
+      const cY = (position2.y + position1.y) * 0.125;
+      const prevCY = (previousPosition2.y + previousPosition1.y) * 0.125;
+      const angle = Math.atan2(dY, dX);
+      const prevAngle = Math.atan2(prevDY, prevDX);
+      Cartesian2_default.fromElements(
+        0,
+        prevDist,
+        touchPinchMovementEvent.distance.startPosition
+      );
+      Cartesian2_default.fromElements(
+        0,
+        dist,
+        touchPinchMovementEvent.distance.endPosition
+      );
+      Cartesian2_default.fromElements(
+        prevAngle,
+        prevCY,
+        touchPinchMovementEvent.angleAndHeight.startPosition
+      );
+      Cartesian2_default.fromElements(
+        angle,
+        cY,
+        touchPinchMovementEvent.angleAndHeight.endPosition
+      );
+      action(touchPinchMovementEvent);
+    }
+  }
+}
+function handlePointerDown(screenSpaceEventHandler, event) {
+  event.target.setPointerCapture(event.pointerId);
+  if (event.pointerType === "touch") {
+    const positions = screenSpaceEventHandler._positions;
+    const identifier = event.pointerId;
+    positions.set(
+      identifier,
+      getPosition(screenSpaceEventHandler, event, new Cartesian2_default())
+    );
+    fireTouchEvents(screenSpaceEventHandler, event);
+    const previousPositions = screenSpaceEventHandler._previousPositions;
+    previousPositions.set(
+      identifier,
+      Cartesian2_default.clone(positions.get(identifier))
+    );
+  } else {
+    handleMouseDown(screenSpaceEventHandler, event);
+  }
+}
+function handlePointerUp(screenSpaceEventHandler, event) {
+  if (event.pointerType === "touch") {
+    const positions = screenSpaceEventHandler._positions;
+    const identifier = event.pointerId;
+    positions.remove(identifier);
+    fireTouchEvents(screenSpaceEventHandler, event);
+    const previousPositions = screenSpaceEventHandler._previousPositions;
+    previousPositions.remove(identifier);
+  } else {
+    handleMouseUp(screenSpaceEventHandler, event);
+  }
+}
+function handlePointerMove(screenSpaceEventHandler, event) {
+  if (event.pointerType === "touch") {
+    const positions = screenSpaceEventHandler._positions;
+    const identifier = event.pointerId;
+    const position = positions.get(identifier);
+    if (!defined_default(position)) {
+      return;
+    }
+    getPosition(screenSpaceEventHandler, event, position);
+    fireTouchMoveEvents(screenSpaceEventHandler, event);
+    const previousPositions = screenSpaceEventHandler._previousPositions;
+    Cartesian2_default.clone(
+      positions.get(identifier),
+      previousPositions.get(identifier)
+    );
+  } else {
+    handleMouseMove(screenSpaceEventHandler, event);
+  }
+}
+function ScreenSpaceEventHandler(element) {
+  this._inputEvents = {};
+  this._buttonDown = {
+    [MouseButton.LEFT]: false,
+    [MouseButton.MIDDLE]: false,
+    [MouseButton.RIGHT]: false
+  };
+  this._isPinching = false;
+  this._isTouchHolding = false;
+  this._lastSeenTouchEvent = -ScreenSpaceEventHandler.mouseEmulationIgnoreMilliseconds;
+  this._primaryStartPosition = new Cartesian2_default();
+  this._primaryPosition = new Cartesian2_default();
+  this._primaryPreviousPosition = new Cartesian2_default();
+  this._positions = new AssociativeArray_default();
+  this._previousPositions = new AssociativeArray_default();
+  this._removalFunctions = [];
+  this._touchHoldTimer = void 0;
+  this._clickPixelTolerance = 5;
+  this._holdPixelTolerance = 25;
+  this._element = element ?? document;
+  registerListeners(this);
+}
+ScreenSpaceEventHandler.prototype.setInputAction = function(action, type, modifiers) {
+  if (!defined_default(action)) {
+    throw new DeveloperError_default("action is required.");
+  }
+  if (!defined_default(type)) {
+    throw new DeveloperError_default("type is required.");
+  }
+  const key = getInputEventKey(type, modifiers);
+  this._inputEvents[key] = action;
+};
+ScreenSpaceEventHandler.prototype.getInputAction = function(type, modifiers) {
+  if (!defined_default(type)) {
+    throw new DeveloperError_default("type is required.");
+  }
+  const key = getInputEventKey(type, modifiers);
+  return this._inputEvents[key];
+};
+ScreenSpaceEventHandler.prototype.removeInputAction = function(type, modifiers) {
+  if (!defined_default(type)) {
+    throw new DeveloperError_default("type is required.");
+  }
+  const key = getInputEventKey(type, modifiers);
+  delete this._inputEvents[key];
+};
+ScreenSpaceEventHandler.prototype.isDestroyed = function() {
+  return false;
+};
+ScreenSpaceEventHandler.prototype.destroy = function() {
+  unregisterListeners(this);
+  return destroyObject_default(this);
+};
+ScreenSpaceEventHandler.mouseEmulationIgnoreMilliseconds = 800;
+ScreenSpaceEventHandler.touchHoldDelayMilliseconds = 1500;
+var ScreenSpaceEventHandler_default = ScreenSpaceEventHandler;
+
+// packages/engine/Source/Core/ShowGeometryInstanceAttribute.js
+function ShowGeometryInstanceAttribute(show) {
+  show = show ?? true;
+  this.value = ShowGeometryInstanceAttribute.toValue(show);
+}
+Object.defineProperties(ShowGeometryInstanceAttribute.prototype, {
+  /**
+   * The datatype of each component in the attribute, e.g., individual elements in
+   * {@link ColorGeometryInstanceAttribute#value}.
+   *
+   * @memberof ShowGeometryInstanceAttribute.prototype
+   *
+   * @type {ComponentDatatype}
+   * @readonly
+   *
+   * @default {@link ComponentDatatype.UNSIGNED_BYTE}
+   */
+  componentDatatype: {
+    get: function() {
+      return ComponentDatatype_default.UNSIGNED_BYTE;
+    }
+  },
+  /**
+   * The number of components in the attributes, i.e., {@link ColorGeometryInstanceAttribute#value}.
+   *
+   * @memberof ShowGeometryInstanceAttribute.prototype
+   *
+   * @type {number}
+   * @readonly
+   *
+   * @default 1
+   */
+  componentsPerAttribute: {
+    get: function() {
+      return 1;
+    }
+  },
+  /**
+   * When <code>true</code> and <code>componentDatatype</code> is an integer format,
+   * indicate that the components should be mapped to the range [0, 1] (unsigned)
+   * or [-1, 1] (signed) when they are accessed as floating-point for rendering.
+   *
+   * @memberof ShowGeometryInstanceAttribute.prototype
+   *
+   * @type {boolean}
+   * @readonly
+   *
+   * @default true
+   */
+  normalize: {
+    get: function() {
+      return false;
+    }
+  }
+});
+ShowGeometryInstanceAttribute.toValue = function(show, result) {
+  if (!defined_default(show)) {
+    throw new DeveloperError_default("show is required.");
+  }
+  if (!defined_default(result)) {
+    return new Uint8Array([show]);
+  }
+  result[0] = show;
+  return result;
+};
+var ShowGeometryInstanceAttribute_default = ShowGeometryInstanceAttribute;
+
+// packages/engine/Source/Core/SteppedSpline.js
+function SteppedSpline(options) {
+  options = options ?? Frozen_default.EMPTY_OBJECT;
+  const points = options.points;
+  const times = options.times;
+  if (!defined_default(points) || !defined_default(times)) {
+    throw new DeveloperError_default("points and times are required.");
+  }
+  if (points.length < 2) {
+    throw new DeveloperError_default(
+      "points.length must be greater than or equal to 2."
+    );
+  }
+  if (times.length !== points.length) {
+    throw new DeveloperError_default("times.length must be equal to points.length.");
+  }
+  this._times = times;
+  this._points = points;
+  this._pointType = Spline_default.getPointType(points[0]);
+  this._lastTimeIndex = 0;
+}
+Object.defineProperties(SteppedSpline.prototype, {
+  /**
+   * An array of times for the control points.
+   *
+   * @memberof SteppedSpline.prototype
+   *
+   * @type {number[]}
+   * @readonly
+   */
+  times: {
+    get: function() {
+      return this._times;
+    }
+  },
+  /**
+   * An array of control points.
+   *
+   * @memberof SteppedSpline.prototype
+   *
+   * @type {number[]|Cartesian3[]|Quaternion[]}
+   * @readonly
+   */
+  points: {
+    get: function() {
+      return this._points;
+    }
+  }
+});
+SteppedSpline.prototype.findTimeInterval = Spline_default.prototype.findTimeInterval;
+SteppedSpline.prototype.wrapTime = Spline_default.prototype.wrapTime;
+SteppedSpline.prototype.clampTime = Spline_default.prototype.clampTime;
+SteppedSpline.prototype.evaluate = function(time, result) {
+  const points = this.points;
+  this._lastTimeIndex = this.findTimeInterval(time, this._lastTimeIndex);
+  const i = this._lastTimeIndex;
+  const PointType = this._pointType;
+  if (PointType === Number) {
+    return points[i];
+  }
+  if (!defined_default(result)) {
+    result = new PointType();
+  }
+  return PointType.clone(points[i], result);
+};
+var SteppedSpline_default = SteppedSpline;
+
+// packages/engine/Source/Core/TranslationRotationScale.js
+var defaultScale2 = new Cartesian3_default(1, 1, 1);
+var defaultTranslation = Cartesian3_default.ZERO;
+var defaultRotation = Quaternion_default.IDENTITY;
+function TranslationRotationScale(translation2, rotation, scale) {
+  this.translation = Cartesian3_default.clone(translation2 ?? defaultTranslation);
+  this.rotation = Quaternion_default.clone(rotation ?? defaultRotation);
+  this.scale = Cartesian3_default.clone(scale ?? defaultScale2);
+}
+TranslationRotationScale.prototype.equals = function(right) {
+  return this === right || defined_default(right) && Cartesian3_default.equals(this.translation, right.translation) && Quaternion_default.equals(this.rotation, right.rotation) && Cartesian3_default.equals(this.scale, right.scale);
+};
+var TranslationRotationScale_default = TranslationRotationScale;
+
+// packages/engine/Source/Core/WireframeIndexGenerator.js
+var WireframeIndexGenerator = {};
+function createWireframeFromTriangles(vertexCount) {
+  const wireframeIndices = IndexDatatype_default.createTypedArray(
+    vertexCount,
+    vertexCount * 2
+  );
+  const length = vertexCount;
+  let index = 0;
+  for (let i = 0; i < length; i += 3) {
+    wireframeIndices[index++] = i;
+    wireframeIndices[index++] = i + 1;
+    wireframeIndices[index++] = i + 1;
+    wireframeIndices[index++] = i + 2;
+    wireframeIndices[index++] = i + 2;
+    wireframeIndices[index++] = i;
+  }
+  return wireframeIndices;
+}
+function createWireframeFromTriangleIndices(vertexCount, originalIndices) {
+  const originalIndicesCount = originalIndices.length;
+  const wireframeIndices = IndexDatatype_default.createTypedArray(
+    vertexCount,
+    originalIndicesCount * 2
+  );
+  let index = 0;
+  for (let i = 0; i < originalIndicesCount; i += 3) {
+    const point0 = originalIndices[i];
+    const point1 = originalIndices[i + 1];
+    const point2 = originalIndices[i + 2];
+    wireframeIndices[index++] = point0;
+    wireframeIndices[index++] = point1;
+    wireframeIndices[index++] = point1;
+    wireframeIndices[index++] = point2;
+    wireframeIndices[index++] = point2;
+    wireframeIndices[index++] = point0;
+  }
+  return wireframeIndices;
+}
+function createWireframeFromTriangleStrip(vertexCount) {
+  const numberOfTriangles = vertexCount - 2;
+  const wireframeIndicesCount = 2 + numberOfTriangles * 4;
+  const wireframeIndices = IndexDatatype_default.createTypedArray(
+    vertexCount,
+    wireframeIndicesCount
+  );
+  let index = 0;
+  wireframeIndices[index++] = 0;
+  wireframeIndices[index++] = 1;
+  for (let i = 0; i < numberOfTriangles; i++) {
+    wireframeIndices[index++] = i + 1;
+    wireframeIndices[index++] = i + 2;
+    wireframeIndices[index++] = i + 2;
+    wireframeIndices[index++] = i;
+  }
+  return wireframeIndices;
+}
+function createWireframeFromTriangleStripIndices(vertexCount, originalIndices) {
+  const originalIndicesCount = originalIndices.length;
+  const numberOfTriangles = originalIndicesCount - 2;
+  const wireframeIndicesCount = 2 + numberOfTriangles * 4;
+  const wireframeIndices = IndexDatatype_default.createTypedArray(
+    vertexCount,
+    wireframeIndicesCount
+  );
+  let index = 0;
+  wireframeIndices[index++] = originalIndices[0];
+  wireframeIndices[index++] = originalIndices[1];
+  for (let i = 0; i < numberOfTriangles; i++) {
+    const point0 = originalIndices[i];
+    const point1 = originalIndices[i + 1];
+    const point2 = originalIndices[i + 2];
+    wireframeIndices[index++] = point1;
+    wireframeIndices[index++] = point2;
+    wireframeIndices[index++] = point2;
+    wireframeIndices[index++] = point0;
+  }
+  return wireframeIndices;
+}
+function createWireframeFromTriangleFan(vertexCount) {
+  const numberOfTriangles = vertexCount - 2;
+  const wireframeIndicesCount = 2 + numberOfTriangles * 4;
+  const wireframeIndices = IndexDatatype_default.createTypedArray(
+    vertexCount,
+    wireframeIndicesCount
+  );
+  let index = 0;
+  wireframeIndices[index++] = 0;
+  wireframeIndices[index++] = 1;
+  for (let i = 0; i < numberOfTriangles; i++) {
+    wireframeIndices[index++] = i + 1;
+    wireframeIndices[index++] = i + 2;
+    wireframeIndices[index++] = i + 2;
+    wireframeIndices[index++] = 0;
+  }
+  return wireframeIndices;
+}
+function createWireframeFromTriangleFanIndices(vertexCount, originalIndices) {
+  const originalIndicesCount = originalIndices.length;
+  const numberOfTriangles = originalIndicesCount - 2;
+  const wireframeIndicesCount = 2 + numberOfTriangles * 4;
+  const wireframeIndices = IndexDatatype_default.createTypedArray(
+    vertexCount,
+    wireframeIndicesCount
+  );
+  let index = 0;
+  const firstPoint = originalIndices[0];
+  wireframeIndices[index++] = firstPoint;
+  wireframeIndices[index++] = originalIndices[1];
+  for (let i = 0; i < numberOfTriangles; i++) {
+    const point1 = originalIndices[i + 1];
+    const point2 = originalIndices[i + 2];
+    wireframeIndices[index++] = point1;
+    wireframeIndices[index++] = point2;
+    wireframeIndices[index++] = point2;
+    wireframeIndices[index++] = firstPoint;
+  }
+  return wireframeIndices;
+}
+WireframeIndexGenerator.createWireframeIndices = function(primitiveType, vertexCount, originalIndices) {
+  const hasOriginalIndices = defined_default(originalIndices);
+  if (primitiveType === PrimitiveType_default.TRIANGLES) {
+    return hasOriginalIndices ? createWireframeFromTriangleIndices(vertexCount, originalIndices) : createWireframeFromTriangles(vertexCount);
+  }
+  if (primitiveType === PrimitiveType_default.TRIANGLE_STRIP) {
+    return hasOriginalIndices ? createWireframeFromTriangleStripIndices(vertexCount, originalIndices) : createWireframeFromTriangleStrip(vertexCount);
+  }
+  if (primitiveType === PrimitiveType_default.TRIANGLE_FAN) {
+    return hasOriginalIndices ? createWireframeFromTriangleFanIndices(vertexCount, originalIndices) : createWireframeFromTriangleFan(vertexCount);
+  }
+  return void 0;
+};
+WireframeIndexGenerator.getWireframeIndicesCount = function(primitiveType, originalCount) {
+  if (primitiveType === PrimitiveType_default.TRIANGLES) {
+    return originalCount * 2;
+  }
+  if (primitiveType === PrimitiveType_default.TRIANGLE_STRIP || primitiveType === PrimitiveType_default.TRIANGLE_FAN) {
+    const numberOfTriangles = originalCount - 2;
+    return 2 + numberOfTriangles * 4;
+  }
+  return originalCount;
+};
+var WireframeIndexGenerator_default = WireframeIndexGenerator;
+
+// packages/engine/Source/Core/createColorRamp.js
+function createColorRamp(colors, rampLength) {
+  const ramp = document.createElement("canvas");
+  ramp.width = rampLength;
+  ramp.height = 1;
+  const ctx = ramp.getContext("2d");
+  const grd = ctx.createLinearGradient(0, 0, ramp.width, 0);
+  const stepSize = 1 / (colors.length - 1);
+  for (let i = 0; i < colors.length; i++) {
+    const color = colors[i];
+    const stop = i * stepSize;
+    const cssColor = color.toCssColorString();
+    grd.addColorStop(stop, cssColor);
+  }
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, ramp.width, ramp.height);
+  const imageData = ctx.getImageData(0, 0, ramp.width, ramp.height);
+  const array = new Uint8Array(imageData.data.buffer);
+  return array;
+}
+var createColorRamp_default = createColorRamp;
+
+// packages/engine/Source/Core/createWorldBathymetryAsync.js
+function createWorldBathymetryAsync(options) {
+  options = options ?? Frozen_default.EMPTY_OBJECT;
+  return CesiumTerrainProvider_default.fromIonAssetId(2426648, {
+    requestVertexNormals: options.requestVertexNormals ?? false
+  });
+}
+var createWorldBathymetryAsync_default = createWorldBathymetryAsync;
+
+// packages/engine/Source/Core/createWorldTerrainAsync.js
+function createWorldTerrainAsync(options) {
+  options = options ?? Frozen_default.EMPTY_OBJECT;
+  return CesiumTerrainProvider_default.fromIonAssetId(1, {
+    requestVertexNormals: options.requestVertexNormals ?? false,
+    requestWaterMask: options.requestWaterMask ?? false,
+    ellipsoid: Ellipsoid_default.WGS84
+  });
+}
+var createWorldTerrainAsync_default = createWorldTerrainAsync;
+
+// packages/engine/Source/Core/getImageFromTypedArray.js
+function getImageFromTypedArray(typedArray, width, height) {
+  const dataArray = new Uint8ClampedArray(typedArray.buffer);
+  const imageData = new ImageData(dataArray, width, height);
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext("2d").putImageData(imageData, 0, 0);
+  return canvas;
+}
+var getImageFromTypedArray_default = getImageFromTypedArray;
+
+// packages/engine/Source/Scene/ClassificationType.js
+var ClassificationType = {
+  /**
+   * Only terrain will be classified.
+   *
+   * @type {number}
+   * @constant
+   */
+  TERRAIN: 0,
+  /**
+   * Only 3D Tiles will be classified.
+   *
+   * @type {number}
+   * @constant
+   */
+  CESIUM_3D_TILE: 1,
+  /**
+   * Both terrain and 3D Tiles will be classified.
+   *
+   * @type {number}
+   * @constant
+   */
+  BOTH: 2
+};
+ClassificationType.NUMBER_OF_CLASSIFICATION_TYPES = 3;
+Object.freeze(ClassificationType);
+var ClassificationType_default = ClassificationType;
+
+// packages/engine/Source/Scene/StencilFunction.js
+var StencilFunction = {
+  /**
+   * The stencil test never passes.
+   *
+   * @type {number}
+   * @constant
+   */
+  NEVER: WebGLConstants_default.NEVER,
+  /**
+   * The stencil test passes when the masked reference value is less than the masked stencil value.
+   *
+   * @type {number}
+   * @constant
+   */
+  LESS: WebGLConstants_default.LESS,
+  /**
+   * The stencil test passes when the masked reference value is equal to the masked stencil value.
+   *
+   * @type {number}
+   * @constant
+   */
+  EQUAL: WebGLConstants_default.EQUAL,
+  /**
+   * The stencil test passes when the masked reference value is less than or equal to the masked stencil value.
+   *
+   * @type {number}
+   * @constant
+   */
+  LESS_OR_EQUAL: WebGLConstants_default.LEQUAL,
+  /**
+   * The stencil test passes when the masked reference value is greater than the masked stencil value.
+   *
+   * @type {number}
+   * @constant
+   */
+  GREATER: WebGLConstants_default.GREATER,
+  /**
+   * The stencil test passes when the masked reference value is not equal to the masked stencil value.
+   *
+   * @type {number}
+   * @constant
+   */
+  NOT_EQUAL: WebGLConstants_default.NOTEQUAL,
+  /**
+   * The stencil test passes when the masked reference value is greater than or equal to the masked stencil value.
+   *
+   * @type {number}
+   * @constant
+   */
+  GREATER_OR_EQUAL: WebGLConstants_default.GEQUAL,
+  /**
+   * The stencil test always passes.
+   *
+   * @type {number}
+   * @constant
+   */
+  ALWAYS: WebGLConstants_default.ALWAYS
+};
+Object.freeze(StencilFunction);
+var StencilFunction_default = StencilFunction;
+
+// packages/engine/Source/Scene/StencilOperation.js
+var StencilOperation = {
+  /**
+   * Sets the stencil buffer value to zero.
+   *
+   * @type {number}
+   * @constant
+   */
+  ZERO: WebGLConstants_default.ZERO,
+  /**
+   * Does not change the stencil buffer.
+   *
+   * @type {number}
+   * @constant
+   */
+  KEEP: WebGLConstants_default.KEEP,
+  /**
+   * Replaces the stencil buffer value with the reference value.
+   *
+   * @type {number}
+   * @constant
+   */
+  REPLACE: WebGLConstants_default.REPLACE,
+  /**
+   * Increments the stencil buffer value, clamping to unsigned byte.
+   *
+   * @type {number}
+   * @constant
+   */
+  INCREMENT: WebGLConstants_default.INCR,
+  /**
+   * Decrements the stencil buffer value, clamping to zero.
+   *
+   * @type {number}
+   * @constant
+   */
+  DECREMENT: WebGLConstants_default.DECR,
+  /**
+   * Bitwise inverts the existing stencil buffer value.
+   *
+   * @type {number}
+   * @constant
+   */
+  INVERT: WebGLConstants_default.INVERT,
+  /**
+   * Increments the stencil buffer value, wrapping to zero when exceeding the unsigned byte range.
+   *
+   * @type {number}
+   * @constant
+   */
+  INCREMENT_WRAP: WebGLConstants_default.INCR_WRAP,
+  /**
+   * Decrements the stencil buffer value, wrapping to the maximum unsigned byte instead of going below zero.
+   *
+   * @type {number}
+   * @constant
+   */
+  DECREMENT_WRAP: WebGLConstants_default.DECR_WRAP
+};
+Object.freeze(StencilOperation);
+var StencilOperation_default = StencilOperation;
+
+// packages/engine/Source/Scene/StencilConstants.js
+var StencilConstants = {
+  CESIUM_3D_TILE_MASK: 128,
+  SKIP_LOD_MASK: 112,
+  SKIP_LOD_BIT_SHIFT: 4,
+  CLASSIFICATION_MASK: 15
+};
+StencilConstants.setCesium3DTileBit = function() {
+  return {
+    enabled: true,
+    frontFunction: StencilFunction_default.ALWAYS,
+    frontOperation: {
+      fail: StencilOperation_default.KEEP,
+      zFail: StencilOperation_default.KEEP,
+      zPass: StencilOperation_default.REPLACE
+    },
+    backFunction: StencilFunction_default.ALWAYS,
+    backOperation: {
+      fail: StencilOperation_default.KEEP,
+      zFail: StencilOperation_default.KEEP,
+      zPass: StencilOperation_default.REPLACE
+    },
+    reference: StencilConstants.CESIUM_3D_TILE_MASK,
+    mask: StencilConstants.CESIUM_3D_TILE_MASK
+  };
+};
+var StencilConstants_default = Object.freeze(StencilConstants);
+
+// packages/engine/Source/Shaders/PolylineFS.js
+var PolylineFS_default = "#ifdef VECTOR_TILE\nuniform vec4 u_highlightColor;\n#endif\n\nin vec2 v_st;\n\nvoid main()\n{\n    czm_materialInput materialInput;\n\n    vec2 st = v_st;\n    st.t = czm_readNonPerspective(st.t, gl_FragCoord.w);\n\n    materialInput.s = st.s;\n    materialInput.st = st;\n    materialInput.str = vec3(st, 0.0);\n\n    czm_material material = czm_getMaterial(materialInput);\n    out_FragColor = vec4(material.diffuse + material.emission, material.alpha);\n#ifdef VECTOR_TILE\n    out_FragColor *= u_highlightColor;\n#endif\n\n    czm_writeLogDepth();\n}\n";
+
+// packages/engine/Source/Scene/SpecularEnvironmentCubeMap.js
+function SpecularEnvironmentCubeMap(url) {
+  this._url = url;
+  this._cubeMapBuffers = void 0;
+  this._texture = void 0;
+  this._maximumMipmapLevel = void 0;
+  this._loading = false;
+  this._ready = false;
+  this._errorEvent = new Event_default();
+}
+Object.defineProperties(SpecularEnvironmentCubeMap.prototype, {
+  /**
+   * The url to the KTX2 file containing the specular environment map and convoluted mipmaps.
+   * @memberof SpecularEnvironmentCubeMap.prototype
+   * @type {string}
+   * @readonly
+   */
+  url: {
+    get: function() {
+      return this._url;
+    }
+  },
+  /**
+   * Gets an event that is raised when encountering an asynchronous error.  By subscribing
+   * to the event, you will be notified of the error and can potentially recover from it.
+   * @memberof SpecularEnvironmentCubeMap.prototype
+   * @type {Event}
+   * @readonly
+   */
+  errorEvent: {
+    get: function() {
+      return this._errorEvent;
+    }
+  },
+  /**
+   * A texture containing all the packed convolutions.
+   * @memberof SpecularEnvironmentCubeMap.prototype
+   * @type {Texture}
+   * @readonly
+   */
+  texture: {
+    get: function() {
+      return this._texture;
+    }
+  },
+  /**
+   * The maximum number of mip levels with valid environment map data.
+   * This may differ from the number of mips in the WebGL cubemap.
+   * The data loaded at <code>maximumMipmapLevel</code> is suitable for
+   * PBR rendering of a material with maximum roughness (1.0).
+   * @memberOf SpecularEnvironmentCubeMap.prototype
+   * @type {number}
+   * @readonly
+   */
+  maximumMipmapLevel: {
+    get: function() {
+      return this._maximumMipmapLevel;
+    }
+  },
+  /**
+   * Determines if the cube map is complete and ready to use.
+   * @memberof SpecularEnvironmentCubeMap.prototype
+   * @type {boolean}
+   * @readonly
+   */
+  ready: {
+    get: function() {
+      return this._ready;
+    }
+  }
+});
+SpecularEnvironmentCubeMap.isSupported = function(context) {
+  const supportsFloatBuffersAndTextures = context.colorBufferHalfFloat && context.halfFloatingPointTexture || context.floatingPointTexture && context.colorBufferFloat;
+  return supportsFloatBuffersAndTextures && context.supportsTextureLod;
+};
+function cleanupResources(map) {
+  map._cubeMapBuffers = void 0;
+}
+SpecularEnvironmentCubeMap.prototype.update = function(frameState) {
+  const { context } = frameState;
+  if (!SpecularEnvironmentCubeMap.isSupported(context)) {
+    return;
+  }
+  if (defined_default(this._texture)) {
+    cleanupResources(this);
+    return;
+  }
+  if (!defined_default(this._texture) && !this._loading) {
+    const cachedTexture = context.textureCache.getTexture(this._url);
+    if (defined_default(cachedTexture)) {
+      cleanupResources(this);
+      this._texture = cachedTexture;
+      this._maximumMipmapLevel = this._texture.maximumMipmapLevel;
+      this._ready = true;
+    }
+  }
+  const cubeMapBuffers = this._cubeMapBuffers;
+  if (!defined_default(cubeMapBuffers) && !this._loading) {
+    const that = this;
+    loadKTX2_default(this._url).then(function(buffers) {
+      that._cubeMapBuffers = buffers;
+      that._loading = false;
+    }).catch(function(error) {
+      if (that.isDestroyed()) {
+        return;
+      }
+      that._errorEvent.raiseEvent(error);
+    });
+    this._loading = true;
+  }
+  if (!defined_default(this._cubeMapBuffers)) {
+    return;
+  }
+  let { pixelDatatype } = cubeMapBuffers[0].positiveX;
+  if (!defined_default(pixelDatatype)) {
+    pixelDatatype = context.halfFloatingPointTexture ? PixelDatatype_default.HALF_FLOAT : PixelDatatype_default.FLOAT;
+  }
+  const pixelFormat = PixelFormat_default.RGBA;
+  const mipLevels = cubeMapBuffers.length;
+  this._maximumMipmapLevel = mipLevels - 1;
+  const faceSize = cubeMapBuffers[0].positiveX.width;
+  const expectedMipLevels = Math.log2(faceSize) + 1;
+  if (mipLevels !== expectedMipLevels) {
+    const dummyMipLevel = {};
+    Object.values(CubeMap_default.FaceName).forEach((faceName) => {
+      dummyMipLevel[faceName] = void 0;
+    });
+    for (let mipLevel = mipLevels; mipLevel < expectedMipLevels; mipLevel++) {
+      cubeMapBuffers.push(dummyMipLevel);
+    }
+  }
+  const sampler = new Sampler_default({
+    minificationFilter: TextureMinificationFilter_default.LINEAR_MIPMAP_LINEAR
+  });
+  const cubeMap = new CubeMap_default({
+    context,
+    source: cubeMapBuffers[0],
+    flipY: false,
+    pixelDatatype,
+    pixelFormat,
+    sampler
+  });
+  cubeMap.loadMipmaps(cubeMapBuffers.slice(1));
+  this._texture = cubeMap;
+  this._texture.maximumMipmapLevel = this._maximumMipmapLevel;
+  context.textureCache.addTexture(this._url, this._texture);
+  this._ready = true;
+};
+SpecularEnvironmentCubeMap.prototype.isDestroyed = function() {
+  return false;
+};
+SpecularEnvironmentCubeMap.prototype.destroy = function() {
+  cleanupResources(this);
+  this._texture = this._texture && this._texture.destroy();
+  return destroyObject_default(this);
+};
+var SpecularEnvironmentCubeMap_default = SpecularEnvironmentCubeMap;
+
+// packages/engine/Source/Scene/ImageBasedLighting.js
+function ImageBasedLighting(options) {
+  options = options ?? Frozen_default.EMPTY_OBJECT;
+  const imageBasedLightingFactor = defined_default(options.imageBasedLightingFactor) ? Cartesian2_default.clone(options.imageBasedLightingFactor) : new Cartesian2_default(1, 1);
+  Check_default.typeOf.object(
+    "options.imageBasedLightingFactor",
+    imageBasedLightingFactor
+  );
+  Check_default.typeOf.number.greaterThanOrEquals(
+    "options.imageBasedLightingFactor.x",
+    imageBasedLightingFactor.x,
+    0
+  );
+  Check_default.typeOf.number.lessThanOrEquals(
+    "options.imageBasedLightingFactor.x",
+    imageBasedLightingFactor.x,
+    1
+  );
+  Check_default.typeOf.number.greaterThanOrEquals(
+    "options.imageBasedLightingFactor.y",
+    imageBasedLightingFactor.y,
+    0
+  );
+  Check_default.typeOf.number.lessThanOrEquals(
+    "options.imageBasedLightingFactor.y",
+    imageBasedLightingFactor.y,
+    1
+  );
+  this._imageBasedLightingFactor = imageBasedLightingFactor;
+  const sphericalHarmonicCoefficients = options.sphericalHarmonicCoefficients;
+  if (defined_default(sphericalHarmonicCoefficients) && (!Array.isArray(sphericalHarmonicCoefficients) || sphericalHarmonicCoefficients.length !== 9)) {
+    throw new DeveloperError_default(
+      "options.sphericalHarmonicCoefficients must be an array of 9 Cartesian3 values."
+    );
+  }
+  this._sphericalHarmonicCoefficients = sphericalHarmonicCoefficients;
+  this._specularEnvironmentMaps = options.specularEnvironmentMaps;
+  this._specularEnvironmentCubeMap = void 0;
+  this._specularEnvironmentCubeMapDirty = true;
+  this._specularEnvironmentMapLoaded = false;
+  this._previousSpecularEnvironmentMapLoaded = false;
+  this._useDefaultSpecularMaps = false;
+  this._useDefaultSphericalHarmonics = false;
+  this._shouldRegenerateShaders = false;
+  this._previousFrameNumber = void 0;
+  this._previousFrameContext = void 0;
+  this._previousImageBasedLightingFactor = Cartesian2_default.clone(
+    imageBasedLightingFactor
+  );
+  this._previousSphericalHarmonicCoefficients = sphericalHarmonicCoefficients;
+  this._removeErrorListener = void 0;
+}
+Object.defineProperties(ImageBasedLighting.prototype, {
+  /**
+   * Cesium adds lighting from the earth, sky, atmosphere, and star skybox.
+   * This cartesian is used to scale the final diffuse and specular lighting
+   * contribution from those sources to the final color. A value of 0.0 will
+   * disable those light sources.
+   *
+   * @memberof ImageBasedLighting.prototype
+   *
+   * @type {Cartesian2}
+   * @default Cartesian2(1.0, 1.0)
+   */
+  imageBasedLightingFactor: {
+    get: function() {
+      return this._imageBasedLightingFactor;
+    },
+    set: function(value) {
+      Check_default.typeOf.object("imageBasedLightingFactor", value);
+      Check_default.typeOf.number.greaterThanOrEquals(
+        "imageBasedLightingFactor.x",
+        value.x,
+        0
+      );
+      Check_default.typeOf.number.lessThanOrEquals(
+        "imageBasedLightingFactor.x",
+        value.x,
+        1
+      );
+      Check_default.typeOf.number.greaterThanOrEquals(
+        "imageBasedLightingFactor.y",
+        value.y,
+        0
+      );
+      Check_default.typeOf.number.lessThanOrEquals(
+        "imageBasedLightingFactor.y",
+        value.y,
+        1
+      );
+      this._previousImageBasedLightingFactor = Cartesian2_default.clone(
+        this._imageBasedLightingFactor,
+        this._previousImageBasedLightingFactor
+      );
+      this._imageBasedLightingFactor = Cartesian2_default.clone(
+        value,
+        this._imageBasedLightingFactor
+      );
+    }
+  },
+  /**
+   * The third order spherical harmonic coefficients used for the diffuse color of image-based lighting. When <code>undefined</code>, a diffuse irradiance
+   * computed from the atmosphere color is used.
+   * <p>
+   * There are nine <code>Cartesian3</code> coefficients.
+   * The order of the coefficients is: L<sub>0,0</sub>, L<sub>1,-1</sub>, L<sub>1,0</sub>, L<sub>1,1</sub>, L<sub>2,-2</sub>, L<sub>2,-1</sub>, L<sub>2,0</sub>, L<sub>2,1</sub>, L<sub>2,2</sub>
+   * </p>
+   *
+   * These values can be obtained by preprocessing the environment map using the <code>cmgen</code> tool of
+   * {@link https://github.com/google/filament/releases|Google's Filament project}.
+   * Be sure to use the <code>--no-mirror</code> option in <code>cmgen</code>.
+   *
+   * @memberof ImageBasedLighting.prototype
+   *
+   * @type {Cartesian3[]}
+   * @demo {@link https://sandcastle.cesium.com/index.html?id=image-based-lighting|Sandcastle Image Based Lighting Demo}
+   * @see {@link https://graphics.stanford.edu/papers/envmap/envmap.pdf|An Efficient Representation for Irradiance Environment Maps}
+   */
+  sphericalHarmonicCoefficients: {
+    get: function() {
+      return this._sphericalHarmonicCoefficients;
+    },
+    set: function(value) {
+      if (defined_default(value) && (!Array.isArray(value) || value.length !== 9)) {
+        throw new DeveloperError_default(
+          "sphericalHarmonicCoefficients must be an array of 9 Cartesian3 values."
+        );
+      }
+      this._previousSphericalHarmonicCoefficients = this._sphericalHarmonicCoefficients;
+      this._sphericalHarmonicCoefficients = value;
+    }
+  },
+  /**
+   * A URL to a KTX2 file that contains a cube map of the specular lighting and the convoluted specular mipmaps.
+   *
+   * @memberof ImageBasedLighting.prototype
+   * @demo {@link https://sandcastle.cesium.com/index.html?id=image-based-lighting|Sandcastle Image Based Lighting Demo}
+   * @type {string}
+   * @see ImageBasedLighting#sphericalHarmonicCoefficients
+   */
+  specularEnvironmentMaps: {
+    get: function() {
+      return this._specularEnvironmentMaps;
+    },
+    set: function(value) {
+      if (value !== this._specularEnvironmentMaps) {
+        this._specularEnvironmentCubeMapDirty = this._specularEnvironmentCubeMapDirty || value !== this._specularEnvironmentMaps;
+        this._specularEnvironmentMapLoaded = false;
+      }
+      this._specularEnvironmentMaps = value;
+    }
+  },
+  /**
+   * Whether or not image-based lighting is enabled.
+   *
+   * @memberof ImageBasedLighting.prototype
+   * @type {boolean}
+   *
+   * @private
+   */
+  enabled: {
+    get: function() {
+      return this._imageBasedLightingFactor.x > 0 || this._imageBasedLightingFactor.y > 0;
+    }
+  },
+  /**
+   * Whether or not the models that use this lighting should regenerate their shaders,
+   * based on the properties and resources have changed.
+   *
+   * @memberof ImageBasedLighting.prototype
+   * @type {boolean}
+   *
+   * @private
+   */
+  shouldRegenerateShaders: {
+    get: function() {
+      return this._shouldRegenerateShaders;
+    }
+  },
+  /**
+   * The texture atlas for the specular environment maps.
+   *
+   * @memberof ImageBasedLighting.prototype
+   * @type {SpecularEnvironmentCubeMap}
+   *
+   * @private
+   */
+  specularEnvironmentCubeMap: {
+    get: function() {
+      return this._specularEnvironmentCubeMap;
+    }
+  },
+  /**
+   * Whether or not to use the default spherical harmonics coefficients.
+   *
+   * @memberof ImageBasedLighting.prototype
+   * @type {boolean}
+   *
+   * @private
+   */
+  useDefaultSphericalHarmonics: {
+    get: function() {
+      return this._useDefaultSphericalHarmonics;
+    }
+  },
+  /**
+   * Whether or not to use the default specular environment maps.
+   *
+   * @memberof ImageBasedLighting.prototype
+   * @type {boolean}
+   *
+   * @private
+   */
+  useDefaultSpecularMaps: {
+    get: function() {
+      return this._useDefaultSpecularMaps;
+    }
+  },
+  /**
+   * Whether or not the image-based lighting settings use specular environment maps.
+   *
+   * @memberof ImageBasedLighting.prototype
+   * @type {boolean}
+   *
+   * @private
+   */
+  useSpecularEnvironmentMaps: {
+    get: function() {
+      return defined_default(this._specularEnvironmentCubeMap) && this._specularEnvironmentCubeMap.ready || this._useDefaultSpecularMaps;
+    }
+  }
+});
+function createSpecularEnvironmentCubeMap(imageBasedLighting, context) {
+  if (!SpecularEnvironmentCubeMap_default.isSupported(context)) {
+    return;
+  }
+  imageBasedLighting._specularEnvironmentCubeMap = imageBasedLighting._specularEnvironmentCubeMap && imageBasedLighting._specularEnvironmentCubeMap.destroy();
+  if (defined_default(imageBasedLighting._specularEnvironmentMaps)) {
+    const cubeMap = new SpecularEnvironmentCubeMap_default(
+      imageBasedLighting._specularEnvironmentMaps
+    );
+    imageBasedLighting._specularEnvironmentCubeMap = cubeMap;
+    imageBasedLighting._removeErrorListener = cubeMap.errorEvent.addEventListener((error) => {
+      console.error(`Error loading specularEnvironmentMaps: ${error}`);
+    });
+  }
+  imageBasedLighting._shouldRegenerateShaders = true;
+}
+ImageBasedLighting.prototype.update = function(frameState) {
+  if (frameState.frameNumber === this._previousFrameNumber && frameState.context === this._previousFrameContext) {
+    return;
+  }
+  this._previousFrameNumber = frameState.frameNumber;
+  const context = this._previousFrameContext = frameState.context;
+  frameState.brdfLutGenerator.update(frameState);
+  this._shouldRegenerateShaders = false;
+  const iblFactor = this._imageBasedLightingFactor;
+  const previousIBLFactor = this._previousImageBasedLightingFactor;
+  if (!Cartesian2_default.equals(iblFactor, previousIBLFactor)) {
+    this._shouldRegenerateShaders = iblFactor.x > 0 && previousIBLFactor.x === 0 || iblFactor.x === 0 && previousIBLFactor.x > 0;
+    this._shouldRegenerateShaders = this._shouldRegenerateShaders || iblFactor.y > 0 && previousIBLFactor.y === 0 || iblFactor.y === 0 && previousIBLFactor.y > 0;
+    this._previousImageBasedLightingFactor = Cartesian2_default.clone(
+      this._imageBasedLightingFactor,
+      this._previousImageBasedLightingFactor
+    );
+  }
+  if (this._previousSphericalHarmonicCoefficients !== this._sphericalHarmonicCoefficients) {
+    this._shouldRegenerateShaders = this._shouldRegenerateShaders || defined_default(this._previousSphericalHarmonicCoefficients) !== defined_default(this._sphericalHarmonicCoefficients);
+    this._previousSphericalHarmonicCoefficients = this._sphericalHarmonicCoefficients;
+  }
+  this._shouldRegenerateShaders = this._shouldRegenerateShaders || this._previousSpecularEnvironmentMapLoaded !== this._specularEnvironmentMapLoaded;
+  this._previousSpecularEnvironmentMapLoaded = this._specularEnvironmentMapLoaded;
+  if (this._specularEnvironmentCubeMapDirty) {
+    createSpecularEnvironmentCubeMap(this, context);
+    this._specularEnvironmentCubeMapDirty = false;
+  }
+  if (defined_default(this._specularEnvironmentCubeMap)) {
+    this._specularEnvironmentCubeMap.update(frameState);
+    if (this._specularEnvironmentCubeMap.ready) {
+      this._specularEnvironmentMapLoaded = true;
+    }
+  }
+  const recompileWithDefaultCubeMap = !defined_default(this._specularEnvironmentCubeMap) && defined_default(frameState.specularEnvironmentMaps) && !this._useDefaultSpecularMaps;
+  const recompileWithoutDefaultCubeMap = !defined_default(frameState.specularEnvironmentMaps) && this._useDefaultSpecularMaps;
+  const recompileWithDefaultSHCoeffs = !defined_default(this._sphericalHarmonicCoefficients) && defined_default(frameState.sphericalHarmonicCoefficients) && !this._useDefaultSphericalHarmonics;
+  const recompileWithoutDefaultSHCoeffs = !defined_default(frameState.sphericalHarmonicCoefficients) && this._useDefaultSphericalHarmonics;
+  this._shouldRegenerateShaders = this._shouldRegenerateShaders || recompileWithDefaultCubeMap || recompileWithoutDefaultCubeMap || recompileWithDefaultSHCoeffs || recompileWithoutDefaultSHCoeffs;
+  this._useDefaultSpecularMaps = !defined_default(this._specularEnvironmentCubeMap) && defined_default(frameState.specularEnvironmentMaps);
+  this._useDefaultSphericalHarmonics = !defined_default(this._sphericalHarmonicCoefficients) && defined_default(frameState.sphericalHarmonicCoefficients);
+};
+ImageBasedLighting.prototype.isDestroyed = function() {
+  return false;
+};
+ImageBasedLighting.prototype.destroy = function() {
+  this._specularEnvironmentCubeMap = this._specularEnvironmentCubeMap && this._specularEnvironmentCubeMap.destroy();
+  this._removeErrorListener = this._removeErrorListener && this._removeErrorListener();
+  return destroyObject_default(this);
+};
+var ImageBasedLighting_default = ImageBasedLighting;
+
+// packages/engine/Source/Scene/BatchTexture.js
+function BatchTexture(options) {
+  Check_default.typeOf.number("options.featuresLength", options.featuresLength);
+  Check_default.typeOf.object("options.owner", options.owner);
+  this._id = createGuid_default();
+  const featuresLength = options.featuresLength;
+  this._showAlphaProperties = void 0;
+  this._batchValues = void 0;
+  this._batchValuesDirty = false;
+  this._batchTexture = void 0;
+  this._defaultTexture = void 0;
+  this._pickTexture = void 0;
+  this._pickIds = [];
+  let textureDimensions;
+  let textureStep;
+  if (featuresLength > 0) {
+    const width = Math.min(featuresLength, ContextLimits_default.maximumTextureSize);
+    const height = Math.ceil(featuresLength / ContextLimits_default.maximumTextureSize);
+    const stepX = 1 / width;
+    const centerX = stepX * 0.5;
+    const stepY = 1 / height;
+    const centerY = stepY * 0.5;
+    textureDimensions = new Cartesian2_default(width, height);
+    textureStep = new Cartesian4_default(stepX, centerX, stepY, centerY);
+  }
+  this._translucentFeaturesLength = 0;
+  this._featuresLength = featuresLength;
+  this._textureDimensions = textureDimensions;
+  this._textureStep = textureStep;
+  this._owner = options.owner;
+  this._statistics = options.statistics;
+  this._colorChangedCallback = options.colorChangedCallback;
+}
+Object.defineProperties(BatchTexture.prototype, {
+  /**
+   * Number of features that are translucent
+   *
+   * @memberof BatchTexture.prototype
+   * @type {number}
+   * @readonly
+   * @private
+   */
+  translucentFeaturesLength: {
+    get: function() {
+      return this._translucentFeaturesLength;
+    }
+  },
+  /**
+   * Total size of all GPU resources used by this batch texture.
+   *
+   * @memberof BatchTexture.prototype
+   * @type {number}
+   * @readonly
+   * @private
+   */
+  byteLength: {
+    get: function() {
+      let memory = 0;
+      if (defined_default(this._pickTexture)) {
+        memory += this._pickTexture.sizeInBytes;
+      }
+      if (defined_default(this._batchTexture)) {
+        memory += this._batchTexture.sizeInBytes;
+      }
+      return memory;
+    }
+  },
+  /**
+   * Dimensions of the underlying batch texture.
+   *
+   * @memberof BatchTexture.prototype
+   * @type {Cartesian2}
+   * @readonly
+   * @private
+   */
+  textureDimensions: {
+    get: function() {
+      return this._textureDimensions;
+    }
+  },
+  /**
+   * Size of each texture and distance from side to center of a texel in
+   * each direction. Stored as (stepX, centerX, stepY, centerY)
+   *
+   * @memberof BatchTexture.prototype
+   * @type {Cartesian4}
+   * @readonly
+   * @private
+   */
+  textureStep: {
+    get: function() {
+      return this._textureStep;
+    }
+  },
+  /**
+   * The underlying texture used for styling. The texels are accessed
+   * by batch ID, and the value is the color of this feature after accounting
+   * for show/hide settings.
+   *
+   * @memberof BatchTexture.prototype
+   * @type {Texture}
+   * @readonly
+   * @private
+   */
+  batchTexture: {
+    get: function() {
+      return this._batchTexture;
+    }
+  },
+  /**
+   * The default texture to use when there are no batch values
+   *
+   * @memberof BatchTexture.prototype
+   * @type {Texture}
+   * @readonly
+   * @private
+   */
+  defaultTexture: {
+    get: function() {
+      return this._defaultTexture;
+    }
+  },
+  /**
+   * The underlying texture used for picking. The texels are accessed by
+   * batch ID, and the value is the pick color.
+   *
+   * @memberof BatchTexture.prototype
+   * @type {Texture}
+   * @readonly
+   * @private
+   */
+  pickTexture: {
+    get: function() {
+      return this._pickTexture;
+    }
+  }
+});
+BatchTexture.DEFAULT_COLOR_VALUE = Color_default.WHITE;
+BatchTexture.DEFAULT_SHOW_VALUE = true;
+function getByteLength(batchTexture) {
+  const dimensions = batchTexture._textureDimensions;
+  return dimensions.x * dimensions.y * 4;
+}
+function getBatchValues(batchTexture) {
+  if (!defined_default(batchTexture._batchValues)) {
+    const byteLength = getByteLength(batchTexture);
+    const bytes = new Uint8Array(byteLength).fill(255);
+    batchTexture._batchValues = bytes;
+  }
+  return batchTexture._batchValues;
+}
+function getShowAlphaProperties(batchTexture) {
+  if (!defined_default(batchTexture._showAlphaProperties)) {
+    const byteLength = 2 * batchTexture._featuresLength;
+    const bytes = new Uint8Array(byteLength).fill(255);
+    batchTexture._showAlphaProperties = bytes;
+  }
+  return batchTexture._showAlphaProperties;
+}
+function checkBatchId(batchId, featuresLength) {
+  if (!defined_default(batchId) || batchId < 0 || batchId >= featuresLength) {
+    throw new DeveloperError_default(
+      `batchId is required and between zero and featuresLength - 1 (${featuresLength}` - +")."
+    );
+  }
+}
+BatchTexture.prototype.setShow = function(batchId, show) {
+  checkBatchId(batchId, this._featuresLength);
+  Check_default.typeOf.bool("show", show);
+  if (show && !defined_default(this._showAlphaProperties)) {
+    return;
+  }
+  const showAlphaProperties = getShowAlphaProperties(this);
+  const propertyOffset = batchId * 2;
+  const newShow = show ? 255 : 0;
+  if (showAlphaProperties[propertyOffset] !== newShow) {
+    showAlphaProperties[propertyOffset] = newShow;
+    const batchValues = getBatchValues(this);
+    const offset = batchId * 4 + 3;
+    batchValues[offset] = show ? showAlphaProperties[propertyOffset + 1] : 0;
+    this._batchValuesDirty = true;
+  }
+};
+BatchTexture.prototype.setAllShow = function(show) {
+  Check_default.typeOf.bool("show", show);
+  const featuresLength = this._featuresLength;
+  for (let i = 0; i < featuresLength; ++i) {
+    this.setShow(i, show);
+  }
+};
+BatchTexture.prototype.getShow = function(batchId) {
+  checkBatchId(batchId, this._featuresLength);
+  if (!defined_default(this._showAlphaProperties)) {
+    return true;
+  }
+  const offset = batchId * 2;
+  return this._showAlphaProperties[offset] === 255;
+};
+var scratchColorBytes = new Array(4);
+BatchTexture.prototype.setColor = function(batchId, color) {
+  checkBatchId(batchId, this._featuresLength);
+  Check_default.typeOf.object("color", color);
+  if (Color_default.equals(color, BatchTexture.DEFAULT_COLOR_VALUE) && !defined_default(this._batchValues)) {
+    return;
+  }
+  const newColor = color.toBytes(scratchColorBytes);
+  const newAlpha = newColor[3];
+  const batchValues = getBatchValues(this);
+  const offset = batchId * 4;
+  const showAlphaProperties = getShowAlphaProperties(this);
+  const propertyOffset = batchId * 2;
+  if (batchValues[offset] !== newColor[0] || batchValues[offset + 1] !== newColor[1] || batchValues[offset + 2] !== newColor[2] || showAlphaProperties[propertyOffset + 1] !== newAlpha) {
+    batchValues[offset] = newColor[0];
+    batchValues[offset + 1] = newColor[1];
+    batchValues[offset + 2] = newColor[2];
+    const wasTranslucent = showAlphaProperties[propertyOffset + 1] !== 255;
+    const show = showAlphaProperties[propertyOffset] !== 0;
+    batchValues[offset + 3] = show ? newAlpha : 0;
+    showAlphaProperties[propertyOffset + 1] = newAlpha;
+    const isTranslucent = newAlpha !== 255;
+    if (isTranslucent && !wasTranslucent) {
+      ++this._translucentFeaturesLength;
+    } else if (!isTranslucent && wasTranslucent) {
+      --this._translucentFeaturesLength;
+    }
+    this._batchValuesDirty = true;
+    if (defined_default(this._colorChangedCallback)) {
+      this._colorChangedCallback(batchId, color);
+    }
+  }
+};
+BatchTexture.prototype.setAllColor = function(color) {
+  Check_default.typeOf.object("color", color);
+  const featuresLength = this._featuresLength;
+  for (let i = 0; i < featuresLength; ++i) {
+    this.setColor(i, color);
+  }
+};
+BatchTexture.prototype.getColor = function(batchId, result) {
+  checkBatchId(batchId, this._featuresLength);
+  Check_default.typeOf.object("result", result);
+  if (!defined_default(this._batchValues)) {
+    return Color_default.clone(BatchTexture.DEFAULT_COLOR_VALUE, result);
+  }
+  const batchValues = this._batchValues;
+  const offset = batchId * 4;
+  const showAlphaProperties = this._showAlphaProperties;
+  const propertyOffset = batchId * 2;
+  return Color_default.fromBytes(
+    batchValues[offset],
+    batchValues[offset + 1],
+    batchValues[offset + 2],
+    showAlphaProperties[propertyOffset + 1],
+    result
+  );
+};
+BatchTexture.prototype.getPickColor = function(batchId) {
+  checkBatchId(batchId, this._featuresLength);
+  return this._pickIds[batchId];
+};
+function createTexture3(batchTexture, context, bytes) {
+  const dimensions = batchTexture._textureDimensions;
+  return new Texture_default({
+    context,
+    pixelFormat: PixelFormat_default.RGBA,
+    pixelDatatype: PixelDatatype_default.UNSIGNED_BYTE,
+    source: {
+      width: dimensions.x,
+      height: dimensions.y,
+      arrayBufferView: bytes
+    },
+    flipY: false,
+    sampler: Sampler_default.NEAREST
+  });
+}
+function createPickTexture(batchTexture, context) {
+  const featuresLength = batchTexture._featuresLength;
+  if (!defined_default(batchTexture._pickTexture) && featuresLength > 0) {
+    const pickIds = batchTexture._pickIds;
+    const byteLength = getByteLength(batchTexture);
+    const bytes = new Uint8Array(byteLength);
+    const owner = batchTexture._owner;
+    const statistics = batchTexture._statistics;
+    for (let i = 0; i < featuresLength; ++i) {
+      const pickId = context.createPickId(owner.getFeature(i));
+      pickIds.push(pickId);
+      const pickColor3 = pickId.color;
+      const offset = i * 4;
+      bytes[offset] = Color_default.floatToByte(pickColor3.red);
+      bytes[offset + 1] = Color_default.floatToByte(pickColor3.green);
+      bytes[offset + 2] = Color_default.floatToByte(pickColor3.blue);
+      bytes[offset + 3] = Color_default.floatToByte(pickColor3.alpha);
+    }
+    batchTexture._pickTexture = createTexture3(batchTexture, context, bytes);
+    if (defined_default(statistics)) {
+      statistics.batchTableByteLength += batchTexture._pickTexture.sizeInBytes;
+    }
+  }
+}
+function updateBatchTexture(batchTexture) {
+  const dimensions = batchTexture._textureDimensions;
+  batchTexture._batchTexture.copyFrom({
+    source: {
+      width: dimensions.x,
+      height: dimensions.y,
+      arrayBufferView: batchTexture._batchValues
+    }
+  });
+}
+BatchTexture.prototype.update = function(tileset, frameState) {
+  const context = frameState.context;
+  this._defaultTexture = context.defaultTexture;
+  const passes = frameState.passes;
+  if (passes.pick || passes.postProcess) {
+    createPickTexture(this, context);
+  }
+  if (this._batchValuesDirty) {
+    this._batchValuesDirty = false;
+    if (!defined_default(this._batchTexture)) {
+      this._batchTexture = createTexture3(this, context, this._batchValues);
+      if (defined_default(this._statistics)) {
+        this._statistics.batchTableByteLength += this._batchTexture.sizeInBytes;
+      }
+    }
+    updateBatchTexture(this);
+  }
+};
+BatchTexture.prototype.isDestroyed = function() {
+  return false;
+};
+BatchTexture.prototype.destroy = function() {
+  this._batchTexture = this._batchTexture && this._batchTexture.destroy();
+  this._pickTexture = this._pickTexture && this._pickTexture.destroy();
+  const pickIds = this._pickIds;
+  const length = pickIds.length;
+  for (let i = 0; i < length; ++i) {
+    pickIds[i].destroy();
+  }
+  return destroyObject_default(this);
+};
+var BatchTexture_default = BatchTexture;
+
+// packages/engine/Source/Scene/getBinaryAccessor.js
+var ComponentsPerAttribute = {
+  SCALAR: 1,
+  VEC2: 2,
+  VEC3: 3,
+  VEC4: 4,
+  MAT2: 4,
+  MAT3: 9,
+  MAT4: 16
+};
+var ClassPerType = {
+  SCALAR: void 0,
+  VEC2: Cartesian2_default,
+  VEC3: Cartesian3_default,
+  VEC4: Cartesian4_default,
+  MAT2: Matrix2_default,
+  MAT3: Matrix3_default,
+  MAT4: Matrix4_default
+};
+function getBinaryAccessor(accessor) {
+  const componentType = accessor.componentType;
+  let componentDatatype;
+  if (typeof componentType === "string") {
+    componentDatatype = ComponentDatatype_default.fromName(componentType);
+  } else {
+    componentDatatype = componentType;
+  }
+  const componentsPerAttribute = ComponentsPerAttribute[accessor.type];
+  const classType = ClassPerType[accessor.type];
+  return {
+    componentsPerAttribute,
+    classType,
+    createArrayBufferView: function(buffer, byteOffset, length) {
+      return ComponentDatatype_default.createArrayBufferView(
+        componentDatatype,
+        buffer,
+        byteOffset,
+        componentsPerAttribute * length
+      );
+    }
+  };
+}
+var getBinaryAccessor_default = getBinaryAccessor;
+
+// packages/engine/Source/Scene/BatchTableHierarchy.js
+function BatchTableHierarchy(options) {
+  this._classes = void 0;
+  this._classIds = void 0;
+  this._classIndexes = void 0;
+  this._parentCounts = void 0;
+  this._parentIndexes = void 0;
+  this._parentIds = void 0;
+  this._byteLength = 0;
+  Check_default.typeOf.object("options.extension", options.extension);
+  initialize2(this, options.extension, options.binaryBody);
+  validateHierarchy(this);
+}
+Object.defineProperties(BatchTableHierarchy.prototype, {
+  byteLength: {
+    get: function() {
+      return this._byteLength;
+    }
+  }
+});
+function initialize2(hierarchy, hierarchyJson, binaryBody) {
+  let i;
+  let classId;
+  let binaryAccessor;
+  const instancesLength = hierarchyJson.instancesLength;
+  const classes = hierarchyJson.classes;
+  let classIds = hierarchyJson.classIds;
+  let parentCounts = hierarchyJson.parentCounts;
+  let parentIds = hierarchyJson.parentIds;
+  let parentIdsLength = instancesLength;
+  let byteLength = 0;
+  if (defined_default(classIds.byteOffset)) {
+    classIds.componentType = classIds.componentType ?? ComponentDatatype_default.UNSIGNED_SHORT;
+    classIds.type = AttributeType_default.SCALAR;
+    binaryAccessor = getBinaryAccessor_default(classIds);
+    classIds = binaryAccessor.createArrayBufferView(
+      binaryBody.buffer,
+      binaryBody.byteOffset + classIds.byteOffset,
+      instancesLength
+    );
+    byteLength += classIds.byteLength;
+  }
+  let parentIndexes;
+  if (defined_default(parentCounts)) {
+    if (defined_default(parentCounts.byteOffset)) {
+      parentCounts.componentType = parentCounts.componentType ?? ComponentDatatype_default.UNSIGNED_SHORT;
+      parentCounts.type = AttributeType_default.SCALAR;
+      binaryAccessor = getBinaryAccessor_default(parentCounts);
+      parentCounts = binaryAccessor.createArrayBufferView(
+        binaryBody.buffer,
+        binaryBody.byteOffset + parentCounts.byteOffset,
+        instancesLength
+      );
+      byteLength += parentCounts.byteLength;
+    }
+    parentIndexes = new Uint16Array(instancesLength);
+    parentIdsLength = 0;
+    for (i = 0; i < instancesLength; ++i) {
+      parentIndexes[i] = parentIdsLength;
+      parentIdsLength += parentCounts[i];
+    }
+    byteLength += parentIndexes.byteLength;
+  }
+  if (defined_default(parentIds) && defined_default(parentIds.byteOffset)) {
+    parentIds.componentType = parentIds.componentType ?? ComponentDatatype_default.UNSIGNED_SHORT;
+    parentIds.type = AttributeType_default.SCALAR;
+    binaryAccessor = getBinaryAccessor_default(parentIds);
+    parentIds = binaryAccessor.createArrayBufferView(
+      binaryBody.buffer,
+      binaryBody.byteOffset + parentIds.byteOffset,
+      parentIdsLength
+    );
+    byteLength += parentIds.byteLength;
+  }
+  const classesLength = classes.length;
+  for (i = 0; i < classesLength; ++i) {
+    const classInstancesLength = classes[i].length;
+    const properties = classes[i].instances;
+    const binaryProperties = Cesium3DTileBatchTable_default.getBinaryProperties(
+      classInstancesLength,
+      properties,
+      binaryBody
+    );
+    byteLength += countBinaryPropertyMemory(binaryProperties);
+    classes[i].instances = combine_default(binaryProperties, properties);
+  }
+  const classCounts = new Array(classesLength).fill(0);
+  const classIndexes = new Uint16Array(instancesLength);
+  for (i = 0; i < instancesLength; ++i) {
+    classId = classIds[i];
+    classIndexes[i] = classCounts[classId];
+    ++classCounts[classId];
+  }
+  byteLength += classIndexes.byteLength;
+  hierarchy._classes = classes;
+  hierarchy._classIds = classIds;
+  hierarchy._classIndexes = classIndexes;
+  hierarchy._parentCounts = parentCounts;
+  hierarchy._parentIndexes = parentIndexes;
+  hierarchy._parentIds = parentIds;
+  hierarchy._byteLength = byteLength;
+}
+function countBinaryPropertyMemory(binaryProperties) {
+  let byteLength = 0;
+  for (const name in binaryProperties) {
+    if (binaryProperties.hasOwnProperty(name)) {
+      byteLength += binaryProperties[name].typedArray.byteLength;
+    }
+  }
+  return byteLength;
+}
+var scratchValidateStack = [];
+function validateHierarchy(hierarchy) {
+  const stack = scratchValidateStack;
+  stack.length = 0;
+  const classIds = hierarchy._classIds;
+  const instancesLength = classIds.length;
+  for (let i = 0; i < instancesLength; ++i) {
+    validateInstance(hierarchy, i, stack);
+  }
+}
+function validateInstance(hierarchy, instanceIndex, stack) {
+  const parentCounts = hierarchy._parentCounts;
+  const parentIds = hierarchy._parentIds;
+  const parentIndexes = hierarchy._parentIndexes;
+  const classIds = hierarchy._classIds;
+  const instancesLength = classIds.length;
+  if (!defined_default(parentIds)) {
+    return;
+  }
+  if (instanceIndex >= instancesLength) {
+    throw new DeveloperError_default(
+      `Parent index ${instanceIndex} exceeds the total number of instances: ${instancesLength}`
+    );
+  }
+  if (stack.indexOf(instanceIndex) > -1) {
+    throw new DeveloperError_default(
+      "Circular dependency detected in the batch table hierarchy."
+    );
+  }
+  stack.push(instanceIndex);
+  const parentCount = defined_default(parentCounts) ? parentCounts[instanceIndex] : 1;
+  const parentIndex = defined_default(parentCounts) ? parentIndexes[instanceIndex] : instanceIndex;
+  for (let i = 0; i < parentCount; ++i) {
+    const parentId = parentIds[parentIndex + i];
+    if (parentId !== instanceIndex) {
+      validateInstance(hierarchy, parentId, stack);
+    }
+  }
+  stack.pop(instanceIndex);
+}
+var scratchVisited = [];
+var scratchStack = [];
+var marker = 0;
+function traverseHierarchyMultipleParents(hierarchy, instanceIndex, endConditionCallback) {
+  const classIds = hierarchy._classIds;
+  const parentCounts = hierarchy._parentCounts;
+  const parentIds = hierarchy._parentIds;
+  const parentIndexes = hierarchy._parentIndexes;
+  const instancesLength = classIds.length;
+  const visited = scratchVisited;
+  visited.length = Math.max(visited.length, instancesLength);
+  const visitedMarker = ++marker;
+  const stack = scratchStack;
+  stack.length = 0;
+  stack.push(instanceIndex);
+  while (stack.length > 0) {
+    instanceIndex = stack.pop();
+    if (visited[instanceIndex] === visitedMarker) {
+      continue;
+    }
+    visited[instanceIndex] = visitedMarker;
+    const result = endConditionCallback(hierarchy, instanceIndex);
+    if (defined_default(result)) {
+      return result;
+    }
+    const parentCount = parentCounts[instanceIndex];
+    const parentIndex = parentIndexes[instanceIndex];
+    for (let i = 0; i < parentCount; ++i) {
+      const parentId = parentIds[parentIndex + i];
+      if (parentId !== instanceIndex) {
+        stack.push(parentId);
+      }
+    }
+  }
+}
+function traverseHierarchySingleParent(hierarchy, instanceIndex, endConditionCallback) {
+  let hasParent = true;
+  while (hasParent) {
+    const result = endConditionCallback(hierarchy, instanceIndex);
+    if (defined_default(result)) {
+      return result;
+    }
+    const parentId = hierarchy._parentIds[instanceIndex];
+    hasParent = parentId !== instanceIndex;
+    instanceIndex = parentId;
+  }
+}
+function traverseHierarchy(hierarchy, instanceIndex, endConditionCallback) {
+  const parentCounts = hierarchy._parentCounts;
+  const parentIds = hierarchy._parentIds;
+  if (!defined_default(parentIds)) {
+    return endConditionCallback(hierarchy, instanceIndex);
+  } else if (defined_default(parentCounts)) {
+    return traverseHierarchyMultipleParents(
+      hierarchy,
+      instanceIndex,
+      endConditionCallback
+    );
+  }
+  return traverseHierarchySingleParent(
+    hierarchy,
+    instanceIndex,
+    endConditionCallback
+  );
+}
+BatchTableHierarchy.prototype.hasProperty = function(batchId, propertyId) {
+  const result = traverseHierarchy(
+    this,
+    batchId,
+    function(hierarchy, instanceIndex) {
+      const classId = hierarchy._classIds[instanceIndex];
+      const instances = hierarchy._classes[classId].instances;
+      if (defined_default(instances[propertyId])) {
+        return true;
+      }
+    }
+  );
+  return defined_default(result);
+};
+BatchTableHierarchy.prototype.propertyExists = function(propertyId) {
+  const classes = this._classes;
+  const classesLength = classes.length;
+  for (let i = 0; i < classesLength; ++i) {
+    const instances = classes[i].instances;
+    if (defined_default(instances[propertyId])) {
+      return true;
+    }
+  }
+  return false;
+};
+BatchTableHierarchy.prototype.getPropertyIds = function(batchId, results) {
+  results = defined_default(results) ? results : [];
+  results.length = 0;
+  traverseHierarchy(this, batchId, function(hierarchy, instanceIndex) {
+    const classId = hierarchy._classIds[instanceIndex];
+    const instances = hierarchy._classes[classId].instances;
+    for (const name in instances) {
+      if (instances.hasOwnProperty(name)) {
+        if (results.indexOf(name) === -1) {
+          results.push(name);
+        }
+      }
+    }
+  });
+  return results;
+};
+BatchTableHierarchy.prototype.getProperty = function(batchId, propertyId) {
+  return traverseHierarchy(this, batchId, function(hierarchy, instanceIndex) {
+    const classId = hierarchy._classIds[instanceIndex];
+    const instanceClass = hierarchy._classes[classId];
+    const indexInClass = hierarchy._classIndexes[instanceIndex];
+    const propertyValues = instanceClass.instances[propertyId];
+    if (defined_default(propertyValues)) {
+      if (defined_default(propertyValues.typedArray)) {
+        return getBinaryProperty(propertyValues, indexInClass);
+      }
+      return clone_default(propertyValues[indexInClass], true);
+    }
+  });
+};
+function getBinaryProperty(binaryProperty, index) {
+  const typedArray = binaryProperty.typedArray;
+  const componentCount = binaryProperty.componentCount;
+  if (componentCount === 1) {
+    return typedArray[index];
+  }
+  return binaryProperty.type.unpack(typedArray, index * componentCount);
+}
+BatchTableHierarchy.prototype.setProperty = function(batchId, propertyId, value) {
+  const result = traverseHierarchy(
+    this,
+    batchId,
+    function(hierarchy, instanceIndex) {
+      const classId = hierarchy._classIds[instanceIndex];
+      const instanceClass = hierarchy._classes[classId];
+      const indexInClass = hierarchy._classIndexes[instanceIndex];
+      const propertyValues = instanceClass.instances[propertyId];
+      if (defined_default(propertyValues)) {
+        if (instanceIndex !== batchId) {
+          throw new DeveloperError_default(
+            `Inherited property "${propertyId}" is read-only.`
+          );
+        }
+        if (defined_default(propertyValues.typedArray)) {
+          setBinaryProperty(propertyValues, indexInClass, value);
+        } else {
+          propertyValues[indexInClass] = clone_default(value, true);
+        }
+        return true;
+      }
+    }
+  );
+  return defined_default(result);
+};
+function setBinaryProperty(binaryProperty, index, value) {
+  const typedArray = binaryProperty.typedArray;
+  const componentCount = binaryProperty.componentCount;
+  if (componentCount === 1) {
+    typedArray[index] = value;
+  } else {
+    binaryProperty.type.pack(value, typedArray, index * componentCount);
+  }
+}
+BatchTableHierarchy.prototype.isClass = function(batchId, className) {
+  const result = traverseHierarchy(
+    this,
+    batchId,
+    function(hierarchy, instanceIndex) {
+      const classId = hierarchy._classIds[instanceIndex];
+      const instanceClass = hierarchy._classes[classId];
+      if (instanceClass.name === className) {
+        return true;
+      }
+    }
+  );
+  return defined_default(result);
+};
+BatchTableHierarchy.prototype.getClassName = function(batchId) {
+  const classId = this._classIds[batchId];
+  const instanceClass = this._classes[classId];
+  return instanceClass.name;
+};
+var BatchTableHierarchy_default = BatchTableHierarchy;
+
+// packages/engine/Source/Scene/Cesium3DTileColorBlendMode.js
+var Cesium3DTileColorBlendMode = {
+  /**
+   * Multiplies the source color by the feature color.
+   *
+   * @type {number}
+   * @constant
+   */
+  HIGHLIGHT: 0,
+  /**
+   * Replaces the source color with the feature color.
+   *
+   * @type {number}
+   * @constant
+   */
+  REPLACE: 1,
+  /**
+   * Blends the source color and feature color together.
+   *
+   * @type {number}
+   * @constant
+   */
+  MIX: 2
+};
+Object.freeze(Cesium3DTileColorBlendMode);
+var Cesium3DTileColorBlendMode_default = Cesium3DTileColorBlendMode;
+
+// packages/engine/Source/Scene/Cesium3DTileBatchTable.js
+var DEFAULT_COLOR_VALUE = BatchTexture_default.DEFAULT_COLOR_VALUE;
+var DEFAULT_SHOW_VALUE = BatchTexture_default.DEFAULT_SHOW_VALUE;
+function Cesium3DTileBatchTable(content, featuresLength, batchTableJson, batchTableBinary, colorChangedCallback) {
+  this.featuresLength = featuresLength;
+  let extensions;
+  if (defined_default(batchTableJson)) {
+    extensions = batchTableJson.extensions;
+  }
+  this._extensions = extensions ?? {};
+  const properties = initializeProperties(batchTableJson);
+  this._properties = properties;
+  this._batchTableHierarchy = initializeHierarchy(
+    this,
+    batchTableJson,
+    batchTableBinary
+  );
+  const binaryProperties = getBinaryProperties(
+    featuresLength,
+    properties,
+    batchTableBinary
+  );
+  this._binaryPropertiesByteLength = countBinaryPropertyMemory2(binaryProperties);
+  this._batchTableBinaryProperties = binaryProperties;
+  this._content = content;
+  this._batchTexture = new BatchTexture_default({
+    featuresLength,
+    colorChangedCallback,
+    owner: content,
+    statistics: content.tileset.statistics
+  });
+}
+Cesium3DTileBatchTable._deprecationWarning = deprecationWarning_default;
+Object.defineProperties(Cesium3DTileBatchTable.prototype, {
+  /**
+   * Size of the batch table, including the batch table hierarchy's binary
+   * buffers and any binary properties. JSON data is not counted.
+   *
+   * @memberof Cesium3DTileBatchTable.prototype
+   * @type {number}
+   * @readonly
+   * @private
+   */
+  batchTableByteLength: {
+    get: function() {
+      let totalByteLength = this._binaryPropertiesByteLength;
+      if (defined_default(this._batchTableHierarchy)) {
+        totalByteLength += this._batchTableHierarchy.byteLength;
+      }
+      totalByteLength += this._batchTexture.byteLength;
+      return totalByteLength;
+    }
+  }
+});
+function initializeProperties(jsonHeader) {
+  const properties = {};
+  if (!defined_default(jsonHeader)) {
+    return properties;
+  }
+  for (const propertyName in jsonHeader) {
+    if (jsonHeader.hasOwnProperty(propertyName) && propertyName !== "HIERARCHY" && // Deprecated HIERARCHY property
+    propertyName !== "extensions" && propertyName !== "extras") {
+      properties[propertyName] = clone_default(jsonHeader[propertyName], true);
+    }
+  }
+  return properties;
+}
+function initializeHierarchy(batchTable, jsonHeader, binaryBody) {
+  if (!defined_default(jsonHeader)) {
+    return;
+  }
+  let hierarchy = batchTable._extensions["3DTILES_batch_table_hierarchy"];
+  const legacyHierarchy = jsonHeader.HIERARCHY;
+  if (defined_default(legacyHierarchy)) {
+    Cesium3DTileBatchTable._deprecationWarning(
+      "batchTableHierarchyExtension",
+      "The batch table HIERARCHY property has been moved to an extension. Use extensions.3DTILES_batch_table_hierarchy instead."
+    );
+    batchTable._extensions["3DTILES_batch_table_hierarchy"] = legacyHierarchy;
+    hierarchy = legacyHierarchy;
+  }
+  if (!defined_default(hierarchy)) {
+    return;
+  }
+  return new BatchTableHierarchy_default({
+    extension: hierarchy,
+    binaryBody
+  });
+}
+function getBinaryProperties(featuresLength, properties, binaryBody) {
+  let binaryProperties;
+  for (const name in properties) {
+    if (properties.hasOwnProperty(name)) {
+      const property = properties[name];
+      const byteOffset = property.byteOffset;
+      if (defined_default(byteOffset)) {
+        const componentType = property.componentType;
+        const type = property.type;
+        if (!defined_default(componentType)) {
+          throw new RuntimeError_default("componentType is required.");
+        }
+        if (!defined_default(type)) {
+          throw new RuntimeError_default("type is required.");
+        }
+        if (!defined_default(binaryBody)) {
+          throw new RuntimeError_default(
+            `Property ${name} requires a batch table binary.`
+          );
+        }
+        const binaryAccessor = getBinaryAccessor_default(property);
+        const componentCount = binaryAccessor.componentsPerAttribute;
+        const classType = binaryAccessor.classType;
+        const typedArray = binaryAccessor.createArrayBufferView(
+          binaryBody.buffer,
+          binaryBody.byteOffset + byteOffset,
+          featuresLength
+        );
+        if (!defined_default(binaryProperties)) {
+          binaryProperties = {};
+        }
+        binaryProperties[name] = {
+          typedArray,
+          componentCount,
+          type: classType
+        };
+      }
+    }
+  }
+  return binaryProperties;
+}
+function countBinaryPropertyMemory2(binaryProperties) {
+  if (!defined_default(binaryProperties)) {
+    return 0;
+  }
+  let byteLength = 0;
+  for (const name in binaryProperties) {
+    if (binaryProperties.hasOwnProperty(name)) {
+      byteLength += binaryProperties[name].typedArray.byteLength;
+    }
+  }
+  return byteLength;
+}
+Cesium3DTileBatchTable.getBinaryProperties = function(featuresLength, batchTableJson, batchTableBinary) {
+  return getBinaryProperties(featuresLength, batchTableJson, batchTableBinary);
+};
+Cesium3DTileBatchTable.prototype.setShow = function(batchId, show) {
+  this._batchTexture.setShow(batchId, show);
+};
+Cesium3DTileBatchTable.prototype.setAllShow = function(show) {
+  this._batchTexture.setAllShow(show);
+};
+Cesium3DTileBatchTable.prototype.getShow = function(batchId) {
+  return this._batchTexture.getShow(batchId);
+};
+Cesium3DTileBatchTable.prototype.setColor = function(batchId, color) {
+  this._batchTexture.setColor(batchId, color);
+};
+Cesium3DTileBatchTable.prototype.setAllColor = function(color) {
+  this._batchTexture.setAllColor(color);
+};
+Cesium3DTileBatchTable.prototype.getColor = function(batchId, result) {
+  return this._batchTexture.getColor(batchId, result);
+};
+Cesium3DTileBatchTable.prototype.getPickColor = function(batchId) {
+  return this._batchTexture.getPickColor(batchId);
+};
+var scratchColor2 = new Color_default();
+Cesium3DTileBatchTable.prototype.applyStyle = function(style) {
+  if (!defined_default(style)) {
+    this.setAllColor(DEFAULT_COLOR_VALUE);
+    this.setAllShow(DEFAULT_SHOW_VALUE);
+    return;
+  }
+  const content = this._content;
+  const length = this.featuresLength;
+  for (let i = 0; i < length; ++i) {
+    const feature = content.getFeature(i);
+    const color = defined_default(style.color) ? style.color.evaluateColor(feature, scratchColor2) ?? DEFAULT_COLOR_VALUE : DEFAULT_COLOR_VALUE;
+    const show = defined_default(style.show) ? style.show.evaluate(feature) ?? DEFAULT_SHOW_VALUE : DEFAULT_SHOW_VALUE;
+    this.setColor(i, color);
+    this.setShow(i, show);
+  }
+};
+function getBinaryProperty2(binaryProperty, index) {
+  const typedArray = binaryProperty.typedArray;
+  const componentCount = binaryProperty.componentCount;
+  if (componentCount === 1) {
+    return typedArray[index];
+  }
+  return binaryProperty.type.unpack(typedArray, index * componentCount);
+}
+function setBinaryProperty2(binaryProperty, index, value) {
+  const typedArray = binaryProperty.typedArray;
+  const componentCount = binaryProperty.componentCount;
+  if (componentCount === 1) {
+    typedArray[index] = value;
+  } else {
+    binaryProperty.type.pack(value, typedArray, index * componentCount);
+  }
+}
+function checkBatchId2(batchId, featuresLength) {
+  if (!defined_default(batchId) || batchId < 0 || batchId >= featuresLength) {
+    throw new DeveloperError_default(
+      `batchId is required and must be between zero and featuresLength - 1 (${featuresLength}` - +")."
+    );
+  }
+}
+Cesium3DTileBatchTable.prototype.isClass = function(batchId, className) {
+  checkBatchId2(batchId, this.featuresLength);
+  Check_default.typeOf.string("className", className);
+  const hierarchy = this._batchTableHierarchy;
+  if (!defined_default(hierarchy)) {
+    return false;
+  }
+  return hierarchy.isClass(batchId, className);
+};
+Cesium3DTileBatchTable.prototype.isExactClass = function(batchId, className) {
+  Check_default.typeOf.string("className", className);
+  return this.getExactClassName(batchId) === className;
+};
+Cesium3DTileBatchTable.prototype.getExactClassName = function(batchId) {
+  checkBatchId2(batchId, this.featuresLength);
+  const hierarchy = this._batchTableHierarchy;
+  if (!defined_default(hierarchy)) {
+    return void 0;
+  }
+  return hierarchy.getClassName(batchId);
+};
+Cesium3DTileBatchTable.prototype.hasProperty = function(batchId, name) {
+  checkBatchId2(batchId, this.featuresLength);
+  Check_default.typeOf.string("name", name);
+  return defined_default(this._properties[name]) || defined_default(this._batchTableHierarchy) && this._batchTableHierarchy.hasProperty(batchId, name);
+};
+Cesium3DTileBatchTable.prototype.hasPropertyBySemantic = function() {
+  return false;
+};
+Cesium3DTileBatchTable.prototype.getPropertyIds = function(batchId, results) {
+  checkBatchId2(batchId, this.featuresLength);
+  results = defined_default(results) ? results : [];
+  results.length = 0;
+  const scratchPropertyIds = Object.keys(this._properties);
+  addAllToArray_default(results, scratchPropertyIds);
+  if (defined_default(this._batchTableHierarchy)) {
+    const propertyIds = this._batchTableHierarchy.getPropertyIds(
+      batchId,
+      scratchPropertyIds
+    );
+    addAllToArray_default(results, propertyIds);
+  }
+  return results;
+};
+Cesium3DTileBatchTable.prototype.getPropertyBySemantic = function(batchId, name) {
+  return void 0;
+};
+Cesium3DTileBatchTable.prototype.getProperty = function(batchId, name) {
+  checkBatchId2(batchId, this.featuresLength);
+  Check_default.typeOf.string("name", name);
+  if (defined_default(this._batchTableBinaryProperties)) {
+    const binaryProperty = this._batchTableBinaryProperties[name];
+    if (defined_default(binaryProperty)) {
+      return getBinaryProperty2(binaryProperty, batchId);
+    }
+  }
+  const propertyValues = this._properties[name];
+  if (defined_default(propertyValues)) {
+    return clone_default(propertyValues[batchId], true);
+  }
+  if (defined_default(this._batchTableHierarchy)) {
+    const hierarchyProperty = this._batchTableHierarchy.getProperty(
+      batchId,
+      name
+    );
+    if (defined_default(hierarchyProperty)) {
+      return hierarchyProperty;
+    }
+  }
+  return void 0;
+};
+Cesium3DTileBatchTable.prototype.setProperty = function(batchId, name, value) {
+  const featuresLength = this.featuresLength;
+  checkBatchId2(batchId, featuresLength);
+  Check_default.typeOf.string("name", name);
+  if (defined_default(this._batchTableBinaryProperties)) {
+    const binaryProperty = this._batchTableBinaryProperties[name];
+    if (defined_default(binaryProperty)) {
+      setBinaryProperty2(binaryProperty, batchId, value);
+      return;
+    }
+  }
+  if (defined_default(this._batchTableHierarchy)) {
+    if (this._batchTableHierarchy.setProperty(batchId, name, value)) {
+      return;
+    }
+  }
+  let propertyValues = this._properties[name];
+  if (!defined_default(propertyValues)) {
+    this._properties[name] = new Array(featuresLength);
+    propertyValues = this._properties[name];
+  }
+  propertyValues[batchId] = clone_default(value, true);
+};
+function getGlslComputeSt2(batchTable) {
+  if (batchTable._batchTexture.textureDimensions.y === 1) {
+    return "uniform vec4 tile_textureStep; \nvec2 computeSt(float batchId) \n{ \n    float stepX = tile_textureStep.x; \n    float centerX = tile_textureStep.y; \n    return vec2(centerX + (batchId * stepX), 0.5); \n} \n";
+  }
+  return "uniform vec4 tile_textureStep; \nuniform vec2 tile_textureDimensions; \nvec2 computeSt(float batchId) \n{ \n    float stepX = tile_textureStep.x; \n    float centerX = tile_textureStep.y; \n    float stepY = tile_textureStep.z; \n    float centerY = tile_textureStep.w; \n    float xId = mod(batchId, tile_textureDimensions.x); \n    float yId = floor(batchId / tile_textureDimensions.x); \n    return vec2(centerX + (xId * stepX), centerY + (yId * stepY)); \n} \n";
+}
+Cesium3DTileBatchTable.prototype.getVertexShaderCallback = function(handleTranslucent, batchIdAttributeName, diffuseAttributeOrUniformName) {
+  if (this.featuresLength === 0) {
+    return;
+  }
+  const that = this;
+  return function(source) {
+    const renamedSource = modifyDiffuse(
+      source,
+      diffuseAttributeOrUniformName,
+      false
+    );
+    let newMain;
+    if (ContextLimits_default.maximumVertexTextureImageUnits > 0) {
+      newMain = "";
+      if (handleTranslucent) {
+        newMain += "uniform bool tile_translucentCommand; \n";
+      }
+      newMain += `${"uniform sampler2D tile_batchTexture; \nout vec4 tile_featureColor; \nout vec2 tile_featureSt; \nvoid main() \n{ \n    vec2 st = computeSt("}${batchIdAttributeName}); 
+    vec4 featureProperties = texture(tile_batchTexture, st); 
+    tile_color(featureProperties); 
+    float show = ceil(featureProperties.a); 
+    gl_Position *= show; 
+`;
+      if (handleTranslucent) {
+        newMain += "    bool isStyleTranslucent = (featureProperties.a != 1.0); \n    if (czm_pass == czm_passTranslucent) \n    { \n        if (!isStyleTranslucent && !tile_translucentCommand) \n        { \n            gl_Position *= 0.0; \n        } \n    } \n    else \n    { \n        if (isStyleTranslucent) \n        { \n            gl_Position *= 0.0; \n        } \n    } \n";
+      }
+      newMain += "    tile_featureColor = featureProperties; \n    tile_featureSt = st; \n}";
+    } else {
+      newMain = `${"out vec2 tile_featureSt; \nvoid main() \n{ \n    tile_color(vec4(1.0)); \n    tile_featureSt = computeSt("}${batchIdAttributeName}); 
+}`;
+    }
+    return `${renamedSource}
+${getGlslComputeSt2(that)}${newMain}`;
+  };
+};
+function getDefaultShader(source, applyHighlight) {
+  source = ShaderSource_default.replaceMain(source, "tile_main");
+  if (!applyHighlight) {
+    return `${source}void tile_color(vec4 tile_featureColor) 
+{ 
+    tile_main(); 
+} 
+`;
+  }
+  return `${source}uniform float tile_colorBlend; 
+void tile_color(vec4 tile_featureColor) 
+{ 
+    tile_main(); 
+    tile_featureColor = czm_gammaCorrect(tile_featureColor); 
+    out_FragColor.a *= tile_featureColor.a; 
+    float highlight = ceil(tile_colorBlend); 
+    out_FragColor.rgb *= mix(tile_featureColor.rgb, vec3(1.0), highlight); 
+} 
+`;
+}
+function replaceDiffuseTextureCalls(source, diffuseAttributeOrUniformName) {
+  const functionCall = `texture(${diffuseAttributeOrUniformName}`;
+  let fromIndex = 0;
+  let startIndex = source.indexOf(functionCall, fromIndex);
+  let endIndex;
+  while (startIndex > -1) {
+    let nestedLevel = 0;
+    for (let i = startIndex; i < source.length; ++i) {
+      const character = source.charAt(i);
+      if (character === "(") {
+        ++nestedLevel;
+      } else if (character === ")") {
+        --nestedLevel;
+        if (nestedLevel === 0) {
+          endIndex = i + 1;
+          break;
+        }
+      }
+    }
+    const extractedFunction = source.slice(startIndex, endIndex);
+    const replacedFunction = `tile_diffuse_final(${extractedFunction}, tile_diffuse)`;
+    source = source.slice(0, startIndex) + replacedFunction + source.slice(endIndex);
+    fromIndex = startIndex + replacedFunction.length;
+    startIndex = source.indexOf(functionCall, fromIndex);
+  }
+  return source;
+}
+function modifyDiffuse(source, diffuseAttributeOrUniformName, applyHighlight) {
+  if (!defined_default(diffuseAttributeOrUniformName)) {
+    return getDefaultShader(source, applyHighlight);
+  }
+  let regex = new RegExp(
+    `(uniform|attribute|in)\\s+(vec[34]|sampler2D)\\s+${diffuseAttributeOrUniformName};`
+  );
+  const uniformMatch = source.match(regex);
+  if (!defined_default(uniformMatch)) {
+    return getDefaultShader(source, applyHighlight);
+  }
+  const declaration = uniformMatch[0];
+  const type = uniformMatch[2];
+  source = ShaderSource_default.replaceMain(source, "tile_main");
+  source = source.replace(declaration, "");
+  const finalDiffuseFunction = "bool isWhite(vec3 color) \n{ \n    return all(greaterThan(color, vec3(1.0 - czm_epsilon3))); \n} \nvec4 tile_diffuse_final(vec4 sourceDiffuse, vec4 tileDiffuse) \n{ \n    vec4 blendDiffuse = mix(sourceDiffuse, tileDiffuse, tile_colorBlend); \n    vec4 diffuse = isWhite(tileDiffuse.rgb) ? sourceDiffuse : blendDiffuse; \n    return vec4(diffuse.rgb, sourceDiffuse.a); \n} \n";
+  const highlight = "    tile_featureColor = czm_gammaCorrect(tile_featureColor); \n    out_FragColor.a *= tile_featureColor.a; \n    float highlight = ceil(tile_colorBlend); \n    out_FragColor.rgb *= mix(tile_featureColor.rgb, vec3(1.0), highlight); \n";
+  let setColor;
+  if (type === "vec3" || type === "vec4") {
+    const sourceDiffuse = type === "vec3" ? `vec4(${diffuseAttributeOrUniformName}, 1.0)` : diffuseAttributeOrUniformName;
+    const replaceDiffuse = type === "vec3" ? "tile_diffuse.xyz" : "tile_diffuse";
+    regex = new RegExp(diffuseAttributeOrUniformName, "g");
+    source = source.replace(regex, replaceDiffuse);
+    setColor = `    vec4 source = ${sourceDiffuse}; 
+    tile_diffuse = tile_diffuse_final(source, tile_featureColor); 
+    tile_main(); 
+`;
+  } else if (type === "sampler2D") {
+    source = replaceDiffuseTextureCalls(source, diffuseAttributeOrUniformName);
+    setColor = "    tile_diffuse = tile_featureColor; \n    tile_main(); \n";
+  }
+  source = `${"uniform float tile_colorBlend; \nvec4 tile_diffuse = vec4(1.0); \n"}${finalDiffuseFunction}${declaration}
+${source}
+void tile_color(vec4 tile_featureColor) 
+{ 
+${setColor}`;
+  if (applyHighlight) {
+    source += highlight;
+  }
+  source += "} \n";
+  return source;
+}
+Cesium3DTileBatchTable.prototype.getFragmentShaderCallback = function(handleTranslucent, diffuseAttributeOrUniformName, hasPremultipliedAlpha) {
+  if (this.featuresLength === 0) {
+    return;
+  }
+  return function(source) {
+    source = modifyDiffuse(source, diffuseAttributeOrUniformName, true);
+    if (ContextLimits_default.maximumVertexTextureImageUnits > 0) {
+      source += "uniform sampler2D tile_pickTexture; \nin vec2 tile_featureSt; \nin vec4 tile_featureColor; \nvoid main() \n{ \n    tile_color(tile_featureColor); \n";
+      if (hasPremultipliedAlpha) {
+        source += "    out_FragColor.rgb *= out_FragColor.a; \n";
+      }
+      source += "}";
+    } else {
+      if (handleTranslucent) {
+        source += "uniform bool tile_translucentCommand; \n";
+      }
+      source += "uniform sampler2D tile_pickTexture; \nuniform sampler2D tile_batchTexture; \nin vec2 tile_featureSt; \nvoid main() \n{ \n    vec4 featureProperties = texture(tile_batchTexture, tile_featureSt); \n    if (featureProperties.a == 0.0) { \n        discard; \n    } \n";
+      if (handleTranslucent) {
+        source += "    bool isStyleTranslucent = (featureProperties.a != 1.0); \n    if (czm_pass == czm_passTranslucent) \n    { \n        if (!isStyleTranslucent && !tile_translucentCommand) \n        { \n            discard; \n        } \n    } \n    else \n    { \n        if (isStyleTranslucent) \n        { \n            discard; \n        } \n    } \n";
+      }
+      source += "    tile_color(featureProperties); \n";
+      if (hasPremultipliedAlpha) {
+        source += "    out_FragColor.rgb *= out_FragColor.a; \n";
+      }
+      source += "} \n";
+    }
+    return source;
+  };
+};
+function getColorBlend(batchTable) {
+  const tileset = batchTable._content.tileset;
+  const colorBlendMode = tileset.colorBlendMode;
+  const colorBlendAmount = tileset.colorBlendAmount;
+  if (colorBlendMode === Cesium3DTileColorBlendMode_default.HIGHLIGHT) {
+    return 0;
+  }
+  if (colorBlendMode === Cesium3DTileColorBlendMode_default.REPLACE) {
+    return 1;
+  }
+  if (colorBlendMode === Cesium3DTileColorBlendMode_default.MIX) {
+    return Math_default.clamp(colorBlendAmount, Math_default.EPSILON4, 1);
+  }
+  throw new DeveloperError_default(`Invalid color blend mode "${colorBlendMode}".`);
+}
+Cesium3DTileBatchTable.prototype.getUniformMapCallback = function() {
+  if (this.featuresLength === 0) {
+    return;
+  }
+  const that = this;
+  return function(uniformMap2) {
+    const batchUniformMap = {
+      tile_batchTexture: function() {
+        return that._batchTexture.batchTexture ?? that._batchTexture.defaultTexture;
+      },
+      tile_textureDimensions: function() {
+        return that._batchTexture.textureDimensions;
+      },
+      tile_textureStep: function() {
+        return that._batchTexture.textureStep;
+      },
+      tile_colorBlend: function() {
+        return getColorBlend(that);
+      },
+      tile_pickTexture: function() {
+        return that._batchTexture.pickTexture;
+      }
+    };
+    return combine_default(uniformMap2, batchUniformMap);
+  };
+};
+Cesium3DTileBatchTable.prototype.getPickId = function() {
+  return "texture(tile_pickTexture, tile_featureSt)";
+};
+var StyleCommandsNeeded = {
+  ALL_OPAQUE: 0,
+  ALL_TRANSLUCENT: 1,
+  OPAQUE_AND_TRANSLUCENT: 2
+};
+Cesium3DTileBatchTable.prototype.addDerivedCommands = function(frameState, commandStart) {
+  const commandList = frameState.commandList;
+  const commandEnd = commandList.length;
+  const tile = this._content._tile;
+  const finalResolution = tile._finalResolution;
+  const tileset = tile.tileset;
+  const bivariateVisibilityTest = tileset.isSkippingLevelOfDetail && tileset.hasMixedContent && frameState.context.stencilBuffer;
+  const styleCommandsNeeded = getStyleCommandsNeeded(this);
+  for (let i = commandStart; i < commandEnd; ++i) {
+    const command = commandList[i];
+    if (command.pass === Pass_default.COMPUTE) {
+      continue;
+    }
+    let derivedCommands = command.derivedCommands.tileset;
+    if (!defined_default(derivedCommands) || command.dirty) {
+      derivedCommands = {};
+      command.derivedCommands.tileset = derivedCommands;
+      derivedCommands.originalCommand = deriveCommand(command);
+      command.dirty = false;
+    }
+    const originalCommand = derivedCommands.originalCommand;
+    if (styleCommandsNeeded !== StyleCommandsNeeded.ALL_OPAQUE && command.pass !== Pass_default.TRANSLUCENT) {
+      if (!defined_default(derivedCommands.translucent)) {
+        derivedCommands.translucent = deriveTranslucentCommand(originalCommand);
+      }
+    }
+    if (styleCommandsNeeded !== StyleCommandsNeeded.ALL_TRANSLUCENT && command.pass !== Pass_default.TRANSLUCENT) {
+      if (!defined_default(derivedCommands.opaque)) {
+        derivedCommands.opaque = deriveOpaqueCommand(originalCommand);
+      }
+      if (bivariateVisibilityTest) {
+        if (!finalResolution) {
+          if (!defined_default(derivedCommands.zback)) {
+            derivedCommands.zback = deriveZBackfaceCommand(
+              frameState.context,
+              originalCommand
+            );
+          }
+          tileset._backfaceCommands.push(derivedCommands.zback);
+        }
+        if (!defined_default(derivedCommands.stencil) || tile._selectionDepth !== getLastSelectionDepth(derivedCommands.stencil)) {
+          if (command.renderState.depthMask) {
+            derivedCommands.stencil = deriveStencilCommand(
+              originalCommand,
+              tile._selectionDepth
+            );
+          } else {
+            derivedCommands.stencil = derivedCommands.opaque;
+          }
+        }
+      }
+    }
+    const opaqueCommand = bivariateVisibilityTest ? derivedCommands.stencil : derivedCommands.opaque;
+    const translucentCommand = derivedCommands.translucent;
+    if (command.pass !== Pass_default.TRANSLUCENT) {
+      if (styleCommandsNeeded === StyleCommandsNeeded.ALL_OPAQUE) {
+        commandList[i] = opaqueCommand;
+      }
+      if (styleCommandsNeeded === StyleCommandsNeeded.ALL_TRANSLUCENT) {
+        commandList[i] = translucentCommand;
+      }
+      if (styleCommandsNeeded === StyleCommandsNeeded.OPAQUE_AND_TRANSLUCENT) {
+        commandList[i] = opaqueCommand;
+        commandList.push(translucentCommand);
+      }
+    } else {
+      commandList[i] = originalCommand;
+    }
+  }
+};
+function getStyleCommandsNeeded(batchTable) {
+  const translucentFeaturesLength = batchTable._batchTexture.translucentFeaturesLength;
+  if (translucentFeaturesLength === 0) {
+    return StyleCommandsNeeded.ALL_OPAQUE;
+  } else if (translucentFeaturesLength === batchTable.featuresLength) {
+    return StyleCommandsNeeded.ALL_TRANSLUCENT;
+  }
+  return StyleCommandsNeeded.OPAQUE_AND_TRANSLUCENT;
+}
+function deriveCommand(command) {
+  const derivedCommand = DrawCommand_default.shallowClone(command);
+  const translucentCommand = derivedCommand.pass === Pass_default.TRANSLUCENT;
+  derivedCommand.uniformMap = defined_default(derivedCommand.uniformMap) ? derivedCommand.uniformMap : {};
+  derivedCommand.uniformMap.tile_translucentCommand = function() {
+    return translucentCommand;
+  };
+  return derivedCommand;
+}
+function deriveTranslucentCommand(command) {
+  const derivedCommand = DrawCommand_default.shallowClone(command);
+  derivedCommand.pass = Pass_default.TRANSLUCENT;
+  derivedCommand.renderState = getTranslucentRenderState(command.renderState);
+  return derivedCommand;
+}
+function deriveOpaqueCommand(command) {
+  const derivedCommand = DrawCommand_default.shallowClone(command);
+  derivedCommand.renderState = getOpaqueRenderState(command.renderState);
+  return derivedCommand;
+}
+function getLogDepthPolygonOffsetFragmentShaderProgram(context, shaderProgram) {
+  let shader = context.shaderCache.getDerivedShaderProgram(
+    shaderProgram,
+    "zBackfaceLogDepth"
+  );
+  if (!defined_default(shader)) {
+    const fs = shaderProgram.fragmentShaderSource.clone();
+    fs.defines = defined_default(fs.defines) ? fs.defines.slice(0) : [];
+    fs.defines.push("POLYGON_OFFSET");
+    shader = context.shaderCache.createDerivedShaderProgram(
+      shaderProgram,
+      "zBackfaceLogDepth",
+      {
+        vertexShaderSource: shaderProgram.vertexShaderSource,
+        fragmentShaderSource: fs,
+        attributeLocations: shaderProgram._attributeLocations
+      }
+    );
+  }
+  return shader;
+}
+function deriveZBackfaceCommand(context, command) {
+  const derivedCommand = DrawCommand_default.shallowClone(command);
+  const rs = clone_default(derivedCommand.renderState, true);
+  rs.cull.enabled = true;
+  rs.cull.face = CullFace_default.FRONT;
+  rs.colorMask = {
+    red: false,
+    green: false,
+    blue: false,
+    alpha: false
+  };
+  rs.polygonOffset = {
+    enabled: true,
+    factor: 5,
+    units: 5
+  };
+  rs.stencilTest = StencilConstants_default.setCesium3DTileBit();
+  rs.stencilMask = StencilConstants_default.CESIUM_3D_TILE_MASK;
+  derivedCommand.renderState = RenderState_default.fromCache(rs);
+  derivedCommand.castShadows = false;
+  derivedCommand.receiveShadows = false;
+  derivedCommand.uniformMap = clone_default(command.uniformMap);
+  const polygonOffset = new Cartesian2_default(5, 5);
+  derivedCommand.uniformMap.u_polygonOffset = function() {
+    return polygonOffset;
+  };
+  derivedCommand.shaderProgram = getLogDepthPolygonOffsetFragmentShaderProgram(
+    context,
+    command.shaderProgram
+  );
+  return derivedCommand;
+}
+function deriveStencilCommand(command, reference) {
+  const derivedCommand = DrawCommand_default.shallowClone(command);
+  const rs = clone_default(derivedCommand.renderState, true);
+  rs.stencilTest.enabled = true;
+  rs.stencilTest.mask = StencilConstants_default.SKIP_LOD_MASK;
+  rs.stencilTest.reference = StencilConstants_default.CESIUM_3D_TILE_MASK | reference << StencilConstants_default.SKIP_LOD_BIT_SHIFT;
+  rs.stencilTest.frontFunction = StencilFunction_default.GREATER_OR_EQUAL;
+  rs.stencilTest.frontOperation.zPass = StencilOperation_default.REPLACE;
+  rs.stencilTest.backFunction = StencilFunction_default.GREATER_OR_EQUAL;
+  rs.stencilTest.backOperation.zPass = StencilOperation_default.REPLACE;
+  rs.stencilMask = StencilConstants_default.CESIUM_3D_TILE_MASK | StencilConstants_default.SKIP_LOD_MASK;
+  derivedCommand.renderState = RenderState_default.fromCache(rs);
+  return derivedCommand;
+}
+function getLastSelectionDepth(stencilCommand) {
+  const reference = stencilCommand.renderState.stencilTest.reference;
+  return (reference & StencilConstants_default.SKIP_LOD_MASK) >>> StencilConstants_default.SKIP_LOD_BIT_SHIFT;
+}
+function getTranslucentRenderState(renderState) {
+  const rs = clone_default(renderState, true);
+  rs.cull.enabled = false;
+  rs.depthTest.enabled = true;
+  rs.depthMask = false;
+  rs.blending = BlendingState_default.ALPHA_BLEND;
+  rs.stencilTest = StencilConstants_default.setCesium3DTileBit();
+  rs.stencilMask = StencilConstants_default.CESIUM_3D_TILE_MASK;
+  return RenderState_default.fromCache(rs);
+}
+function getOpaqueRenderState(renderState) {
+  const rs = clone_default(renderState, true);
+  rs.stencilTest = StencilConstants_default.setCesium3DTileBit();
+  rs.stencilMask = StencilConstants_default.CESIUM_3D_TILE_MASK;
+  return RenderState_default.fromCache(rs);
+}
+Cesium3DTileBatchTable.prototype.update = function(tileset, frameState) {
+  this._batchTexture.update(tileset, frameState);
+};
+Cesium3DTileBatchTable.prototype.isDestroyed = function() {
+  return false;
+};
+Cesium3DTileBatchTable.prototype.destroy = function() {
+  this._batchTexture = this._batchTexture && this._batchTexture.destroy();
+  return destroyObject_default(this);
+};
+var Cesium3DTileBatchTable_default = Cesium3DTileBatchTable;
+
+// packages/engine/Source/Scene/Cesium3DTileFeature.js
+var Cesium3DTileFeature = class _Cesium3DTileFeature {
+  /**
+   * @param {Cesium3DTileContent} content
+   * @param {number} batchId
+   */
+  constructor(content, batchId) {
+    this._content = content;
+    this._batchId = batchId;
+    this._color = void 0;
+  }
+  /**
+   * Gets or sets if the feature will be shown. This is set for all features
+   * when a style's show is evaluated.
+   *
+   * @type {boolean}
+   *
+   * @default true
+   */
+  get show() {
+    return this._content.batchTable.getShow(this._batchId);
+  }
+  set show(value) {
+    this._content.batchTable.setShow(this._batchId, value);
+  }
+  /**
+   * Gets or sets the highlight color multiplied with the feature's color.  When
+   * this is white, the feature's color is not changed. This is set for all features
+   * when a style's color is evaluated.
+   *
+   * @type {Color}
+   *
+   * @default {@link Color.WHITE}
+   */
+  get color() {
+    if (!defined_default(this._color)) {
+      this._color = new Color_default();
+    }
+    return this._content.batchTable.getColor(this._batchId, this._color);
+  }
+  set color(value) {
+    this._content.batchTable.setColor(this._batchId, value);
+  }
+  /**
+   * Gets a typed array containing the ECEF positions of the polyline.
+   * Returns undefined if {@link Cesium3DTileset#vectorKeepDecodedPositions} is false
+   * or the feature is not a polyline in a vector tile.
+   *
+   * @experimental This feature is using part of the 3D Tiles spec that is not final and is subject to change without Cesium's standard deprecation policy.
+   *
+   * @type {Float64Array}
+   */
+  get polylinePositions() {
+    if (!defined_default(this._content.getPolylinePositions)) {
+      return void 0;
+    }
+    return this._content.getPolylinePositions(this._batchId);
+  }
+  /**
+   * Gets the content of the tile containing the feature.
+   *
+   * @type {Cesium3DTileContent}
+   *
+   * @readonly
+   * @private
+   */
+  get content() {
+    return this._content;
+  }
+  /**
+   * Gets the tileset containing the feature.
+   *
+   * @type {Cesium3DTileset}
+   *
+   * @readonly
+   */
+  get tileset() {
+    return this._content.tileset;
+  }
+  /**
+   * All objects returned by {@link Scene#pick} have a <code>primitive</code> property. This returns
+   * the tileset containing the feature.
+   *
+   * @type {Cesium3DTileset}
+   *
+   * @readonly
+   */
+  get primitive() {
+    return this._content.tileset;
+  }
+  /**
+   * Get the feature ID associated with this feature. For 3D Tiles 1.0, the
+   * batch ID is returned. For EXT_mesh_features, this is the feature ID from
+   * the selected feature ID set.
+   *
+   * @type {number}
+   *
+   * @readonly
+   * @experimental This feature is using part of the 3D Tiles spec that is not final and is subject to change without Cesium's standard deprecation policy.
+   */
+  get featureId() {
+    return this._batchId;
+  }
+  /**
+   * @private
+   */
+  get pickId() {
+    return this._content.batchTable.getPickColor(this._batchId);
+  }
+  /**
+   * Returns whether the feature contains this property. This includes properties from this feature's
+   * class and inherited classes when using a batch table hierarchy.
+   *
+   * @see {@link https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_batch_table_hierarchy}
+   *
+   * @param {string} name The case-sensitive name of the property.
+   * @returns {boolean} Whether the feature contains this property.
+   */
+  hasProperty(name) {
+    return this._content.batchTable.hasProperty(this._batchId, name);
+  }
+  /**
+   * Returns an array of property IDs for the feature. This includes properties from this feature's
+   * class and inherited classes when using a batch table hierarchy.
+   *
+   * @see {@link https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_batch_table_hierarchy}
+   *
+   * @param {string[]} [results] An array into which to store the results.
+   * @returns {string[]} The IDs of the feature's properties.
+   */
+  getPropertyIds(results) {
+    return this._content.batchTable.getPropertyIds(this._batchId, results);
+  }
+  /**
+   * Returns a copy of the value of the feature's property with the given name. This includes properties from this feature's
+   * class and inherited classes when using a batch table hierarchy.
+   *
+   * @see {@link https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_batch_table_hierarchy}
+   *
+   * @param {string} name The case-sensitive name of the property.
+   * @returns {*} The value of the property or <code>undefined</code> if the feature does not have this property.
+   *
+   * @example
+   * // Display all the properties for a feature in the console log.
+   * const propertyIds = feature.getPropertyIds();
+   * const length = propertyIds.length;
+   * for (let i = 0; i < length; ++i) {
+   *     const propertyId = propertyIds[i];
+   *     console.log(`{propertyId}: ${feature.getProperty(propertyId)}`);
+   * }
+   */
+  getProperty(name) {
+    return this._content.batchTable.getProperty(this._batchId, name);
+  }
+  /**
+   * Returns a copy of the feature's property with the given name, examining all
+   * the metadata from 3D Tiles 1.0 formats, the EXT_structural_metadata and legacy
+   * EXT_feature_metadata glTF extensions, and the metadata present either in the
+   * tileset JSON (3D Tiles 1.1) or in the 3DTILES_metadata 3D Tiles extension.
+   * Metadata is checked against name from most specific to most general and the
+   * first match is returned. Metadata is checked in this order:
+   *
+   * <ol>
+   *   <li>Batch table (structural metadata) property by semantic</li>
+   *   <li>Batch table (structural metadata) property by property ID</li>
+   *   <li>Content metadata property by semantic</li>
+   *   <li>Content metadata property by property</li>
+   *   <li>Tile metadata property by semantic</li>
+   *   <li>Tile metadata property by property ID</li>
+   *   <li>Subtree metadata property by semantic</li>
+   *   <li>Subtree metadata property by property ID</li>
+   *   <li>Group metadata property by semantic</li>
+   *   <li>Group metadata property by property ID</li>
+   *   <li>Tileset metadata property by semantic</li>
+   *   <li>Tileset metadata property by property ID</li>
+   *   <li>Otherwise, return undefined</li>
+   * </ol>
+   * <p>
+   * For 3D Tiles Next details, see the {@link https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_metadata|3DTILES_metadata Extension}
+   * for 3D Tiles, as well as the {@link https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata|EXT_structural_metadata Extension}
+   * for glTF. For the legacy glTF extension, see {@link https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata|EXT_feature_metadata Extension}
+   * </p>
+   *
+   * @param {Cesium3DTileContent} content The content for accessing the metadata
+   * @param {number} batchId The batch ID (or feature ID) of the feature to get a property for
+   * @param {string} name The semantic or property ID of the feature. Semantics are checked before property IDs in each granularity of metadata.
+   * @privateParam {Cesium3DTileBatchTable} [batchTable] Batch table in which to look up the feature property. If unspecified, `content.batchTable` is used.
+   * @return {*} The value of the property or <code>undefined</code> if the feature does not have this property.
+   *
+   * @experimental This feature is using part of the 3D Tiles spec that is not final and is subject to change without Cesium's standard deprecation policy.
+   */
+  static getPropertyInherited(content, batchId, name, batchTable = content.batchTable) {
+    if (defined_default(batchTable)) {
+      if (batchTable.hasPropertyBySemantic(batchId, name)) {
+        return batchTable.getPropertyBySemantic(batchId, name);
+      }
+      if (batchTable.hasProperty(batchId, name)) {
+        return batchTable.getProperty(batchId, name);
+      }
+    }
+    const contentMetadata = content.metadata;
+    if (defined_default(contentMetadata)) {
+      if (contentMetadata.hasPropertyBySemantic(name)) {
+        return contentMetadata.getPropertyBySemantic(name);
+      }
+      if (contentMetadata.hasProperty(name)) {
+        return contentMetadata.getProperty(name);
+      }
+    }
+    const tile = content.tile;
+    const tileMetadata = tile.metadata;
+    if (defined_default(tileMetadata)) {
+      if (tileMetadata.hasPropertyBySemantic(name)) {
+        return tileMetadata.getPropertyBySemantic(name);
+      }
+      if (tileMetadata.hasProperty(name)) {
+        return tileMetadata.getProperty(name);
+      }
+    }
+    let subtreeMetadata;
+    if (defined_default(tile.implicitSubtree)) {
+      subtreeMetadata = tile.implicitSubtree.metadata;
+    }
+    if (defined_default(subtreeMetadata)) {
+      if (subtreeMetadata.hasPropertyBySemantic(name)) {
+        return subtreeMetadata.getPropertyBySemantic(name);
+      }
+      if (subtreeMetadata.hasProperty(name)) {
+        return subtreeMetadata.getProperty(name);
+      }
+    }
+    const groupMetadata = defined_default(content.group) ? content.group.metadata : void 0;
+    if (defined_default(groupMetadata)) {
+      if (groupMetadata.hasPropertyBySemantic(name)) {
+        return groupMetadata.getPropertyBySemantic(name);
+      }
+      if (groupMetadata.hasProperty(name)) {
+        return groupMetadata.getProperty(name);
+      }
+    }
+    const tilesetMetadata = content.tileset.metadata;
+    if (defined_default(tilesetMetadata)) {
+      if (tilesetMetadata.hasPropertyBySemantic(name)) {
+        return tilesetMetadata.getPropertyBySemantic(name);
+      }
+      if (tilesetMetadata.hasProperty(name)) {
+        return tilesetMetadata.getProperty(name);
+      }
+    }
+    return void 0;
+  }
+  /**
+   * Returns a copy of the value of the feature's property with the given name.
+   * If the feature is contained within a tileset that has metadata (3D Tiles 1.1)
+   * or uses the <code>3DTILES_metadata</code> extension, tileset, group and tile
+   * metadata is inherited.
+   * <p>
+   * To resolve name conflicts, this method resolves names from most specific to
+   * least specific by metadata granularity in the order: feature, tile, group,
+   * tileset. Within each granularity, semantics are resolved first, then other
+   * properties.
+   * </p>
+   * @param {string} name The case-sensitive name of the property.
+   * @returns {*} The value of the property or <code>undefined</code> if the feature does not have this property.
+   * @private
+   */
+  getPropertyInherited(name) {
+    return _Cesium3DTileFeature.getPropertyInherited(
+      this._content,
+      this._batchId,
+      name
+    );
+  }
+  /**
+   * Sets the value of the feature's property with the given name.
+   * <p>
+   * If a property with the given name doesn't exist, it is created.
+   * </p>
+   *
+   * @param {string} name The case-sensitive name of the property.
+   * @param {*} value The value of the property that will be copied.
+   *
+   * @exception {DeveloperError} Inherited batch table hierarchy property is read only.
+   *
+   * @example
+   * const height = feature.getProperty('Height'); // e.g., the height of a building
+   *
+   * @example
+   * const name = 'clicked';
+   * if (feature.getProperty(name)) {
+   *     console.log('already clicked');
+   * } else {
+   *     feature.setProperty(name, true);
+   *     console.log('first click');
+   * }
+   */
+  setProperty(name, value) {
+    this._content.batchTable.setProperty(this._batchId, name, value);
+    this._content.featurePropertiesDirty = true;
+  }
+  /**
+   * Returns whether the feature's class name equals <code>className</code>. Unlike {@link Cesium3DTileFeature#isClass}
+   * this function only checks the feature's exact class and not inherited classes.
+   * <p>
+   * This function returns <code>false</code> if no batch table hierarchy is present.
+   * </p>
+   *
+   * @param {string} className The name to check against.
+   * @returns {boolean} Whether the feature's class name equals <code>className</code>
+   *
+   * @private
+   */
+  isExactClass(className) {
+    return this._content.batchTable.isExactClass(this._batchId, className);
+  }
+  /**
+   * Returns whether the feature's class or any inherited classes are named <code>className</code>.
+   * <p>
+   * This function returns <code>false</code> if no batch table hierarchy is present.
+   * </p>
+   *
+   * @param {string} className The name to check against.
+   * @returns {boolean} Whether the feature's class or inherited classes are named <code>className</code>
+   *
+   * @private
+   */
+  isClass(className) {
+    return this._content.batchTable.isClass(this._batchId, className);
+  }
+  /**
+   * Returns the feature's class name.
+   * <p>
+   * This function returns <code>undefined</code> if no batch table hierarchy is present.
+   * </p>
+   *
+   * @returns {string} The feature's class name.
+   *
+   * @private
+   */
+  getExactClassName() {
+    return this._content.batchTable.getExactClassName(this._batchId);
+  }
+};
+var Cesium3DTileFeature_default = Cesium3DTileFeature;
+
 // packages/engine/Source/Scene/ModelAnimationLoop.js
 var ModelAnimationLoop = {
   /**
@@ -62988,31 +66894,6 @@ var EdgeDisplayMode = {
 };
 Object.freeze(EdgeDisplayMode);
 var EdgeDisplayMode_default = EdgeDisplayMode;
-
-// packages/engine/Source/Core/ArticulationStageType.js
-var ArticulationStageType = {
-  XTRANSLATE: "xTranslate",
-  YTRANSLATE: "yTranslate",
-  ZTRANSLATE: "zTranslate",
-  XROTATE: "xRotate",
-  YROTATE: "yRotate",
-  ZROTATE: "zRotate",
-  XSCALE: "xScale",
-  YSCALE: "yScale",
-  ZSCALE: "zScale",
-  UNIFORMSCALE: "uniformScale"
-};
-Object.freeze(ArticulationStageType);
-var ArticulationStageType_default = ArticulationStageType;
-
-// packages/engine/Source/Core/InterpolationType.js
-var InterpolationType = {
-  STEP: 0,
-  LINEAR: 1,
-  CUBICSPLINE: 2
-};
-Object.freeze(InterpolationType);
-var InterpolationType_default = InterpolationType;
 
 // packages/engine/Source/Scene/JsonMetadataTable.js
 var emptyClass = {};
@@ -71698,740 +75579,6 @@ var ModelAnimationState = {
 };
 Object.freeze(ModelAnimationState);
 var ModelAnimationState_default = ModelAnimationState;
-
-// packages/engine/Source/Core/Spline.js
-function Spline() {
-  this.times = void 0;
-  this.points = void 0;
-  DeveloperError_default.throwInstantiationError();
-}
-Spline.getPointType = function(point) {
-  if (typeof point === "number") {
-    return Number;
-  }
-  if (point instanceof Cartesian3_default) {
-    return Cartesian3_default;
-  }
-  if (point instanceof Quaternion_default) {
-    return Quaternion_default;
-  }
-  throw new DeveloperError_default(
-    "point must be a Cartesian3, Quaternion, or number."
-  );
-};
-Spline.prototype.evaluate = DeveloperError_default.throwInstantiationError;
-Spline.prototype.findTimeInterval = function(time, startIndex) {
-  const times = this.times;
-  const length = times.length;
-  Check_default.typeOf.number("time", time);
-  if (time < times[0] || time > times[length - 1]) {
-    throw new DeveloperError_default("time is out of range.");
-  }
-  startIndex = startIndex ?? 0;
-  if (time >= times[startIndex]) {
-    if (startIndex + 1 < length && time < times[startIndex + 1]) {
-      return startIndex;
-    } else if (startIndex + 2 < length && time < times[startIndex + 2]) {
-      return startIndex + 1;
-    }
-  } else if (startIndex - 1 >= 0 && time >= times[startIndex - 1]) {
-    return startIndex - 1;
-  }
-  let i;
-  if (time > times[startIndex]) {
-    for (i = startIndex; i < length - 1; ++i) {
-      if (time >= times[i] && time < times[i + 1]) {
-        break;
-      }
-    }
-  } else {
-    for (i = startIndex - 1; i >= 0; --i) {
-      if (time >= times[i] && time < times[i + 1]) {
-        break;
-      }
-    }
-  }
-  if (i === length - 1) {
-    i = length - 2;
-  }
-  return i;
-};
-Spline.prototype.wrapTime = function(time) {
-  Check_default.typeOf.number("time", time);
-  const times = this.times;
-  const timeEnd = times[times.length - 1];
-  const timeStart = times[0];
-  const timeStretch = timeEnd - timeStart;
-  let divs;
-  if (time < timeStart) {
-    divs = Math.floor((timeStart - time) / timeStretch) + 1;
-    time += divs * timeStretch;
-  }
-  if (time > timeEnd) {
-    divs = Math.floor((time - timeEnd) / timeStretch) + 1;
-    time -= divs * timeStretch;
-  }
-  return time;
-};
-Spline.prototype.clampTime = function(time) {
-  Check_default.typeOf.number("time", time);
-  const times = this.times;
-  return Math_default.clamp(time, times[0], times[times.length - 1]);
-};
-var Spline_default = Spline;
-
-// packages/engine/Source/Core/ConstantSpline.js
-function ConstantSpline(value) {
-  this._value = value;
-  this._valueType = Spline_default.getPointType(value);
-}
-Object.defineProperties(ConstantSpline.prototype, {
-  /**
-   * The constant value that the spline evaluates to.
-   *
-   * @memberof ConstantSpline.prototype
-   *
-   * @type {number|Cartesian3|Quaternion}
-   * @readonly
-   */
-  value: {
-    get: function() {
-      return this._value;
-    }
-  }
-});
-ConstantSpline.prototype.findTimeInterval = function(time) {
-  throw new DeveloperError_default(
-    "findTimeInterval cannot be called on a ConstantSpline."
-  );
-};
-ConstantSpline.prototype.wrapTime = function(time) {
-  Check_default.typeOf.number("time", time);
-  return 0;
-};
-ConstantSpline.prototype.clampTime = function(time) {
-  Check_default.typeOf.number("time", time);
-  return 0;
-};
-ConstantSpline.prototype.evaluate = function(time, result) {
-  Check_default.typeOf.number("time", time);
-  const value = this._value;
-  const ValueType = this._valueType;
-  if (ValueType === Number) {
-    return value;
-  }
-  return ValueType.clone(value, result);
-};
-var ConstantSpline_default = ConstantSpline;
-
-// packages/engine/Source/Core/LinearSpline.js
-function LinearSpline(options) {
-  options = options ?? Frozen_default.EMPTY_OBJECT;
-  const points = options.points;
-  const times = options.times;
-  if (!defined_default(points) || !defined_default(times)) {
-    throw new DeveloperError_default("points and times are required.");
-  }
-  if (points.length < 2) {
-    throw new DeveloperError_default(
-      "points.length must be greater than or equal to 2."
-    );
-  }
-  if (times.length !== points.length) {
-    throw new DeveloperError_default("times.length must be equal to points.length.");
-  }
-  this._times = times;
-  this._points = points;
-  this._pointType = Spline_default.getPointType(points[0]);
-  this._lastTimeIndex = 0;
-}
-Object.defineProperties(LinearSpline.prototype, {
-  /**
-   * An array of times for the control points.
-   *
-   * @memberof LinearSpline.prototype
-   *
-   * @type {number[]}
-   * @readonly
-   */
-  times: {
-    get: function() {
-      return this._times;
-    }
-  },
-  /**
-   * An array of {@link Cartesian3} control points.
-   *
-   * @memberof LinearSpline.prototype
-   *
-   * @type {number[]|Cartesian3[]}
-   * @readonly
-   */
-  points: {
-    get: function() {
-      return this._points;
-    }
-  }
-});
-LinearSpline.prototype.findTimeInterval = Spline_default.prototype.findTimeInterval;
-LinearSpline.prototype.wrapTime = Spline_default.prototype.wrapTime;
-LinearSpline.prototype.clampTime = Spline_default.prototype.clampTime;
-LinearSpline.prototype.evaluate = function(time, result) {
-  const points = this.points;
-  const times = this.times;
-  const i = this._lastTimeIndex = this.findTimeInterval(
-    time,
-    this._lastTimeIndex
-  );
-  const u = (time - times[i]) / (times[i + 1] - times[i]);
-  const PointType = this._pointType;
-  if (PointType === Number) {
-    return (1 - u) * points[i] + u * points[i + 1];
-  }
-  if (!defined_default(result)) {
-    result = new Cartesian3_default();
-  }
-  return Cartesian3_default.lerp(points[i], points[i + 1], u, result);
-};
-var LinearSpline_default = LinearSpline;
-
-// packages/engine/Source/Core/TridiagonalSystemSolver.js
-var TridiagonalSystemSolver = {};
-TridiagonalSystemSolver.solve = function(lower, diagonal, upper, right) {
-  if (!defined_default(lower) || !(lower instanceof Array)) {
-    throw new DeveloperError_default("The array lower is required.");
-  }
-  if (!defined_default(diagonal) || !(diagonal instanceof Array)) {
-    throw new DeveloperError_default("The array diagonal is required.");
-  }
-  if (!defined_default(upper) || !(upper instanceof Array)) {
-    throw new DeveloperError_default("The array upper is required.");
-  }
-  if (!defined_default(right) || !(right instanceof Array)) {
-    throw new DeveloperError_default("The array right is required.");
-  }
-  if (diagonal.length !== right.length) {
-    throw new DeveloperError_default("diagonal and right must have the same lengths.");
-  }
-  if (lower.length !== upper.length) {
-    throw new DeveloperError_default("lower and upper must have the same lengths.");
-  } else if (lower.length !== diagonal.length - 1) {
-    throw new DeveloperError_default(
-      "lower and upper must be one less than the length of diagonal."
-    );
-  }
-  const c = new Array(upper.length);
-  const d = new Array(right.length);
-  const x = new Array(right.length);
-  let i;
-  for (i = 0; i < d.length; i++) {
-    d[i] = new Cartesian3_default();
-    x[i] = new Cartesian3_default();
-  }
-  c[0] = upper[0] / diagonal[0];
-  d[0] = Cartesian3_default.multiplyByScalar(right[0], 1 / diagonal[0], d[0]);
-  let scalar;
-  for (i = 1; i < c.length; ++i) {
-    scalar = 1 / (diagonal[i] - c[i - 1] * lower[i - 1]);
-    c[i] = upper[i] * scalar;
-    d[i] = Cartesian3_default.subtract(
-      right[i],
-      Cartesian3_default.multiplyByScalar(d[i - 1], lower[i - 1], d[i]),
-      d[i]
-    );
-    d[i] = Cartesian3_default.multiplyByScalar(d[i], scalar, d[i]);
-  }
-  scalar = 1 / (diagonal[i] - c[i - 1] * lower[i - 1]);
-  d[i] = Cartesian3_default.subtract(
-    right[i],
-    Cartesian3_default.multiplyByScalar(d[i - 1], lower[i - 1], d[i]),
-    d[i]
-  );
-  d[i] = Cartesian3_default.multiplyByScalar(d[i], scalar, d[i]);
-  x[x.length - 1] = d[d.length - 1];
-  for (i = x.length - 2; i >= 0; --i) {
-    x[i] = Cartesian3_default.subtract(
-      d[i],
-      Cartesian3_default.multiplyByScalar(x[i + 1], c[i], x[i]),
-      x[i]
-    );
-  }
-  return x;
-};
-var TridiagonalSystemSolver_default = TridiagonalSystemSolver;
-
-// packages/engine/Source/Core/HermiteSpline.js
-var scratchLower = [];
-var scratchDiagonal = [];
-var scratchUpper = [];
-var scratchRight2 = [];
-function generateClamped(points, firstTangent, lastTangent) {
-  const l = scratchLower;
-  const u = scratchUpper;
-  const d = scratchDiagonal;
-  const r = scratchRight2;
-  l.length = u.length = points.length - 1;
-  d.length = r.length = points.length;
-  let i;
-  l[0] = d[0] = 1;
-  u[0] = 0;
-  let right = r[0];
-  if (!defined_default(right)) {
-    right = r[0] = new Cartesian3_default();
-  }
-  Cartesian3_default.clone(firstTangent, right);
-  for (i = 1; i < l.length - 1; ++i) {
-    l[i] = u[i] = 1;
-    d[i] = 4;
-    right = r[i];
-    if (!defined_default(right)) {
-      right = r[i] = new Cartesian3_default();
-    }
-    Cartesian3_default.subtract(points[i + 1], points[i - 1], right);
-    Cartesian3_default.multiplyByScalar(right, 3, right);
-  }
-  l[i] = 0;
-  u[i] = 1;
-  d[i] = 4;
-  right = r[i];
-  if (!defined_default(right)) {
-    right = r[i] = new Cartesian3_default();
-  }
-  Cartesian3_default.subtract(points[i + 1], points[i - 1], right);
-  Cartesian3_default.multiplyByScalar(right, 3, right);
-  d[i + 1] = 1;
-  right = r[i + 1];
-  if (!defined_default(right)) {
-    right = r[i + 1] = new Cartesian3_default();
-  }
-  Cartesian3_default.clone(lastTangent, right);
-  return TridiagonalSystemSolver_default.solve(l, d, u, r);
-}
-function generateNatural(points) {
-  const l = scratchLower;
-  const u = scratchUpper;
-  const d = scratchDiagonal;
-  const r = scratchRight2;
-  l.length = u.length = points.length - 1;
-  d.length = r.length = points.length;
-  let i;
-  l[0] = u[0] = 1;
-  d[0] = 2;
-  let right = r[0];
-  if (!defined_default(right)) {
-    right = r[0] = new Cartesian3_default();
-  }
-  Cartesian3_default.subtract(points[1], points[0], right);
-  Cartesian3_default.multiplyByScalar(right, 3, right);
-  for (i = 1; i < l.length; ++i) {
-    l[i] = u[i] = 1;
-    d[i] = 4;
-    right = r[i];
-    if (!defined_default(right)) {
-      right = r[i] = new Cartesian3_default();
-    }
-    Cartesian3_default.subtract(points[i + 1], points[i - 1], right);
-    Cartesian3_default.multiplyByScalar(right, 3, right);
-  }
-  d[i] = 2;
-  right = r[i];
-  if (!defined_default(right)) {
-    right = r[i] = new Cartesian3_default();
-  }
-  Cartesian3_default.subtract(points[i], points[i - 1], right);
-  Cartesian3_default.multiplyByScalar(right, 3, right);
-  return TridiagonalSystemSolver_default.solve(l, d, u, r);
-}
-function HermiteSpline(options) {
-  options = options ?? Frozen_default.EMPTY_OBJECT;
-  const points = options.points;
-  const times = options.times;
-  const inTangents = options.inTangents;
-  const outTangents = options.outTangents;
-  if (!defined_default(points) || !defined_default(times) || !defined_default(inTangents) || !defined_default(outTangents)) {
-    throw new DeveloperError_default(
-      "times, points, inTangents, and outTangents are required."
-    );
-  }
-  if (points.length < 2) {
-    throw new DeveloperError_default(
-      "points.length must be greater than or equal to 2."
-    );
-  }
-  if (times.length !== points.length) {
-    throw new DeveloperError_default("times.length must be equal to points.length.");
-  }
-  if (inTangents.length !== outTangents.length || inTangents.length !== points.length - 1) {
-    throw new DeveloperError_default(
-      "inTangents and outTangents must have a length equal to points.length - 1."
-    );
-  }
-  this._times = times;
-  this._points = points;
-  this._pointType = Spline_default.getPointType(points[0]);
-  if (this._pointType !== Spline_default.getPointType(inTangents[0]) || this._pointType !== Spline_default.getPointType(outTangents[0])) {
-    throw new DeveloperError_default(
-      "inTangents and outTangents must be of the same type as points."
-    );
-  }
-  this._inTangents = inTangents;
-  this._outTangents = outTangents;
-  this._lastTimeIndex = 0;
-}
-Object.defineProperties(HermiteSpline.prototype, {
-  /**
-   * An array of times for the control points.
-   *
-   * @memberof HermiteSpline.prototype
-   *
-   * @type {number[]}
-   * @readonly
-   */
-  times: {
-    get: function() {
-      return this._times;
-    }
-  },
-  /**
-   * An array of control points.
-   *
-   * @memberof HermiteSpline.prototype
-   *
-   * @type {Cartesian3[]}
-   * @readonly
-   */
-  points: {
-    get: function() {
-      return this._points;
-    }
-  },
-  /**
-   * An array of incoming tangents at each control point.
-   *
-   * @memberof HermiteSpline.prototype
-   *
-   * @type {Cartesian3[]}
-   * @readonly
-   */
-  inTangents: {
-    get: function() {
-      return this._inTangents;
-    }
-  },
-  /**
-   * An array of outgoing tangents at each control point.
-   *
-   * @memberof HermiteSpline.prototype
-   *
-   * @type {Cartesian3[]}
-   * @readonly
-   */
-  outTangents: {
-    get: function() {
-      return this._outTangents;
-    }
-  }
-});
-HermiteSpline.createC1 = function(options) {
-  options = options ?? Frozen_default.EMPTY_OBJECT;
-  const times = options.times;
-  const points = options.points;
-  const tangents = options.tangents;
-  if (!defined_default(points) || !defined_default(times) || !defined_default(tangents)) {
-    throw new DeveloperError_default("points, times and tangents are required.");
-  }
-  if (points.length < 2) {
-    throw new DeveloperError_default(
-      "points.length must be greater than or equal to 2."
-    );
-  }
-  if (times.length !== points.length || times.length !== tangents.length) {
-    throw new DeveloperError_default(
-      "times, points and tangents must have the same length."
-    );
-  }
-  const outTangents = tangents.slice(0, tangents.length - 1);
-  const inTangents = tangents.slice(1, tangents.length);
-  return new HermiteSpline({
-    times,
-    points,
-    inTangents,
-    outTangents
-  });
-};
-HermiteSpline.createNaturalCubic = function(options) {
-  options = options ?? Frozen_default.EMPTY_OBJECT;
-  const times = options.times;
-  const points = options.points;
-  if (!defined_default(points) || !defined_default(times)) {
-    throw new DeveloperError_default("points and times are required.");
-  }
-  if (points.length < 2) {
-    throw new DeveloperError_default(
-      "points.length must be greater than or equal to 2."
-    );
-  }
-  if (times.length !== points.length) {
-    throw new DeveloperError_default("times.length must be equal to points.length.");
-  }
-  if (points.length < 3) {
-    return new LinearSpline_default({
-      points,
-      times
-    });
-  }
-  const tangents = generateNatural(points);
-  const outTangents = tangents.slice(0, tangents.length - 1);
-  const inTangents = tangents.slice(1, tangents.length);
-  return new HermiteSpline({
-    times,
-    points,
-    inTangents,
-    outTangents
-  });
-};
-HermiteSpline.createClampedCubic = function(options) {
-  options = options ?? Frozen_default.EMPTY_OBJECT;
-  const times = options.times;
-  const points = options.points;
-  const firstTangent = options.firstTangent;
-  const lastTangent = options.lastTangent;
-  if (!defined_default(points) || !defined_default(times) || !defined_default(firstTangent) || !defined_default(lastTangent)) {
-    throw new DeveloperError_default(
-      "points, times, firstTangent and lastTangent are required."
-    );
-  }
-  if (points.length < 2) {
-    throw new DeveloperError_default(
-      "points.length must be greater than or equal to 2."
-    );
-  }
-  if (times.length !== points.length) {
-    throw new DeveloperError_default("times.length must be equal to points.length.");
-  }
-  const PointType = Spline_default.getPointType(points[0]);
-  if (PointType !== Spline_default.getPointType(firstTangent) || PointType !== Spline_default.getPointType(lastTangent)) {
-    throw new DeveloperError_default(
-      "firstTangent and lastTangent must be of the same type as points."
-    );
-  }
-  if (points.length < 3) {
-    return new LinearSpline_default({
-      points,
-      times
-    });
-  }
-  const tangents = generateClamped(points, firstTangent, lastTangent);
-  const outTangents = tangents.slice(0, tangents.length - 1);
-  const inTangents = tangents.slice(1, tangents.length);
-  return new HermiteSpline({
-    times,
-    points,
-    inTangents,
-    outTangents
-  });
-};
-HermiteSpline.hermiteCoefficientMatrix = new Matrix4_default(
-  2,
-  -3,
-  0,
-  1,
-  -2,
-  3,
-  0,
-  0,
-  1,
-  -2,
-  1,
-  0,
-  1,
-  -1,
-  0,
-  0
-);
-HermiteSpline.prototype.findTimeInterval = Spline_default.prototype.findTimeInterval;
-var scratchTimeVec = new Cartesian4_default();
-var scratchTemp = new Cartesian3_default();
-HermiteSpline.prototype.wrapTime = Spline_default.prototype.wrapTime;
-HermiteSpline.prototype.clampTime = Spline_default.prototype.clampTime;
-HermiteSpline.prototype.evaluate = function(time, result) {
-  const points = this.points;
-  const times = this.times;
-  const inTangents = this.inTangents;
-  const outTangents = this.outTangents;
-  this._lastTimeIndex = this.findTimeInterval(time, this._lastTimeIndex);
-  const i = this._lastTimeIndex;
-  const timesDelta = times[i + 1] - times[i];
-  const u = (time - times[i]) / timesDelta;
-  const timeVec = scratchTimeVec;
-  timeVec.z = u;
-  timeVec.y = u * u;
-  timeVec.x = timeVec.y * u;
-  timeVec.w = 1;
-  const coefs = Matrix4_default.multiplyByVector(
-    HermiteSpline.hermiteCoefficientMatrix,
-    timeVec,
-    timeVec
-  );
-  coefs.z *= timesDelta;
-  coefs.w *= timesDelta;
-  const PointType = this._pointType;
-  if (PointType === Number) {
-    return points[i] * coefs.x + points[i + 1] * coefs.y + outTangents[i] * coefs.z + inTangents[i] * coefs.w;
-  }
-  if (!defined_default(result)) {
-    result = new PointType();
-  }
-  result = PointType.multiplyByScalar(points[i], coefs.x, result);
-  PointType.multiplyByScalar(points[i + 1], coefs.y, scratchTemp);
-  PointType.add(result, scratchTemp, result);
-  PointType.multiplyByScalar(outTangents[i], coefs.z, scratchTemp);
-  PointType.add(result, scratchTemp, result);
-  PointType.multiplyByScalar(inTangents[i], coefs.w, scratchTemp);
-  return PointType.add(result, scratchTemp, result);
-};
-var HermiteSpline_default = HermiteSpline;
-
-// packages/engine/Source/Core/SteppedSpline.js
-function SteppedSpline(options) {
-  options = options ?? Frozen_default.EMPTY_OBJECT;
-  const points = options.points;
-  const times = options.times;
-  if (!defined_default(points) || !defined_default(times)) {
-    throw new DeveloperError_default("points and times are required.");
-  }
-  if (points.length < 2) {
-    throw new DeveloperError_default(
-      "points.length must be greater than or equal to 2."
-    );
-  }
-  if (times.length !== points.length) {
-    throw new DeveloperError_default("times.length must be equal to points.length.");
-  }
-  this._times = times;
-  this._points = points;
-  this._pointType = Spline_default.getPointType(points[0]);
-  this._lastTimeIndex = 0;
-}
-Object.defineProperties(SteppedSpline.prototype, {
-  /**
-   * An array of times for the control points.
-   *
-   * @memberof SteppedSpline.prototype
-   *
-   * @type {number[]}
-   * @readonly
-   */
-  times: {
-    get: function() {
-      return this._times;
-    }
-  },
-  /**
-   * An array of control points.
-   *
-   * @memberof SteppedSpline.prototype
-   *
-   * @type {number[]|Cartesian3[]|Quaternion[]}
-   * @readonly
-   */
-  points: {
-    get: function() {
-      return this._points;
-    }
-  }
-});
-SteppedSpline.prototype.findTimeInterval = Spline_default.prototype.findTimeInterval;
-SteppedSpline.prototype.wrapTime = Spline_default.prototype.wrapTime;
-SteppedSpline.prototype.clampTime = Spline_default.prototype.clampTime;
-SteppedSpline.prototype.evaluate = function(time, result) {
-  const points = this.points;
-  this._lastTimeIndex = this.findTimeInterval(time, this._lastTimeIndex);
-  const i = this._lastTimeIndex;
-  const PointType = this._pointType;
-  if (PointType === Number) {
-    return points[i];
-  }
-  if (!defined_default(result)) {
-    result = new PointType();
-  }
-  return PointType.clone(points[i], result);
-};
-var SteppedSpline_default = SteppedSpline;
-
-// packages/engine/Source/Core/QuaternionSpline.js
-function createEvaluateFunction(spline) {
-  const points = spline.points;
-  const times = spline.times;
-  return function(time, result) {
-    if (!defined_default(result)) {
-      result = new Quaternion_default();
-    }
-    const i = spline._lastTimeIndex = spline.findTimeInterval(
-      time,
-      spline._lastTimeIndex
-    );
-    const u = (time - times[i]) / (times[i + 1] - times[i]);
-    const q0 = points[i];
-    const q1 = points[i + 1];
-    return Quaternion_default.fastSlerp(q0, q1, u, result);
-  };
-}
-function QuaternionSpline(options) {
-  options = options ?? Frozen_default.EMPTY_OBJECT;
-  const points = options.points;
-  const times = options.times;
-  if (!defined_default(points) || !defined_default(times)) {
-    throw new DeveloperError_default("points and times are required.");
-  }
-  if (points.length < 2) {
-    throw new DeveloperError_default(
-      "points.length must be greater than or equal to 2."
-    );
-  }
-  if (times.length !== points.length) {
-    throw new DeveloperError_default("times.length must be equal to points.length.");
-  }
-  this._times = times;
-  this._points = points;
-  this._evaluateFunction = createEvaluateFunction(this);
-  this._lastTimeIndex = 0;
-}
-Object.defineProperties(QuaternionSpline.prototype, {
-  /**
-   * An array of times for the control points.
-   *
-   * @memberof QuaternionSpline.prototype
-   *
-   * @type {number[]}
-   * @readonly
-   */
-  times: {
-    get: function() {
-      return this._times;
-    }
-  },
-  /**
-   * An array of {@link Quaternion} control points.
-   *
-   * @memberof QuaternionSpline.prototype
-   *
-   * @type {Quaternion[]}
-   * @readonly
-   */
-  points: {
-    get: function() {
-      return this._points;
-    }
-  }
-});
-QuaternionSpline.prototype.findTimeInterval = Spline_default.prototype.findTimeInterval;
-QuaternionSpline.prototype.wrapTime = Spline_default.prototype.wrapTime;
-QuaternionSpline.prototype.clampTime = Spline_default.prototype.clampTime;
-QuaternionSpline.prototype.evaluate = function(time, result) {
-  return this._evaluateFunction(time, result);
-};
-var QuaternionSpline_default = QuaternionSpline;
 
 // packages/engine/Source/Scene/Model/ModelAnimationChannel.js
 var AnimatedPropertyType3 = ModelComponents_default.AnimatedPropertyType;
@@ -84476,150 +87623,6 @@ VerticalExaggerationPipelineStage.process = function(renderResources, primitive,
 };
 var VerticalExaggerationPipelineStage_default = VerticalExaggerationPipelineStage;
 
-// packages/engine/Source/Core/WireframeIndexGenerator.js
-var WireframeIndexGenerator = {};
-function createWireframeFromTriangles(vertexCount) {
-  const wireframeIndices = IndexDatatype_default.createTypedArray(
-    vertexCount,
-    vertexCount * 2
-  );
-  const length = vertexCount;
-  let index = 0;
-  for (let i = 0; i < length; i += 3) {
-    wireframeIndices[index++] = i;
-    wireframeIndices[index++] = i + 1;
-    wireframeIndices[index++] = i + 1;
-    wireframeIndices[index++] = i + 2;
-    wireframeIndices[index++] = i + 2;
-    wireframeIndices[index++] = i;
-  }
-  return wireframeIndices;
-}
-function createWireframeFromTriangleIndices(vertexCount, originalIndices) {
-  const originalIndicesCount = originalIndices.length;
-  const wireframeIndices = IndexDatatype_default.createTypedArray(
-    vertexCount,
-    originalIndicesCount * 2
-  );
-  let index = 0;
-  for (let i = 0; i < originalIndicesCount; i += 3) {
-    const point0 = originalIndices[i];
-    const point1 = originalIndices[i + 1];
-    const point2 = originalIndices[i + 2];
-    wireframeIndices[index++] = point0;
-    wireframeIndices[index++] = point1;
-    wireframeIndices[index++] = point1;
-    wireframeIndices[index++] = point2;
-    wireframeIndices[index++] = point2;
-    wireframeIndices[index++] = point0;
-  }
-  return wireframeIndices;
-}
-function createWireframeFromTriangleStrip(vertexCount) {
-  const numberOfTriangles = vertexCount - 2;
-  const wireframeIndicesCount = 2 + numberOfTriangles * 4;
-  const wireframeIndices = IndexDatatype_default.createTypedArray(
-    vertexCount,
-    wireframeIndicesCount
-  );
-  let index = 0;
-  wireframeIndices[index++] = 0;
-  wireframeIndices[index++] = 1;
-  for (let i = 0; i < numberOfTriangles; i++) {
-    wireframeIndices[index++] = i + 1;
-    wireframeIndices[index++] = i + 2;
-    wireframeIndices[index++] = i + 2;
-    wireframeIndices[index++] = i;
-  }
-  return wireframeIndices;
-}
-function createWireframeFromTriangleStripIndices(vertexCount, originalIndices) {
-  const originalIndicesCount = originalIndices.length;
-  const numberOfTriangles = originalIndicesCount - 2;
-  const wireframeIndicesCount = 2 + numberOfTriangles * 4;
-  const wireframeIndices = IndexDatatype_default.createTypedArray(
-    vertexCount,
-    wireframeIndicesCount
-  );
-  let index = 0;
-  wireframeIndices[index++] = originalIndices[0];
-  wireframeIndices[index++] = originalIndices[1];
-  for (let i = 0; i < numberOfTriangles; i++) {
-    const point0 = originalIndices[i];
-    const point1 = originalIndices[i + 1];
-    const point2 = originalIndices[i + 2];
-    wireframeIndices[index++] = point1;
-    wireframeIndices[index++] = point2;
-    wireframeIndices[index++] = point2;
-    wireframeIndices[index++] = point0;
-  }
-  return wireframeIndices;
-}
-function createWireframeFromTriangleFan(vertexCount) {
-  const numberOfTriangles = vertexCount - 2;
-  const wireframeIndicesCount = 2 + numberOfTriangles * 4;
-  const wireframeIndices = IndexDatatype_default.createTypedArray(
-    vertexCount,
-    wireframeIndicesCount
-  );
-  let index = 0;
-  wireframeIndices[index++] = 0;
-  wireframeIndices[index++] = 1;
-  for (let i = 0; i < numberOfTriangles; i++) {
-    wireframeIndices[index++] = i + 1;
-    wireframeIndices[index++] = i + 2;
-    wireframeIndices[index++] = i + 2;
-    wireframeIndices[index++] = 0;
-  }
-  return wireframeIndices;
-}
-function createWireframeFromTriangleFanIndices(vertexCount, originalIndices) {
-  const originalIndicesCount = originalIndices.length;
-  const numberOfTriangles = originalIndicesCount - 2;
-  const wireframeIndicesCount = 2 + numberOfTriangles * 4;
-  const wireframeIndices = IndexDatatype_default.createTypedArray(
-    vertexCount,
-    wireframeIndicesCount
-  );
-  let index = 0;
-  const firstPoint = originalIndices[0];
-  wireframeIndices[index++] = firstPoint;
-  wireframeIndices[index++] = originalIndices[1];
-  for (let i = 0; i < numberOfTriangles; i++) {
-    const point1 = originalIndices[i + 1];
-    const point2 = originalIndices[i + 2];
-    wireframeIndices[index++] = point1;
-    wireframeIndices[index++] = point2;
-    wireframeIndices[index++] = point2;
-    wireframeIndices[index++] = firstPoint;
-  }
-  return wireframeIndices;
-}
-WireframeIndexGenerator.createWireframeIndices = function(primitiveType, vertexCount, originalIndices) {
-  const hasOriginalIndices = defined_default(originalIndices);
-  if (primitiveType === PrimitiveType_default.TRIANGLES) {
-    return hasOriginalIndices ? createWireframeFromTriangleIndices(vertexCount, originalIndices) : createWireframeFromTriangles(vertexCount);
-  }
-  if (primitiveType === PrimitiveType_default.TRIANGLE_STRIP) {
-    return hasOriginalIndices ? createWireframeFromTriangleStripIndices(vertexCount, originalIndices) : createWireframeFromTriangleStrip(vertexCount);
-  }
-  if (primitiveType === PrimitiveType_default.TRIANGLE_FAN) {
-    return hasOriginalIndices ? createWireframeFromTriangleFanIndices(vertexCount, originalIndices) : createWireframeFromTriangleFan(vertexCount);
-  }
-  return void 0;
-};
-WireframeIndexGenerator.getWireframeIndicesCount = function(primitiveType, originalCount) {
-  if (primitiveType === PrimitiveType_default.TRIANGLES) {
-    return originalCount * 2;
-  }
-  if (primitiveType === PrimitiveType_default.TRIANGLE_STRIP || primitiveType === PrimitiveType_default.TRIANGLE_FAN) {
-    const numberOfTriangles = originalCount - 2;
-    return 2 + numberOfTriangles * 4;
-  }
-  return originalCount;
-};
-var WireframeIndexGenerator_default = WireframeIndexGenerator;
-
 // packages/engine/Source/Scene/Model/WireframePipelineStage.js
 var WireframePipelineStage = {
   name: "WireframePipelineStage"
@@ -94502,3009 +97505,6 @@ function loadCubeMap(context, urls, skipColorSpaceConversion) {
   });
 }
 var loadCubeMap_default = loadCubeMap;
-
-// packages/engine/Source/Core/TileAvailability.js
-function TileAvailability(tilingScheme, maximumLevel) {
-  this._tilingScheme = tilingScheme;
-  this._maximumLevel = maximumLevel;
-  this._rootNodes = [];
-}
-var rectangleScratch3 = new Rectangle_default();
-function findNode(level, x, y, nodes) {
-  const count = nodes.length;
-  for (let i = 0; i < count; ++i) {
-    const node = nodes[i];
-    if (node.x === x && node.y === y && node.level === level) {
-      return true;
-    }
-  }
-  return false;
-}
-TileAvailability.prototype.addAvailableTileRange = function(level, startX, startY, endX, endY) {
-  const tilingScheme = this._tilingScheme;
-  const rootNodes = this._rootNodes;
-  if (level === 0) {
-    for (let y = startY; y <= endY; ++y) {
-      for (let x = startX; x <= endX; ++x) {
-        if (!findNode(level, x, y, rootNodes)) {
-          rootNodes.push(new QuadtreeNode(tilingScheme, void 0, 0, x, y));
-        }
-      }
-    }
-  }
-  tilingScheme.tileXYToRectangle(startX, startY, level, rectangleScratch3);
-  const west = rectangleScratch3.west;
-  const north = rectangleScratch3.north;
-  tilingScheme.tileXYToRectangle(endX, endY, level, rectangleScratch3);
-  const east = rectangleScratch3.east;
-  const south = rectangleScratch3.south;
-  const rectangleWithLevel = new RectangleWithLevel(
-    level,
-    west,
-    south,
-    east,
-    north
-  );
-  for (let i = 0; i < rootNodes.length; ++i) {
-    const rootNode = rootNodes[i];
-    if (rectanglesOverlap(rootNode.extent, rectangleWithLevel)) {
-      putRectangleInQuadtree(this._maximumLevel, rootNode, rectangleWithLevel);
-    }
-  }
-};
-TileAvailability.prototype.computeMaximumLevelAtPosition = function(position) {
-  let node;
-  for (let nodeIndex = 0; nodeIndex < this._rootNodes.length; ++nodeIndex) {
-    const rootNode = this._rootNodes[nodeIndex];
-    if (rectangleContainsPosition(rootNode.extent, position)) {
-      node = rootNode;
-      break;
-    }
-  }
-  if (!defined_default(node)) {
-    return -1;
-  }
-  return findMaxLevelFromNode(void 0, node, position);
-};
-var rectanglesScratch = [];
-var remainingToCoverByLevelScratch = [];
-var westScratch = new Rectangle_default();
-var eastScratch = new Rectangle_default();
-TileAvailability.prototype.computeBestAvailableLevelOverRectangle = function(rectangle) {
-  const rectangles = rectanglesScratch;
-  rectangles.length = 0;
-  if (rectangle.east < rectangle.west) {
-    rectangles.push(
-      Rectangle_default.fromRadians(
-        -Math.PI,
-        rectangle.south,
-        rectangle.east,
-        rectangle.north,
-        westScratch
-      )
-    );
-    rectangles.push(
-      Rectangle_default.fromRadians(
-        rectangle.west,
-        rectangle.south,
-        Math.PI,
-        rectangle.north,
-        eastScratch
-      )
-    );
-  } else {
-    rectangles.push(rectangle);
-  }
-  const remainingToCoverByLevel = remainingToCoverByLevelScratch;
-  remainingToCoverByLevel.length = 0;
-  let i;
-  for (i = 0; i < this._rootNodes.length; ++i) {
-    updateCoverageWithNode(
-      remainingToCoverByLevel,
-      this._rootNodes[i],
-      rectangles
-    );
-  }
-  for (i = remainingToCoverByLevel.length - 1; i >= 0; --i) {
-    if (defined_default(remainingToCoverByLevel[i]) && remainingToCoverByLevel[i].length === 0) {
-      return i;
-    }
-  }
-  return 0;
-};
-var cartographicScratch4 = new Cartographic_default();
-TileAvailability.prototype.isTileAvailable = function(level, x, y) {
-  const rectangle = this._tilingScheme.tileXYToRectangle(
-    x,
-    y,
-    level,
-    rectangleScratch3
-  );
-  Rectangle_default.center(rectangle, cartographicScratch4);
-  return this.computeMaximumLevelAtPosition(cartographicScratch4) >= level;
-};
-TileAvailability.prototype.computeChildMaskForTile = function(level, x, y) {
-  const childLevel = level + 1;
-  if (childLevel >= this._maximumLevel) {
-    return 0;
-  }
-  let mask = 0;
-  mask |= this.isTileAvailable(childLevel, 2 * x, 2 * y + 1) ? 1 : 0;
-  mask |= this.isTileAvailable(childLevel, 2 * x + 1, 2 * y + 1) ? 2 : 0;
-  mask |= this.isTileAvailable(childLevel, 2 * x, 2 * y) ? 4 : 0;
-  mask |= this.isTileAvailable(childLevel, 2 * x + 1, 2 * y) ? 8 : 0;
-  return mask;
-};
-function QuadtreeNode(tilingScheme, parent, level, x, y) {
-  this.tilingScheme = tilingScheme;
-  this.parent = parent;
-  this.level = level;
-  this.x = x;
-  this.y = y;
-  this.extent = tilingScheme.tileXYToRectangle(x, y, level);
-  this.rectangles = [];
-  this._sw = void 0;
-  this._se = void 0;
-  this._nw = void 0;
-  this._ne = void 0;
-}
-Object.defineProperties(QuadtreeNode.prototype, {
-  nw: {
-    get: function() {
-      if (!this._nw) {
-        this._nw = new QuadtreeNode(
-          this.tilingScheme,
-          this,
-          this.level + 1,
-          this.x * 2,
-          this.y * 2
-        );
-      }
-      return this._nw;
-    }
-  },
-  ne: {
-    get: function() {
-      if (!this._ne) {
-        this._ne = new QuadtreeNode(
-          this.tilingScheme,
-          this,
-          this.level + 1,
-          this.x * 2 + 1,
-          this.y * 2
-        );
-      }
-      return this._ne;
-    }
-  },
-  sw: {
-    get: function() {
-      if (!this._sw) {
-        this._sw = new QuadtreeNode(
-          this.tilingScheme,
-          this,
-          this.level + 1,
-          this.x * 2,
-          this.y * 2 + 1
-        );
-      }
-      return this._sw;
-    }
-  },
-  se: {
-    get: function() {
-      if (!this._se) {
-        this._se = new QuadtreeNode(
-          this.tilingScheme,
-          this,
-          this.level + 1,
-          this.x * 2 + 1,
-          this.y * 2 + 1
-        );
-      }
-      return this._se;
-    }
-  }
-});
-function RectangleWithLevel(level, west, south, east, north) {
-  this.level = level;
-  this.west = west;
-  this.south = south;
-  this.east = east;
-  this.north = north;
-}
-function rectanglesOverlap(rectangle1, rectangle2) {
-  const west = Math.max(rectangle1.west, rectangle2.west);
-  const south = Math.max(rectangle1.south, rectangle2.south);
-  const east = Math.min(rectangle1.east, rectangle2.east);
-  const north = Math.min(rectangle1.north, rectangle2.north);
-  return south < north && west < east;
-}
-function putRectangleInQuadtree(maxDepth, node, rectangle) {
-  while (node.level < maxDepth) {
-    if (rectangleFullyContainsRectangle(node.nw.extent, rectangle)) {
-      node = node.nw;
-    } else if (rectangleFullyContainsRectangle(node.ne.extent, rectangle)) {
-      node = node.ne;
-    } else if (rectangleFullyContainsRectangle(node.sw.extent, rectangle)) {
-      node = node.sw;
-    } else if (rectangleFullyContainsRectangle(node.se.extent, rectangle)) {
-      node = node.se;
-    } else {
-      break;
-    }
-  }
-  if (node.rectangles.length === 0 || node.rectangles[node.rectangles.length - 1].level <= rectangle.level) {
-    node.rectangles.push(rectangle);
-  } else {
-    let index = binarySearch_default(
-      node.rectangles,
-      rectangle.level,
-      rectangleLevelComparator
-    );
-    if (index < 0) {
-      index = ~index;
-    }
-    node.rectangles.splice(index, 0, rectangle);
-  }
-}
-function rectangleLevelComparator(a, b) {
-  return a.level - b;
-}
-function rectangleFullyContainsRectangle(potentialContainer, rectangleToTest) {
-  return rectangleToTest.west >= potentialContainer.west && rectangleToTest.east <= potentialContainer.east && rectangleToTest.south >= potentialContainer.south && rectangleToTest.north <= potentialContainer.north;
-}
-function rectangleContainsPosition(potentialContainer, positionToTest) {
-  return positionToTest.longitude >= potentialContainer.west && positionToTest.longitude <= potentialContainer.east && positionToTest.latitude >= potentialContainer.south && positionToTest.latitude <= potentialContainer.north;
-}
-function findMaxLevelFromNode(stopNode, node, position) {
-  let maxLevel = 0;
-  let found = false;
-  while (!found) {
-    const nw = node._nw && rectangleContainsPosition(node._nw.extent, position);
-    const ne = node._ne && rectangleContainsPosition(node._ne.extent, position);
-    const sw = node._sw && rectangleContainsPosition(node._sw.extent, position);
-    const se = node._se && rectangleContainsPosition(node._se.extent, position);
-    if (nw + ne + sw + se > 1) {
-      if (nw) {
-        maxLevel = Math.max(
-          maxLevel,
-          findMaxLevelFromNode(node, node._nw, position)
-        );
-      }
-      if (ne) {
-        maxLevel = Math.max(
-          maxLevel,
-          findMaxLevelFromNode(node, node._ne, position)
-        );
-      }
-      if (sw) {
-        maxLevel = Math.max(
-          maxLevel,
-          findMaxLevelFromNode(node, node._sw, position)
-        );
-      }
-      if (se) {
-        maxLevel = Math.max(
-          maxLevel,
-          findMaxLevelFromNode(node, node._se, position)
-        );
-      }
-      break;
-    } else if (nw) {
-      node = node._nw;
-    } else if (ne) {
-      node = node._ne;
-    } else if (sw) {
-      node = node._sw;
-    } else if (se) {
-      node = node._se;
-    } else {
-      found = true;
-    }
-  }
-  while (node !== stopNode) {
-    const rectangles = node.rectangles;
-    for (let i = rectangles.length - 1; i >= 0 && rectangles[i].level > maxLevel; --i) {
-      const rectangle = rectangles[i];
-      if (rectangleContainsPosition(rectangle, position)) {
-        maxLevel = rectangle.level;
-      }
-    }
-    node = node.parent;
-  }
-  return maxLevel;
-}
-function updateCoverageWithNode(remainingToCoverByLevel, node, rectanglesToCover) {
-  if (!node) {
-    return;
-  }
-  let i;
-  let anyOverlap = false;
-  for (i = 0; i < rectanglesToCover.length; ++i) {
-    anyOverlap = anyOverlap || rectanglesOverlap(node.extent, rectanglesToCover[i]);
-  }
-  if (!anyOverlap) {
-    return;
-  }
-  const rectangles = node.rectangles;
-  for (i = 0; i < rectangles.length; ++i) {
-    const rectangle = rectangles[i];
-    if (!remainingToCoverByLevel[rectangle.level]) {
-      remainingToCoverByLevel[rectangle.level] = rectanglesToCover;
-    }
-    remainingToCoverByLevel[rectangle.level] = subtractRectangle(
-      remainingToCoverByLevel[rectangle.level],
-      rectangle
-    );
-  }
-  updateCoverageWithNode(remainingToCoverByLevel, node._nw, rectanglesToCover);
-  updateCoverageWithNode(remainingToCoverByLevel, node._ne, rectanglesToCover);
-  updateCoverageWithNode(remainingToCoverByLevel, node._sw, rectanglesToCover);
-  updateCoverageWithNode(remainingToCoverByLevel, node._se, rectanglesToCover);
-}
-function subtractRectangle(rectangleList, rectangleToSubtract) {
-  const result = [];
-  for (let i = 0; i < rectangleList.length; ++i) {
-    const rectangle = rectangleList[i];
-    if (!rectanglesOverlap(rectangle, rectangleToSubtract)) {
-      result.push(rectangle);
-    } else {
-      if (rectangle.west < rectangleToSubtract.west) {
-        result.push(
-          new Rectangle_default(
-            rectangle.west,
-            rectangle.south,
-            rectangleToSubtract.west,
-            rectangle.north
-          )
-        );
-      }
-      if (rectangle.east > rectangleToSubtract.east) {
-        result.push(
-          new Rectangle_default(
-            rectangleToSubtract.east,
-            rectangle.south,
-            rectangle.east,
-            rectangle.north
-          )
-        );
-      }
-      if (rectangle.south < rectangleToSubtract.south) {
-        result.push(
-          new Rectangle_default(
-            Math.max(rectangleToSubtract.west, rectangle.west),
-            rectangle.south,
-            Math.min(rectangleToSubtract.east, rectangle.east),
-            rectangleToSubtract.south
-          )
-        );
-      }
-      if (rectangle.north > rectangleToSubtract.north) {
-        result.push(
-          new Rectangle_default(
-            Math.max(rectangleToSubtract.west, rectangle.west),
-            rectangleToSubtract.north,
-            Math.min(rectangleToSubtract.east, rectangle.east),
-            rectangle.north
-          )
-        );
-      }
-    }
-  }
-  return result;
-}
-var TileAvailability_default = TileAvailability;
-
-// packages/engine/Source/Core/DoubleEndedPriorityQueue.js
-function DoubleEndedPriorityQueue(options) {
-  Check_default.typeOf.object("options", options);
-  Check_default.defined("options.comparator", options.comparator);
-  if (defined_default(options.maximumLength)) {
-    Check_default.typeOf.number.greaterThanOrEquals(
-      "options.maximumLength",
-      options.maximumLength,
-      0
-    );
-  }
-  this._comparator = options.comparator;
-  this._maximumLength = options.maximumLength;
-  this._array = defined_default(options.maximumLength) ? new Array(options.maximumLength) : [];
-  this._length = 0;
-}
-Object.defineProperties(DoubleEndedPriorityQueue.prototype, {
-  /**
-   * Gets the number of elements in the queue.
-   *
-   * @memberof DoubleEndedPriorityQueue.prototype
-   *
-   * @type {number}
-   * @readonly
-   */
-  length: {
-    get: function() {
-      return this._length;
-    }
-  },
-  /**
-   * Gets or sets the maximum number of elements in the queue.
-   * If set to a smaller value than the current length of the queue, the lowest priority elements are removed.
-   * If an element is inserted when the queue is at full capacity, the minimum element is removed.
-   * If set to undefined, the size of the queue is unlimited.
-   *
-   * @memberof DoubleEndedPriorityQueue.prototype
-   *
-   * @type {number}
-   * @readonly
-   */
-  maximumLength: {
-    get: function() {
-      return this._maximumLength;
-    },
-    set: function(value) {
-      if (defined_default(value)) {
-        Check_default.typeOf.number.greaterThanOrEquals("maximumLength", value, 0);
-        while (this._length > value) {
-          this.removeMinimum();
-        }
-        this._array.length = value;
-      }
-      this._maximumLength = value;
-    }
-  },
-  /**
-   * Gets the internal array.
-   *
-   * @memberof DoubleEndedPriorityQueue.prototype
-   *
-   * @type {Array}
-   * @readonly
-   */
-  internalArray: {
-    get: function() {
-      return this._array;
-    }
-  },
-  /**
-   * The comparator used by the queue.
-   * If comparator(a, b) is less than 0, a is lower priority than b.
-   *
-   * @memberof DoubleEndedPriorityQueue.prototype
-   *
-   * @type {DoubleEndedPriorityQueue.ComparatorCallback}
-   * @readonly
-   */
-  comparator: {
-    get: function() {
-      return this._comparator;
-    }
-  }
-});
-DoubleEndedPriorityQueue.prototype.clone = function() {
-  const maximumLength = this._maximumLength;
-  const comparator = this._comparator;
-  const array = this._array;
-  const length = this._length;
-  const result = new DoubleEndedPriorityQueue({
-    comparator,
-    maximumLength
-  });
-  result._length = length;
-  for (let i = 0; i < length; i++) {
-    result._array[i] = array[i];
-  }
-  return result;
-};
-DoubleEndedPriorityQueue.prototype.reset = function() {
-  this._length = 0;
-  const maximumLength = this._maximumLength;
-  if (defined_default(maximumLength)) {
-    for (let i = 0; i < maximumLength; i++) {
-      this._array[i] = void 0;
-    }
-  } else {
-    this._array.length = 0;
-  }
-};
-DoubleEndedPriorityQueue.prototype.resort = function() {
-  const length = this._length;
-  for (let i = 0; i < length; i++) {
-    pushUp(this, i);
-  }
-};
-DoubleEndedPriorityQueue.prototype.insert = function(element) {
-  let removedElement;
-  const maximumLength = this._maximumLength;
-  if (defined_default(maximumLength)) {
-    if (maximumLength === 0) {
-      return void 0;
-    } else if (this._length === maximumLength) {
-      const minimumElement = this._array[0];
-      if (this._comparator(element, minimumElement) <= 0) {
-        return element;
-      }
-      removedElement = this.removeMinimum();
-    }
-  }
-  const index = this._length;
-  this._array[index] = element;
-  this._length++;
-  pushUp(this, index);
-  return removedElement;
-};
-DoubleEndedPriorityQueue.prototype.removeMinimum = function() {
-  const length = this._length;
-  if (length === 0) {
-    return void 0;
-  }
-  this._length--;
-  const minimumElement = this._array[0];
-  if (length >= 2) {
-    this._array[0] = this._array[length - 1];
-    pushDown(this, 0);
-  }
-  this._array[length - 1] = void 0;
-  return minimumElement;
-};
-DoubleEndedPriorityQueue.prototype.removeMaximum = function() {
-  const length = this._length;
-  if (length === 0) {
-    return void 0;
-  }
-  this._length--;
-  let maximumElement;
-  if (length <= 2) {
-    maximumElement = this._array[length - 1];
-  } else {
-    const maximumElementIndex = greaterThan(this, 1, 2) ? 1 : 2;
-    maximumElement = this._array[maximumElementIndex];
-    this._array[maximumElementIndex] = this._array[length - 1];
-    if (length >= 4) {
-      pushDown(this, maximumElementIndex);
-    }
-  }
-  this._array[length - 1] = void 0;
-  return maximumElement;
-};
-DoubleEndedPriorityQueue.prototype.getMinimum = function() {
-  const length = this._length;
-  if (length === 0) {
-    return void 0;
-  }
-  return this._array[0];
-};
-DoubleEndedPriorityQueue.prototype.getMaximum = function() {
-  const length = this._length;
-  if (length === 0) {
-    return void 0;
-  }
-  if (length <= 2) {
-    return this._array[length - 1];
-  }
-  return this._array[greaterThan(this, 1, 2) ? 1 : 2];
-};
-function swap(that, indexA, indexB) {
-  const array = that._array;
-  const temp = array[indexA];
-  array[indexA] = array[indexB];
-  array[indexB] = temp;
-}
-function lessThan(that, indexA, indexB) {
-  return that._comparator(that._array[indexA], that._array[indexB]) < 0;
-}
-function greaterThan(that, indexA, indexB) {
-  return that._comparator(that._array[indexA], that._array[indexB]) > 0;
-}
-function pushUp(that, index) {
-  if (index === 0) {
-    return;
-  }
-  const onMinLevel = Math.floor(Math_default.log2(index + 1)) % 2 === 0;
-  const parentIndex = Math.floor((index - 1) / 2);
-  const lessThanParent = lessThan(that, index, parentIndex);
-  if (lessThanParent !== onMinLevel) {
-    swap(that, index, parentIndex);
-    index = parentIndex;
-  }
-  while (index >= 3) {
-    const grandparentIndex = Math.floor((index - 3) / 4);
-    if (lessThan(that, index, grandparentIndex) !== lessThanParent) {
-      break;
-    }
-    swap(that, index, grandparentIndex);
-    index = grandparentIndex;
-  }
-}
-function pushDown(that, index) {
-  const length = that._length;
-  const onMinLevel = Math.floor(Math_default.log2(index + 1)) % 2 === 0;
-  let leftChildIndex;
-  while ((leftChildIndex = 2 * index + 1) < length) {
-    let target = leftChildIndex;
-    const rightChildIndex = leftChildIndex + 1;
-    if (rightChildIndex < length) {
-      if (lessThan(that, rightChildIndex, target) === onMinLevel) {
-        target = rightChildIndex;
-      }
-      const grandChildStart = 2 * leftChildIndex + 1;
-      const grandChildCount = Math.max(
-        Math.min(length - grandChildStart, 4),
-        0
-      );
-      for (let i = 0; i < grandChildCount; i++) {
-        const grandChildIndex = grandChildStart + i;
-        if (lessThan(that, grandChildIndex, target) === onMinLevel) {
-          target = grandChildIndex;
-        }
-      }
-    }
-    if (lessThan(that, target, index) === onMinLevel) {
-      swap(that, target, index);
-      if (target !== leftChildIndex && target !== rightChildIndex) {
-        const parentOfGrandchildIndex = Math.floor((target - 1) / 2);
-        if (greaterThan(that, target, parentOfGrandchildIndex) === onMinLevel) {
-          swap(that, target, parentOfGrandchildIndex);
-        }
-      }
-    }
-    index = target;
-  }
-}
-var DoubleEndedPriorityQueue_default = DoubleEndedPriorityQueue;
-
-// packages/engine/Source/Core/QuantizedMeshTerrainData.js
-function QuantizedMeshTerrainData(options) {
-  options = options ?? Frozen_default.EMPTY_OBJECT;
-  Check_default.typeOf.object("options.quantizedVertices", options.quantizedVertices);
-  Check_default.typeOf.object("options.indices", options.indices);
-  Check_default.typeOf.number("options.minimumHeight", options.minimumHeight);
-  Check_default.typeOf.number("options.maximumHeight", options.maximumHeight);
-  Check_default.typeOf.object("options.boundingSphere", options.boundingSphere);
-  Check_default.typeOf.object(
-    "options.horizonOcclusionPoint",
-    options.horizonOcclusionPoint
-  );
-  Check_default.typeOf.object("options.westIndices", options.westIndices);
-  Check_default.typeOf.object("options.southIndices", options.southIndices);
-  Check_default.typeOf.object("options.eastIndices", options.eastIndices);
-  Check_default.typeOf.object("options.northIndices", options.northIndices);
-  Check_default.typeOf.number("options.westSkirtHeight", options.westSkirtHeight);
-  Check_default.typeOf.number("options.southSkirtHeight", options.southSkirtHeight);
-  Check_default.typeOf.number("options.eastSkirtHeight", options.eastSkirtHeight);
-  Check_default.typeOf.number("options.northSkirtHeight", options.northSkirtHeight);
-  this._quantizedVertices = options.quantizedVertices;
-  this._encodedNormals = options.encodedNormals;
-  this._indices = options.indices;
-  this._minimumHeight = options.minimumHeight;
-  this._maximumHeight = options.maximumHeight;
-  this._boundingSphere = options.boundingSphere;
-  this._orientedBoundingBox = options.orientedBoundingBox;
-  this._horizonOcclusionPoint = options.horizonOcclusionPoint;
-  this._credits = options.credits;
-  const vertexCount = this._quantizedVertices.length / 3;
-  const uValues = this._uValues = this._quantizedVertices.subarray(
-    0,
-    vertexCount
-  );
-  const vValues = this._vValues = this._quantizedVertices.subarray(
-    vertexCount,
-    2 * vertexCount
-  );
-  this._heightValues = this._quantizedVertices.subarray(
-    2 * vertexCount,
-    3 * vertexCount
-  );
-  function sortByV(a, b) {
-    return vValues[a] - vValues[b];
-  }
-  function sortByU(a, b) {
-    return uValues[a] - uValues[b];
-  }
-  this._westIndices = sortIndicesIfNecessary(
-    options.westIndices,
-    sortByV,
-    vertexCount
-  );
-  this._southIndices = sortIndicesIfNecessary(
-    options.southIndices,
-    sortByU,
-    vertexCount
-  );
-  this._eastIndices = sortIndicesIfNecessary(
-    options.eastIndices,
-    sortByV,
-    vertexCount
-  );
-  this._northIndices = sortIndicesIfNecessary(
-    options.northIndices,
-    sortByU,
-    vertexCount
-  );
-  this._westSkirtHeight = options.westSkirtHeight;
-  this._southSkirtHeight = options.southSkirtHeight;
-  this._eastSkirtHeight = options.eastSkirtHeight;
-  this._northSkirtHeight = options.northSkirtHeight;
-  this._childTileMask = options.childTileMask ?? 15;
-  this._createdByUpsampling = options.createdByUpsampling ?? false;
-  this._waterMask = options.waterMask;
-  this._mesh = void 0;
-}
-Object.defineProperties(QuantizedMeshTerrainData.prototype, {
-  /**
-   * An array of credits for this tile.
-   * @memberof QuantizedMeshTerrainData.prototype
-   * @type {Credit[]}
-   */
-  credits: {
-    get: function() {
-      return this._credits;
-    }
-  },
-  /**
-   * The water mask included in this terrain data, if any.  A water mask is a rectangular
-   * Uint8Array or image where a value of 255 indicates water and a value of 0 indicates land.
-   * Values in between 0 and 255 are allowed as well to smoothly blend between land and water.
-   * @memberof QuantizedMeshTerrainData.prototype
-   * @type {Uint8Array|HTMLImageElement|HTMLCanvasElement|undefined}
-   */
-  waterMask: {
-    get: function() {
-      return this._waterMask;
-    }
-  },
-  childTileMask: {
-    get: function() {
-      return this._childTileMask;
-    }
-  },
-  canUpsample: {
-    get: function() {
-      return defined_default(this._mesh);
-    }
-  }
-});
-var arrayScratch = [];
-function sortIndicesIfNecessary(indices, sortFunction, vertexCount) {
-  arrayScratch.length = indices.length;
-  let needsSort = false;
-  for (let i = 0, len = indices.length; i < len; ++i) {
-    arrayScratch[i] = indices[i];
-    needsSort = needsSort || i > 0 && sortFunction(indices[i - 1], indices[i]) > 0;
-  }
-  if (needsSort) {
-    arrayScratch.sort(sortFunction);
-    return IndexDatatype_default.createTypedArray(vertexCount, arrayScratch);
-  }
-  return indices;
-}
-var createMeshTaskName2 = "createVerticesFromQuantizedTerrainMesh";
-var createMeshTaskProcessorNoThrottle2 = new TaskProcessor_default(createMeshTaskName2);
-var createMeshTaskProcessorThrottle2 = new TaskProcessor_default(
-  createMeshTaskName2,
-  TerrainData_default.maximumAsynchronousTasks
-);
-QuantizedMeshTerrainData.prototype.createMesh = function(options) {
-  options = options ?? Frozen_default.EMPTY_OBJECT;
-  Check_default.typeOf.object("options.tilingScheme", options.tilingScheme);
-  Check_default.typeOf.number("options.x", options.x);
-  Check_default.typeOf.number("options.y", options.y);
-  Check_default.typeOf.number("options.level", options.level);
-  const tilingScheme = options.tilingScheme;
-  const x = options.x;
-  const y = options.y;
-  const level = options.level;
-  const exaggeration = options.exaggeration ?? 1;
-  const exaggerationRelativeHeight = options.exaggerationRelativeHeight ?? 0;
-  const throttle = options.throttle ?? true;
-  const ellipsoid = tilingScheme.ellipsoid;
-  const rectangle = tilingScheme.tileXYToRectangle(x, y, level);
-  const createMeshTaskProcessor = throttle ? createMeshTaskProcessorThrottle2 : createMeshTaskProcessorNoThrottle2;
-  const verticesPromise = createMeshTaskProcessor.scheduleTask({
-    minimumHeight: this._minimumHeight,
-    maximumHeight: this._maximumHeight,
-    quantizedVertices: this._quantizedVertices,
-    octEncodedNormals: this._encodedNormals,
-    includeWebMercatorT: true,
-    indices: this._indices,
-    westIndices: this._westIndices,
-    southIndices: this._southIndices,
-    eastIndices: this._eastIndices,
-    northIndices: this._northIndices,
-    westSkirtHeight: this._westSkirtHeight,
-    southSkirtHeight: this._southSkirtHeight,
-    eastSkirtHeight: this._eastSkirtHeight,
-    northSkirtHeight: this._northSkirtHeight,
-    rectangle,
-    relativeToCenter: this._boundingSphere.center,
-    ellipsoid,
-    exaggeration,
-    exaggerationRelativeHeight
-  });
-  if (!defined_default(verticesPromise)) {
-    return void 0;
-  }
-  const that = this;
-  return Promise.resolve(verticesPromise).then(function(result) {
-    const vertexCountWithoutSkirts = that._quantizedVertices.length / 3;
-    const vertexCount = vertexCountWithoutSkirts + that._westIndices.length + that._southIndices.length + that._eastIndices.length + that._northIndices.length;
-    const indicesTypedArray = IndexDatatype_default.createTypedArray(
-      vertexCount,
-      result.indices
-    );
-    const vertices = new Float32Array(result.vertices);
-    const rtc = result.center;
-    const minimumHeight = result.minimumHeight;
-    const maximumHeight = result.maximumHeight;
-    const boundingSphere = that._boundingSphere;
-    const obb = that._orientedBoundingBox;
-    const occludeePointInScaledSpace = Cartesian3_default.clone(result.occludeePointInScaledSpace) ?? that._horizonOcclusionPoint;
-    const stride = result.vertexStride;
-    const terrainEncoding = TerrainEncoding_default.clone(result.encoding);
-    that._mesh = new TerrainMesh_default(
-      rtc,
-      vertices,
-      indicesTypedArray,
-      result.indexCountWithoutSkirts,
-      vertexCountWithoutSkirts,
-      minimumHeight,
-      maximumHeight,
-      rectangle,
-      boundingSphere,
-      occludeePointInScaledSpace,
-      stride,
-      obb,
-      terrainEncoding,
-      result.westIndicesSouthToNorth,
-      result.southIndicesEastToWest,
-      result.eastIndicesNorthToSouth,
-      result.northIndicesWestToEast
-    );
-    that._quantizedVertices = void 0;
-    that._encodedNormals = void 0;
-    that._indices = void 0;
-    that._uValues = void 0;
-    that._vValues = void 0;
-    that._heightValues = void 0;
-    that._westIndices = void 0;
-    that._southIndices = void 0;
-    that._eastIndices = void 0;
-    that._northIndices = void 0;
-    return that._mesh;
-  });
-};
-var upsampleTaskProcessor = new TaskProcessor_default(
-  "upsampleQuantizedTerrainMesh",
-  TerrainData_default.maximumAsynchronousTasks
-);
-QuantizedMeshTerrainData.prototype.upsample = function(tilingScheme, thisX, thisY, thisLevel, descendantX, descendantY, descendantLevel) {
-  if (!defined_default(tilingScheme)) {
-    throw new DeveloperError_default("tilingScheme is required.");
-  }
-  if (!defined_default(thisX)) {
-    throw new DeveloperError_default("thisX is required.");
-  }
-  if (!defined_default(thisY)) {
-    throw new DeveloperError_default("thisY is required.");
-  }
-  if (!defined_default(thisLevel)) {
-    throw new DeveloperError_default("thisLevel is required.");
-  }
-  if (!defined_default(descendantX)) {
-    throw new DeveloperError_default("descendantX is required.");
-  }
-  if (!defined_default(descendantY)) {
-    throw new DeveloperError_default("descendantY is required.");
-  }
-  if (!defined_default(descendantLevel)) {
-    throw new DeveloperError_default("descendantLevel is required.");
-  }
-  const levelDifference = descendantLevel - thisLevel;
-  if (levelDifference > 1) {
-    throw new DeveloperError_default(
-      "Upsampling through more than one level at a time is not currently supported."
-    );
-  }
-  const mesh = this._mesh;
-  if (!defined_default(this._mesh)) {
-    return void 0;
-  }
-  const isEastChild = thisX * 2 !== descendantX;
-  const isNorthChild = thisY * 2 === descendantY;
-  const ellipsoid = tilingScheme.ellipsoid;
-  const childRectangle = tilingScheme.tileXYToRectangle(
-    descendantX,
-    descendantY,
-    descendantLevel
-  );
-  const upsamplePromise = upsampleTaskProcessor.scheduleTask({
-    vertices: mesh.vertices,
-    vertexCountWithoutSkirts: mesh.vertexCountWithoutSkirts,
-    indices: mesh.indices,
-    indexCountWithoutSkirts: mesh.indexCountWithoutSkirts,
-    encoding: mesh.encoding,
-    minimumHeight: this._minimumHeight,
-    maximumHeight: this._maximumHeight,
-    isEastChild,
-    isNorthChild,
-    childRectangle,
-    ellipsoid
-  });
-  if (!defined_default(upsamplePromise)) {
-    return void 0;
-  }
-  let shortestSkirt = Math.min(this._westSkirtHeight, this._eastSkirtHeight);
-  shortestSkirt = Math.min(shortestSkirt, this._southSkirtHeight);
-  shortestSkirt = Math.min(shortestSkirt, this._northSkirtHeight);
-  const westSkirtHeight = isEastChild ? shortestSkirt * 0.5 : this._westSkirtHeight;
-  const southSkirtHeight = isNorthChild ? shortestSkirt * 0.5 : this._southSkirtHeight;
-  const eastSkirtHeight = isEastChild ? this._eastSkirtHeight : shortestSkirt * 0.5;
-  const northSkirtHeight = isNorthChild ? this._northSkirtHeight : shortestSkirt * 0.5;
-  const credits = this._credits;
-  return Promise.resolve(upsamplePromise).then(function(result) {
-    const quantizedVertices = new Uint16Array(result.vertices);
-    const indicesTypedArray = IndexDatatype_default.createTypedArray(
-      quantizedVertices.length / 3,
-      result.indices
-    );
-    let encodedNormals;
-    if (defined_default(result.encodedNormals)) {
-      encodedNormals = new Uint8Array(result.encodedNormals);
-    }
-    return new QuantizedMeshTerrainData({
-      quantizedVertices,
-      indices: indicesTypedArray,
-      encodedNormals,
-      minimumHeight: result.minimumHeight,
-      maximumHeight: result.maximumHeight,
-      boundingSphere: BoundingSphere_default.clone(result.boundingSphere),
-      orientedBoundingBox: OrientedBoundingBox_default.clone(
-        result.orientedBoundingBox
-      ),
-      horizonOcclusionPoint: Cartesian3_default.clone(result.horizonOcclusionPoint),
-      westIndices: result.westIndices,
-      southIndices: result.southIndices,
-      eastIndices: result.eastIndices,
-      northIndices: result.northIndices,
-      westSkirtHeight,
-      southSkirtHeight,
-      eastSkirtHeight,
-      northSkirtHeight,
-      childTileMask: 0,
-      credits,
-      createdByUpsampling: true
-    });
-  });
-};
-var maxShort = 32767;
-var barycentricCoordinateScratch = new Cartesian3_default();
-QuantizedMeshTerrainData.prototype.interpolateHeight = function(rectangle, longitude, latitude) {
-  let u = Math_default.clamp(
-    (longitude - rectangle.west) / rectangle.width,
-    0,
-    1
-  );
-  u *= maxShort;
-  let v = Math_default.clamp(
-    (latitude - rectangle.south) / rectangle.height,
-    0,
-    1
-  );
-  v *= maxShort;
-  if (!defined_default(this._mesh)) {
-    return interpolateHeight2(this, u, v);
-  }
-  return interpolateMeshHeight2(this, u, v);
-};
-function pointInBoundingBox(u, v, u0, v0, u1, v1, u2, v2) {
-  const minU = Math.min(u0, u1, u2);
-  const maxU = Math.max(u0, u1, u2);
-  const minV = Math.min(v0, v1, v2);
-  const maxV = Math.max(v0, v1, v2);
-  return u >= minU && u <= maxU && v >= minV && v <= maxV;
-}
-var texCoordScratch0 = new Cartesian2_default();
-var texCoordScratch1 = new Cartesian2_default();
-var texCoordScratch2 = new Cartesian2_default();
-function interpolateMeshHeight2(terrainData, u, v) {
-  const mesh = terrainData._mesh;
-  const vertices = mesh.vertices;
-  const encoding = mesh.encoding;
-  const indices = mesh.indices;
-  for (let i = 0, len = indices.length; i < len; i += 3) {
-    const i0 = indices[i];
-    const i1 = indices[i + 1];
-    const i2 = indices[i + 2];
-    const uv0 = encoding.decodeTextureCoordinates(
-      vertices,
-      i0,
-      texCoordScratch0
-    );
-    const uv1 = encoding.decodeTextureCoordinates(
-      vertices,
-      i1,
-      texCoordScratch1
-    );
-    const uv2 = encoding.decodeTextureCoordinates(
-      vertices,
-      i2,
-      texCoordScratch2
-    );
-    if (pointInBoundingBox(u, v, uv0.x, uv0.y, uv1.x, uv1.y, uv2.x, uv2.y)) {
-      const barycentric = Intersections2D_default.computeBarycentricCoordinates(
-        u,
-        v,
-        uv0.x,
-        uv0.y,
-        uv1.x,
-        uv1.y,
-        uv2.x,
-        uv2.y,
-        barycentricCoordinateScratch
-      );
-      if (barycentric.x >= -1e-15 && barycentric.y >= -1e-15 && barycentric.z >= -1e-15) {
-        const h0 = encoding.decodeHeight(vertices, i0);
-        const h1 = encoding.decodeHeight(vertices, i1);
-        const h2 = encoding.decodeHeight(vertices, i2);
-        return barycentric.x * h0 + barycentric.y * h1 + barycentric.z * h2;
-      }
-    }
-  }
-  return void 0;
-}
-function interpolateHeight2(terrainData, u, v) {
-  const uBuffer = terrainData._uValues;
-  const vBuffer = terrainData._vValues;
-  const heightBuffer = terrainData._heightValues;
-  const indices = terrainData._indices;
-  for (let i = 0, len = indices.length; i < len; i += 3) {
-    const i0 = indices[i];
-    const i1 = indices[i + 1];
-    const i2 = indices[i + 2];
-    const u0 = uBuffer[i0];
-    const u1 = uBuffer[i1];
-    const u2 = uBuffer[i2];
-    const v0 = vBuffer[i0];
-    const v1 = vBuffer[i1];
-    const v2 = vBuffer[i2];
-    if (pointInBoundingBox(u, v, u0, v0, u1, v1, u2, v2)) {
-      const barycentric = Intersections2D_default.computeBarycentricCoordinates(
-        u,
-        v,
-        u0,
-        v0,
-        u1,
-        v1,
-        u2,
-        v2,
-        barycentricCoordinateScratch
-      );
-      if (barycentric.x >= -1e-15 && barycentric.y >= -1e-15 && barycentric.z >= -1e-15) {
-        const quantizedHeight = barycentric.x * heightBuffer[i0] + barycentric.y * heightBuffer[i1] + barycentric.z * heightBuffer[i2];
-        return Math_default.lerp(
-          terrainData._minimumHeight,
-          terrainData._maximumHeight,
-          quantizedHeight / maxShort
-        );
-      }
-    }
-  }
-  return void 0;
-}
-QuantizedMeshTerrainData.prototype.isChildAvailable = function(thisX, thisY, childX, childY) {
-  Check_default.typeOf.number("thisX", thisX);
-  Check_default.typeOf.number("thisY", thisY);
-  Check_default.typeOf.number("childX", childX);
-  Check_default.typeOf.number("childY", childY);
-  let bitNumber = 2;
-  if (childX !== thisX * 2) {
-    ++bitNumber;
-  }
-  if (childY !== thisY * 2) {
-    bitNumber -= 2;
-  }
-  return (this._childTileMask & 1 << bitNumber) !== 0;
-};
-QuantizedMeshTerrainData.prototype.wasCreatedByUpsampling = function() {
-  return this._createdByUpsampling;
-};
-var QuantizedMeshTerrainData_default = QuantizedMeshTerrainData;
-
-// packages/engine/Source/Core/CesiumTerrainProvider.js
-function LayerInformation(layer) {
-  this.resource = layer.resource;
-  this.version = layer.version;
-  this.isHeightmap = layer.isHeightmap;
-  this.tileUrlTemplates = layer.tileUrlTemplates;
-  this.availability = layer.availability;
-  this.hasVertexNormals = layer.hasVertexNormals;
-  this.hasWaterMask = layer.hasWaterMask;
-  this.hasMetadata = layer.hasMetadata;
-  this.availabilityLevels = layer.availabilityLevels;
-  this.availabilityTilesLoaded = layer.availabilityTilesLoaded;
-  this.littleEndianExtensionSize = layer.littleEndianExtensionSize;
-  this.availabilityPromiseCache = {};
-}
-function TerrainProviderBuilder(options) {
-  this.requestVertexNormals = options.requestVertexNormals ?? false;
-  this.requestWaterMask = options.requestWaterMask ?? false;
-  this.requestMetadata = options.requestMetadata ?? true;
-  this.ellipsoid = options.ellipsoid ?? Ellipsoid_default.default;
-  this.heightmapWidth = 65;
-  this.heightmapStructure = void 0;
-  this.hasWaterMask = false;
-  this.hasMetadata = false;
-  this.hasVertexNormals = false;
-  this.scheme = void 0;
-  this.lastResource = void 0;
-  this.layerJsonResource = void 0;
-  this.previousError = void 0;
-  this.availability = void 0;
-  this.tilingScheme = void 0;
-  this.levelZeroMaximumGeometricError = void 0;
-  this.heightmapStructure = void 0;
-  this.layers = [];
-  this.attribution = "";
-  this.overallAvailability = [];
-  this.overallMaxZoom = 0;
-  this.tileCredits = [];
-}
-TerrainProviderBuilder.prototype.build = function(provider) {
-  provider._heightmapWidth = this.heightmapWidth;
-  provider._scheme = this.scheme;
-  const credits = defined_default(this.lastResource.credits) ? this.lastResource.credits : [];
-  provider._tileCredits = credits.concat(this.tileCredits);
-  provider._availability = this.availability;
-  provider._tilingScheme = this.tilingScheme;
-  provider._requestWaterMask = this.requestWaterMask;
-  provider._levelZeroMaximumGeometricError = this.levelZeroMaximumGeometricError;
-  provider._heightmapStructure = this.heightmapStructure;
-  provider._layers = this.layers;
-  provider._hasWaterMask = this.hasWaterMask;
-  provider._hasVertexNormals = this.hasVertexNormals;
-  provider._hasMetadata = this.hasMetadata;
-};
-async function parseMetadataSuccess(terrainProviderBuilder, data, provider) {
-  if (!data.format) {
-    const message = "The tile format is not specified in the layer.json file.";
-    terrainProviderBuilder.previousError = TileProviderError_default.reportError(
-      terrainProviderBuilder.previousError,
-      provider,
-      defined_default(provider) ? provider._errorEvent : void 0,
-      message
-    );
-    throw new RuntimeError_default(message);
-  }
-  if (!data.tiles || data.tiles.length === 0) {
-    const message = "The layer.json file does not specify any tile URL templates.";
-    terrainProviderBuilder.previousError = TileProviderError_default.reportError(
-      terrainProviderBuilder.previousError,
-      provider,
-      defined_default(provider) ? provider._errorEvent : void 0,
-      message
-    );
-    throw new RuntimeError_default(message);
-  }
-  let hasVertexNormals = false;
-  let hasWaterMask = false;
-  let hasMetadata = false;
-  let littleEndianExtensionSize = true;
-  let isHeightmap = false;
-  if (data.format === "heightmap-1.0") {
-    isHeightmap = true;
-    if (!defined_default(terrainProviderBuilder.heightmapStructure)) {
-      terrainProviderBuilder.heightmapStructure = {
-        heightScale: 1 / 5,
-        heightOffset: -1e3,
-        elementsPerHeight: 1,
-        stride: 1,
-        elementMultiplier: 256,
-        isBigEndian: false,
-        lowestEncodedHeight: 0,
-        highestEncodedHeight: 256 * 256 - 1
-      };
-    }
-    hasWaterMask = true;
-    terrainProviderBuilder.requestWaterMask = true;
-  } else if (data.format.indexOf("quantized-mesh-1.") !== 0) {
-    const message = `The tile format "${data.format}" is invalid or not supported.`;
-    terrainProviderBuilder.previousError = TileProviderError_default.reportError(
-      terrainProviderBuilder.previousError,
-      provider,
-      defined_default(provider) ? provider._errorEvent : void 0,
-      message
-    );
-    throw new RuntimeError_default(message);
-  }
-  const tileUrlTemplates = data.tiles;
-  const maxZoom = data.maxzoom;
-  terrainProviderBuilder.overallMaxZoom = Math.max(
-    terrainProviderBuilder.overallMaxZoom,
-    maxZoom
-  );
-  if (!data.projection || data.projection === "EPSG:4326") {
-    terrainProviderBuilder.tilingScheme = new GeographicTilingScheme_default({
-      numberOfLevelZeroTilesX: 2,
-      numberOfLevelZeroTilesY: 1,
-      ellipsoid: terrainProviderBuilder.ellipsoid
-    });
-  } else if (data.projection === "EPSG:3857") {
-    terrainProviderBuilder.tilingScheme = new WebMercatorTilingScheme_default({
-      numberOfLevelZeroTilesX: 1,
-      numberOfLevelZeroTilesY: 1,
-      ellipsoid: terrainProviderBuilder.ellipsoid
-    });
-  } else {
-    const message = `The projection "${data.projection}" is invalid or not supported.`;
-    terrainProviderBuilder.previousError = TileProviderError_default.reportError(
-      terrainProviderBuilder.previousError,
-      provider,
-      defined_default(provider) ? provider._errorEvent : void 0,
-      message
-    );
-    throw new RuntimeError_default(message);
-  }
-  terrainProviderBuilder.levelZeroMaximumGeometricError = TerrainProvider_default.getEstimatedLevelZeroGeometricErrorForAHeightmap(
-    terrainProviderBuilder.tilingScheme.ellipsoid,
-    terrainProviderBuilder.heightmapWidth,
-    terrainProviderBuilder.tilingScheme.getNumberOfXTilesAtLevel(0)
-  );
-  if (!data.scheme || data.scheme === "tms" || data.scheme === "slippyMap") {
-    terrainProviderBuilder.scheme = data.scheme;
-  } else {
-    const message = `The scheme "${data.scheme}" is invalid or not supported.`;
-    terrainProviderBuilder.previousError = TileProviderError_default.reportError(
-      terrainProviderBuilder.previousError,
-      provider,
-      defined_default(provider) ? provider._errorEvent : void 0,
-      message
-    );
-    throw new RuntimeError_default(message);
-  }
-  let availabilityTilesLoaded;
-  if (defined_default(data.extensions) && data.extensions.indexOf("octvertexnormals") !== -1) {
-    hasVertexNormals = true;
-  } else if (defined_default(data.extensions) && data.extensions.indexOf("vertexnormals") !== -1) {
-    hasVertexNormals = true;
-    littleEndianExtensionSize = false;
-  }
-  if (defined_default(data.extensions) && data.extensions.indexOf("watermask") !== -1) {
-    hasWaterMask = true;
-  }
-  if (defined_default(data.extensions) && data.extensions.indexOf("metadata") !== -1) {
-    hasMetadata = true;
-  }
-  const availabilityLevels = data.metadataAvailability;
-  const availableTiles = data.available;
-  let availability;
-  if (defined_default(availableTiles) && !defined_default(availabilityLevels)) {
-    availability = new TileAvailability_default(
-      terrainProviderBuilder.tilingScheme,
-      availableTiles.length
-    );
-    for (let level = 0; level < availableTiles.length; ++level) {
-      const rangesAtLevel = availableTiles[level];
-      const yTiles = terrainProviderBuilder.tilingScheme.getNumberOfYTilesAtLevel(level);
-      if (!defined_default(terrainProviderBuilder.overallAvailability[level])) {
-        terrainProviderBuilder.overallAvailability[level] = [];
-      }
-      for (let rangeIndex = 0; rangeIndex < rangesAtLevel.length; ++rangeIndex) {
-        const range = rangesAtLevel[rangeIndex];
-        const yStart = yTiles - range.endY - 1;
-        const yEnd = yTiles - range.startY - 1;
-        terrainProviderBuilder.overallAvailability[level].push([
-          range.startX,
-          yStart,
-          range.endX,
-          yEnd
-        ]);
-        availability.addAvailableTileRange(
-          level,
-          range.startX,
-          yStart,
-          range.endX,
-          yEnd
-        );
-      }
-    }
-  } else if (defined_default(availabilityLevels)) {
-    availabilityTilesLoaded = new TileAvailability_default(
-      terrainProviderBuilder.tilingScheme,
-      maxZoom
-    );
-    availability = new TileAvailability_default(
-      terrainProviderBuilder.tilingScheme,
-      maxZoom
-    );
-    terrainProviderBuilder.overallAvailability[0] = [[0, 0, 1, 0]];
-    availability.addAvailableTileRange(0, 0, 0, 1, 0);
-  }
-  terrainProviderBuilder.hasWaterMask = terrainProviderBuilder.hasWaterMask || hasWaterMask;
-  terrainProviderBuilder.hasVertexNormals = terrainProviderBuilder.hasVertexNormals || hasVertexNormals;
-  terrainProviderBuilder.hasMetadata = terrainProviderBuilder.hasMetadata || hasMetadata;
-  if (defined_default(data.attribution)) {
-    if (terrainProviderBuilder.attribution.length > 0) {
-      terrainProviderBuilder.attribution += " ";
-    }
-    terrainProviderBuilder.attribution += data.attribution;
-  }
-  terrainProviderBuilder.layers.push(
-    new LayerInformation({
-      resource: terrainProviderBuilder.lastResource,
-      version: data.version,
-      isHeightmap,
-      tileUrlTemplates,
-      availability,
-      hasVertexNormals,
-      hasWaterMask,
-      hasMetadata,
-      availabilityLevels,
-      availabilityTilesLoaded,
-      littleEndianExtensionSize
-    })
-  );
-  const parentUrl = data.parentUrl;
-  if (defined_default(parentUrl)) {
-    if (!defined_default(availability)) {
-      console.log(
-        "A layer.json can't have a parentUrl if it does't have an available array."
-      );
-      return true;
-    }
-    terrainProviderBuilder.lastResource = terrainProviderBuilder.lastResource.getDerivedResource({
-      url: parentUrl
-    });
-    terrainProviderBuilder.lastResource.appendForwardSlash();
-    terrainProviderBuilder.layerJsonResource = terrainProviderBuilder.lastResource.getDerivedResource({
-      url: "layer.json"
-    });
-    await requestLayerJson(terrainProviderBuilder);
-    return true;
-  }
-  return true;
-}
-function parseMetadataFailure(terrainProviderBuilder, error, provider) {
-  let message = `An error occurred while accessing ${terrainProviderBuilder.layerJsonResource.url}.`;
-  if (defined_default(error)) {
-    message += `
-${error.message}`;
-  }
-  terrainProviderBuilder.previousError = TileProviderError_default.reportError(
-    terrainProviderBuilder.previousError,
-    provider,
-    defined_default(provider) ? provider._errorEvent : void 0,
-    message
-  );
-  if (terrainProviderBuilder.previousError.retry) {
-    return requestLayerJson(terrainProviderBuilder, provider);
-  }
-  throw new RuntimeError_default(message);
-}
-async function metadataSuccess4(terrainProviderBuilder, data, provider) {
-  await parseMetadataSuccess(terrainProviderBuilder, data, provider);
-  const length = terrainProviderBuilder.overallAvailability.length;
-  if (length > 0) {
-    const availability = terrainProviderBuilder.availability = new TileAvailability_default(
-      terrainProviderBuilder.tilingScheme,
-      terrainProviderBuilder.overallMaxZoom
-    );
-    for (let level = 0; level < length; ++level) {
-      const levelRanges = terrainProviderBuilder.overallAvailability[level];
-      for (let i = 0; i < levelRanges.length; ++i) {
-        const range = levelRanges[i];
-        availability.addAvailableTileRange(
-          level,
-          range[0],
-          range[1],
-          range[2],
-          range[3]
-        );
-      }
-    }
-  }
-  if (terrainProviderBuilder.attribution.length > 0) {
-    const layerJsonCredit = new Credit_default(terrainProviderBuilder.attribution);
-    terrainProviderBuilder.tileCredits.push(layerJsonCredit);
-  }
-  return true;
-}
-async function requestLayerJson(terrainProviderBuilder, provider) {
-  try {
-    const data = await terrainProviderBuilder.layerJsonResource.fetchJson();
-    return metadataSuccess4(terrainProviderBuilder, data, provider);
-  } catch (error) {
-    if (defined_default(error) && error.statusCode === 404) {
-      await parseMetadataSuccess(
-        terrainProviderBuilder,
-        {
-          tilejson: "2.1.0",
-          format: "heightmap-1.0",
-          version: "1.0.0",
-          scheme: "tms",
-          tiles: ["{z}/{x}/{y}.terrain?v={version}"]
-        },
-        provider
-      );
-      return true;
-    }
-    return parseMetadataFailure(terrainProviderBuilder, error, provider);
-  }
-}
-function CesiumTerrainProvider(options) {
-  options = options ?? Frozen_default.EMPTY_OBJECT;
-  this._heightmapWidth = void 0;
-  this._heightmapStructure = void 0;
-  this._hasWaterMask = false;
-  this._hasVertexNormals = false;
-  this._hasMetadata = false;
-  this._scheme = void 0;
-  this._ellipsoid = options.ellipsoid;
-  this._requestVertexNormals = options.requestVertexNormals ?? false;
-  this._requestWaterMask = options.requestWaterMask ?? false;
-  this._requestMetadata = options.requestMetadata ?? true;
-  this._errorEvent = new Event_default();
-  let credit = options.credit;
-  if (typeof credit === "string") {
-    credit = new Credit_default(credit);
-  }
-  this._credit = credit;
-  this._availability = void 0;
-  this._tilingScheme = void 0;
-  this._levelZeroMaximumGeometricError = void 0;
-  this._layers = void 0;
-  this._tileCredits = void 0;
-}
-var QuantizedMeshExtensionIds = {
-  /**
-   * Oct-Encoded Per-Vertex Normals are included as an extension to the tile mesh
-   *
-   * @type {number}
-   * @constant
-   * @default 1
-   */
-  OCT_VERTEX_NORMALS: 1,
-  /**
-   * A watermask is included as an extension to the tile mesh
-   *
-   * @type {number}
-   * @constant
-   * @default 2
-   */
-  WATER_MASK: 2,
-  /**
-   * A json object contain metadata about the tile
-   *
-   * @type {number}
-   * @constant
-   * @default 4
-   */
-  METADATA: 4
-};
-function getRequestHeader(extensionsList) {
-  if (!defined_default(extensionsList) || extensionsList.length === 0) {
-    return {
-      Accept: "application/vnd.quantized-mesh,application/octet-stream;q=0.9,*/*;q=0.01"
-    };
-  }
-  const extensions = extensionsList.join("-");
-  return {
-    Accept: `application/vnd.quantized-mesh;extensions=${extensions},application/octet-stream;q=0.9,*/*;q=0.01`
-  };
-}
-function createHeightmapTerrainData(provider, buffer, level, x, y) {
-  const heightBuffer = new Uint16Array(
-    buffer,
-    0,
-    provider._heightmapWidth * provider._heightmapWidth
-  );
-  return new HeightmapTerrainData_default({
-    buffer: heightBuffer,
-    childTileMask: new Uint8Array(buffer, heightBuffer.byteLength, 1)[0],
-    waterMask: new Uint8Array(
-      buffer,
-      heightBuffer.byteLength + 1,
-      buffer.byteLength - heightBuffer.byteLength - 1
-    ),
-    width: provider._heightmapWidth,
-    height: provider._heightmapWidth,
-    structure: provider._heightmapStructure,
-    credits: provider._tileCredits
-  });
-}
-function createQuantizedMeshTerrainData(provider, buffer, level, x, y, layer) {
-  const littleEndianExtensionSize = layer.littleEndianExtensionSize;
-  let pos = 0;
-  const cartesian3Elements = 3;
-  const boundingSphereElements = cartesian3Elements + 1;
-  const cartesian3Length = Float64Array.BYTES_PER_ELEMENT * cartesian3Elements;
-  const boundingSphereLength = Float64Array.BYTES_PER_ELEMENT * boundingSphereElements;
-  const encodedVertexElements = 3;
-  const encodedVertexLength = Uint16Array.BYTES_PER_ELEMENT * encodedVertexElements;
-  const triangleElements = 3;
-  let bytesPerIndex = Uint16Array.BYTES_PER_ELEMENT;
-  let triangleLength = bytesPerIndex * triangleElements;
-  const view = new DataView(buffer);
-  const center = new Cartesian3_default(
-    view.getFloat64(pos, true),
-    view.getFloat64(pos + 8, true),
-    view.getFloat64(pos + 16, true)
-  );
-  pos += cartesian3Length;
-  const minimumHeight = view.getFloat32(pos, true);
-  pos += Float32Array.BYTES_PER_ELEMENT;
-  const maximumHeight = view.getFloat32(pos, true);
-  pos += Float32Array.BYTES_PER_ELEMENT;
-  const boundingSphere = new BoundingSphere_default(
-    new Cartesian3_default(
-      view.getFloat64(pos, true),
-      view.getFloat64(pos + 8, true),
-      view.getFloat64(pos + 16, true)
-    ),
-    view.getFloat64(pos + cartesian3Length, true)
-  );
-  pos += boundingSphereLength;
-  const horizonOcclusionPoint = new Cartesian3_default(
-    view.getFloat64(pos, true),
-    view.getFloat64(pos + 8, true),
-    view.getFloat64(pos + 16, true)
-  );
-  pos += cartesian3Length;
-  const vertexCount = view.getUint32(pos, true);
-  pos += Uint32Array.BYTES_PER_ELEMENT;
-  const encodedVertexBuffer = new Uint16Array(buffer, pos, vertexCount * 3);
-  pos += vertexCount * encodedVertexLength;
-  if (vertexCount > 64 * 1024) {
-    bytesPerIndex = Uint32Array.BYTES_PER_ELEMENT;
-    triangleLength = bytesPerIndex * triangleElements;
-  }
-  const uBuffer = encodedVertexBuffer.subarray(0, vertexCount);
-  const vBuffer = encodedVertexBuffer.subarray(vertexCount, 2 * vertexCount);
-  const heightBuffer = encodedVertexBuffer.subarray(
-    vertexCount * 2,
-    3 * vertexCount
-  );
-  AttributeCompression_default.zigZagDeltaDecode(uBuffer, vBuffer, heightBuffer);
-  if (pos % bytesPerIndex !== 0) {
-    pos += bytesPerIndex - pos % bytesPerIndex;
-  }
-  const triangleCount = view.getUint32(pos, true);
-  pos += Uint32Array.BYTES_PER_ELEMENT;
-  const indices = IndexDatatype_default.createTypedArrayFromArrayBuffer(
-    vertexCount,
-    buffer,
-    pos,
-    triangleCount * triangleElements
-  );
-  pos += triangleCount * triangleLength;
-  let highest = 0;
-  const length = indices.length;
-  for (let i = 0; i < length; ++i) {
-    const code = indices[i];
-    indices[i] = highest - code;
-    if (code === 0) {
-      ++highest;
-    }
-  }
-  const westVertexCount = view.getUint32(pos, true);
-  pos += Uint32Array.BYTES_PER_ELEMENT;
-  const westIndices = IndexDatatype_default.createTypedArrayFromArrayBuffer(
-    vertexCount,
-    buffer,
-    pos,
-    westVertexCount
-  );
-  pos += westVertexCount * bytesPerIndex;
-  const southVertexCount = view.getUint32(pos, true);
-  pos += Uint32Array.BYTES_PER_ELEMENT;
-  const southIndices = IndexDatatype_default.createTypedArrayFromArrayBuffer(
-    vertexCount,
-    buffer,
-    pos,
-    southVertexCount
-  );
-  pos += southVertexCount * bytesPerIndex;
-  const eastVertexCount = view.getUint32(pos, true);
-  pos += Uint32Array.BYTES_PER_ELEMENT;
-  const eastIndices = IndexDatatype_default.createTypedArrayFromArrayBuffer(
-    vertexCount,
-    buffer,
-    pos,
-    eastVertexCount
-  );
-  pos += eastVertexCount * bytesPerIndex;
-  const northVertexCount = view.getUint32(pos, true);
-  pos += Uint32Array.BYTES_PER_ELEMENT;
-  const northIndices = IndexDatatype_default.createTypedArrayFromArrayBuffer(
-    vertexCount,
-    buffer,
-    pos,
-    northVertexCount
-  );
-  pos += northVertexCount * bytesPerIndex;
-  let encodedNormalBuffer;
-  let waterMaskBuffer;
-  while (pos < view.byteLength) {
-    const extensionId = view.getUint8(pos, true);
-    pos += Uint8Array.BYTES_PER_ELEMENT;
-    const extensionLength = view.getUint32(pos, littleEndianExtensionSize);
-    pos += Uint32Array.BYTES_PER_ELEMENT;
-    if (extensionId === QuantizedMeshExtensionIds.OCT_VERTEX_NORMALS && provider._requestVertexNormals) {
-      encodedNormalBuffer = new Uint8Array(buffer, pos, vertexCount * 2);
-    } else if (extensionId === QuantizedMeshExtensionIds.WATER_MASK && provider._requestWaterMask) {
-      waterMaskBuffer = new Uint8Array(buffer, pos, extensionLength);
-    } else if (extensionId === QuantizedMeshExtensionIds.METADATA && provider._requestMetadata) {
-      const stringLength = view.getUint32(pos, true);
-      if (stringLength > 0) {
-        const metadata = getJsonFromTypedArray_default(
-          new Uint8Array(buffer),
-          pos + Uint32Array.BYTES_PER_ELEMENT,
-          stringLength
-        );
-        const availableTiles = metadata.available;
-        if (defined_default(availableTiles)) {
-          for (let offset = 0; offset < availableTiles.length; ++offset) {
-            const availableLevel = level + offset + 1;
-            const rangesAtLevel = availableTiles[offset];
-            const yTiles = provider._tilingScheme.getNumberOfYTilesAtLevel(availableLevel);
-            for (let rangeIndex = 0; rangeIndex < rangesAtLevel.length; ++rangeIndex) {
-              const range = rangesAtLevel[rangeIndex];
-              const yStart = yTiles - range.endY - 1;
-              const yEnd = yTiles - range.startY - 1;
-              provider.availability.addAvailableTileRange(
-                availableLevel,
-                range.startX,
-                yStart,
-                range.endX,
-                yEnd
-              );
-              layer.availability.addAvailableTileRange(
-                availableLevel,
-                range.startX,
-                yStart,
-                range.endX,
-                yEnd
-              );
-            }
-          }
-        }
-      }
-      layer.availabilityTilesLoaded.addAvailableTileRange(level, x, y, x, y);
-    }
-    pos += extensionLength;
-  }
-  const skirtHeight = provider.getLevelMaximumGeometricError(level) * 5;
-  const rectangle = provider._tilingScheme.tileXYToRectangle(x, y, level);
-  const orientedBoundingBox = OrientedBoundingBox_default.fromRectangle(
-    rectangle,
-    minimumHeight,
-    maximumHeight,
-    provider._tilingScheme.ellipsoid
-  );
-  return new QuantizedMeshTerrainData_default({
-    center,
-    minimumHeight,
-    maximumHeight,
-    boundingSphere,
-    orientedBoundingBox,
-    horizonOcclusionPoint,
-    quantizedVertices: encodedVertexBuffer,
-    encodedNormals: encodedNormalBuffer,
-    indices,
-    westIndices,
-    southIndices,
-    eastIndices,
-    northIndices,
-    westSkirtHeight: skirtHeight,
-    southSkirtHeight: skirtHeight,
-    eastSkirtHeight: skirtHeight,
-    northSkirtHeight: skirtHeight,
-    childTileMask: provider.availability.computeChildMaskForTile(level, x, y),
-    waterMask: waterMaskBuffer,
-    credits: provider._tileCredits
-  });
-}
-CesiumTerrainProvider.prototype.requestTileGeometry = function(x, y, level, request) {
-  const layers = this._layers;
-  let layerToUse;
-  const layerCount = layers.length;
-  let unknownAvailability = false;
-  let availabilityPromise = Promise.resolve();
-  if (layerCount === 1) {
-    layerToUse = layers[0];
-  } else {
-    for (let i = 0; i < layerCount; ++i) {
-      const layer = layers[i];
-      if (!defined_default(layer.availability) || layer.availability.isTileAvailable(level, x, y)) {
-        layerToUse = layer;
-        break;
-      }
-      const availabilityUnloaded = checkLayer(
-        this,
-        x,
-        y,
-        level,
-        layer,
-        i === 0
-      );
-      if (availabilityUnloaded.result) {
-        unknownAvailability = true;
-        availabilityPromise = availabilityPromise.then(
-          () => availabilityUnloaded.promise
-        );
-      }
-    }
-  }
-  if (!defined_default(layerToUse) && unknownAvailability) {
-    return availabilityPromise.then(() => {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const promise = this.requestTileGeometry(x, y, level, request);
-          resolve(promise);
-        }, 0);
-      });
-    });
-  }
-  return requestTileGeometry2(this, x, y, level, layerToUse, request);
-};
-function requestTileGeometry2(provider, x, y, level, layerToUse, request) {
-  if (!defined_default(layerToUse)) {
-    return Promise.reject(new RuntimeError_default("Terrain tile doesn't exist"));
-  }
-  const urlTemplates = layerToUse.tileUrlTemplates;
-  if (urlTemplates.length === 0) {
-    return void 0;
-  }
-  let terrainY;
-  if (!provider._scheme || provider._scheme === "tms") {
-    const yTiles = provider._tilingScheme.getNumberOfYTilesAtLevel(level);
-    terrainY = yTiles - y - 1;
-  } else {
-    terrainY = y;
-  }
-  const extensionList = [];
-  if (provider._requestVertexNormals && layerToUse.hasVertexNormals) {
-    extensionList.push(
-      layerToUse.littleEndianExtensionSize ? "octvertexnormals" : "vertexnormals"
-    );
-  }
-  if (provider._requestWaterMask && layerToUse.hasWaterMask) {
-    extensionList.push("watermask");
-  }
-  if (provider._requestMetadata && layerToUse.hasMetadata) {
-    extensionList.push("metadata");
-  }
-  let headers;
-  let query;
-  const url = urlTemplates[(x + terrainY + level) % urlTemplates.length];
-  const resource = layerToUse.resource;
-  if (defined_default(resource._ionEndpoint) && !defined_default(resource._ionEndpoint.externalType)) {
-    if (extensionList.length !== 0) {
-      query = { extensions: extensionList.join("-") };
-    }
-    headers = getRequestHeader(void 0);
-  } else {
-    headers = getRequestHeader(extensionList);
-  }
-  const promise = resource.getDerivedResource({
-    url,
-    templateValues: {
-      version: layerToUse.version,
-      z: level,
-      x,
-      y: terrainY
-    },
-    queryParameters: query,
-    headers,
-    request
-  }).fetchArrayBuffer();
-  if (!defined_default(promise)) {
-    return void 0;
-  }
-  return promise.then(function(buffer) {
-    if (!defined_default(buffer)) {
-      return Promise.reject(new RuntimeError_default("Mesh buffer doesn't exist."));
-    }
-    if (defined_default(provider._heightmapStructure)) {
-      return createHeightmapTerrainData(provider, buffer, level, x, y);
-    }
-    return createQuantizedMeshTerrainData(
-      provider,
-      buffer,
-      level,
-      x,
-      y,
-      layerToUse
-    );
-  });
-}
-Object.defineProperties(CesiumTerrainProvider.prototype, {
-  /**
-   * Gets an event that is raised when the terrain provider encounters an asynchronous error.  By subscribing
-   * to the event, you will be notified of the error and can potentially recover from it.  Event listeners
-   * are passed an instance of {@link TileProviderError}.
-   * @memberof CesiumTerrainProvider.prototype
-   * @type {Event}
-   * @readonly
-   */
-  errorEvent: {
-    get: function() {
-      return this._errorEvent;
-    }
-  },
-  /**
-   * Gets the credit to display when this terrain provider is active.  Typically this is used to credit
-   * the source of the terrain.
-   * @memberof CesiumTerrainProvider.prototype
-   * @type {Credit}
-   * @readonly
-   */
-  credit: {
-    get: function() {
-      return this._credit;
-    }
-  },
-  /**
-   * Gets the tiling scheme used by this provider.
-   * @memberof CesiumTerrainProvider.prototype
-   * @type {GeographicTilingScheme}
-   * @readonly
-   */
-  tilingScheme: {
-    get: function() {
-      return this._tilingScheme;
-    }
-  },
-  /**
-   * Gets a value indicating whether or not the provider includes a water mask.  The water mask
-   * indicates which areas of the globe are water rather than land, so they can be rendered
-   * as a reflective surface with animated waves.
-   * @memberof CesiumTerrainProvider.prototype
-   * @type {boolean}
-   * @readonly
-   */
-  hasWaterMask: {
-    get: function() {
-      return this._hasWaterMask && this._requestWaterMask;
-    }
-  },
-  /**
-   * Gets a value indicating whether or not the requested tiles include vertex normals.
-   * @memberof CesiumTerrainProvider.prototype
-   * @type {boolean}
-   * @readonly
-   */
-  hasVertexNormals: {
-    get: function() {
-      return this._hasVertexNormals && this._requestVertexNormals;
-    }
-  },
-  /**
-   * Gets a value indicating whether or not the requested tiles include metadata.
-   * @memberof CesiumTerrainProvider.prototype
-   * @type {boolean}
-   * @readonly
-   */
-  hasMetadata: {
-    get: function() {
-      return this._hasMetadata && this._requestMetadata;
-    }
-  },
-  /**
-   * Boolean flag that indicates if the client should request vertex normals from the server.
-   * Vertex normals data is appended to the standard tile mesh data only if the client requests the vertex normals and
-   * if the server provides vertex normals.
-   * @memberof CesiumTerrainProvider.prototype
-   * @type {boolean}
-   * @readonly
-   */
-  requestVertexNormals: {
-    get: function() {
-      return this._requestVertexNormals;
-    }
-  },
-  /**
-   * Boolean flag that indicates if the client should request a watermask from the server.
-   * Watermask data is appended to the standard tile mesh data only if the client requests the watermask and
-   * if the server provides a watermask.
-   * @memberof CesiumTerrainProvider.prototype
-   * @type {boolean}
-   * @readonly
-   */
-  requestWaterMask: {
-    get: function() {
-      return this._requestWaterMask;
-    }
-  },
-  /**
-   * Boolean flag that indicates if the client should request metadata from the server.
-   * Metadata is appended to the standard tile mesh data only if the client requests the metadata and
-   * if the server provides a metadata.
-   * @memberof CesiumTerrainProvider.prototype
-   * @type {boolean}
-   * @readonly
-   */
-  requestMetadata: {
-    get: function() {
-      return this._requestMetadata;
-    }
-  },
-  /**
-   * Gets an object that can be used to determine availability of terrain from this provider, such as
-   * at points and in rectangles. This property may be undefined if availability
-   * information is not available. Note that this reflects tiles that are known to be available currently.
-   * Additional tiles may be discovered to be available in the future, e.g. if availability information
-   * exists deeper in the tree rather than it all being discoverable at the root. However, a tile that
-   * is available now will not become unavailable in the future.
-   * @memberof CesiumTerrainProvider.prototype
-   * @type {TileAvailability|undefined}
-   * @readonly
-   */
-  availability: {
-    get: function() {
-      return this._availability;
-    }
-  }
-});
-CesiumTerrainProvider.prototype.getLevelMaximumGeometricError = function(level) {
-  return this._levelZeroMaximumGeometricError / (1 << level);
-};
-CesiumTerrainProvider.fromIonAssetId = async function(assetId, options) {
-  Check_default.defined("assetId", assetId);
-  const resource = await IonResource_default.fromAssetId(assetId);
-  return CesiumTerrainProvider.fromUrl(resource, options);
-};
-CesiumTerrainProvider.fromUrl = async function(url, options) {
-  Check_default.defined("url", url);
-  options = options ?? Frozen_default.EMPTY_OBJECT;
-  url = await Promise.resolve(url);
-  const resource = Resource_default.createIfNeeded(url);
-  resource.appendForwardSlash();
-  const terrainProviderBuilder = new TerrainProviderBuilder(options);
-  terrainProviderBuilder.lastResource = resource;
-  terrainProviderBuilder.layerJsonResource = terrainProviderBuilder.lastResource.getDerivedResource({
-    url: "layer.json"
-  });
-  await requestLayerJson(terrainProviderBuilder);
-  const provider = new CesiumTerrainProvider(options);
-  terrainProviderBuilder.build(provider);
-  return provider;
-};
-CesiumTerrainProvider.prototype.getTileDataAvailable = function(x, y, level) {
-  if (!defined_default(this._availability)) {
-    return void 0;
-  }
-  if (level > this._availability._maximumLevel) {
-    return false;
-  }
-  if (this._availability.isTileAvailable(level, x, y)) {
-    return true;
-  }
-  if (!this._hasMetadata) {
-    return false;
-  }
-  const layers = this._layers;
-  const count = layers.length;
-  for (let i = 0; i < count; ++i) {
-    const layerResult = checkLayer(this, x, y, level, layers[i], i === 0);
-    if (layerResult.result) {
-      return void 0;
-    }
-  }
-  return false;
-};
-CesiumTerrainProvider.prototype.loadTileDataAvailability = function(x, y, level) {
-  if (!defined_default(this._availability) || level > this._availability._maximumLevel || this._availability.isTileAvailable(level, x, y) || !this._hasMetadata) {
-    return void 0;
-  }
-  const layers = this._layers;
-  const count = layers.length;
-  for (let i = 0; i < count; ++i) {
-    const layerResult = checkLayer(this, x, y, level, layers[i], i === 0);
-    if (defined_default(layerResult.promise)) {
-      return layerResult.promise;
-    }
-  }
-};
-function getAvailabilityTile(layer, x, y, level) {
-  if (level === 0) {
-    return;
-  }
-  const availabilityLevels = layer.availabilityLevels;
-  const parentLevel = level % availabilityLevels === 0 ? level - availabilityLevels : (level / availabilityLevels | 0) * availabilityLevels;
-  const divisor = 1 << level - parentLevel;
-  const parentX = x / divisor | 0;
-  const parentY = y / divisor | 0;
-  return {
-    level: parentLevel,
-    x: parentX,
-    y: parentY
-  };
-}
-function checkLayer(provider, x, y, level, layer, topLayer) {
-  if (!defined_default(layer.availabilityLevels)) {
-    return {
-      result: false
-    };
-  }
-  let cacheKey;
-  const deleteFromCache = function() {
-    delete layer.availabilityPromiseCache[cacheKey];
-  };
-  const availabilityTilesLoaded = layer.availabilityTilesLoaded;
-  const availability = layer.availability;
-  let tile = getAvailabilityTile(layer, x, y, level);
-  while (defined_default(tile)) {
-    if (availability.isTileAvailable(tile.level, tile.x, tile.y) && !availabilityTilesLoaded.isTileAvailable(tile.level, tile.x, tile.y)) {
-      let requestPromise;
-      if (!topLayer) {
-        cacheKey = `${tile.level}-${tile.x}-${tile.y}`;
-        requestPromise = layer.availabilityPromiseCache[cacheKey];
-        if (!defined_default(requestPromise)) {
-          const request = new Request_default({
-            throttle: false,
-            throttleByServer: true,
-            type: RequestType_default.TERRAIN
-          });
-          requestPromise = requestTileGeometry2(
-            provider,
-            tile.x,
-            tile.y,
-            tile.level,
-            layer,
-            request
-          );
-          if (defined_default(requestPromise)) {
-            layer.availabilityPromiseCache[cacheKey] = requestPromise;
-            requestPromise.then(deleteFromCache);
-          }
-        }
-      }
-      return {
-        result: true,
-        promise: requestPromise
-      };
-    }
-    tile = getAvailabilityTile(layer, tile.x, tile.y, tile.level);
-  }
-  return {
-    result: false
-  };
-}
-CesiumTerrainProvider._getAvailabilityTile = getAvailabilityTile;
-var CesiumTerrainProvider_default = CesiumTerrainProvider;
-
-// packages/engine/Source/Core/KeyboardEventModifier.js
-var KeyboardEventModifier = {
-  /**
-   * Represents the shift key being held down.
-   *
-   * @type {number}
-   * @constant
-   */
-  SHIFT: 0,
-  /**
-   * Represents the control key being held down.
-   *
-   * @type {number}
-   * @constant
-   */
-  CTRL: 1,
-  /**
-   * Represents the alt key being held down.
-   *
-   * @type {number}
-   * @constant
-   */
-  ALT: 2
-};
-Object.freeze(KeyboardEventModifier);
-var KeyboardEventModifier_default = KeyboardEventModifier;
-
-// packages/engine/Source/Core/ScreenSpaceEventType.js
-var ScreenSpaceEventType = {
-  /**
-   * Represents a mouse left button down event.
-   *
-   * @type {number}
-   * @constant
-   */
-  LEFT_DOWN: 0,
-  /**
-   * Represents a mouse left button up event.
-   *
-   * @type {number}
-   * @constant
-   */
-  LEFT_UP: 1,
-  /**
-   * Represents a mouse left click event.
-   *
-   * @type {number}
-   * @constant
-   */
-  LEFT_CLICK: 2,
-  /**
-   * Represents a mouse left double click event.
-   *
-   * @type {number}
-   * @constant
-   */
-  LEFT_DOUBLE_CLICK: 3,
-  /**
-   * Represents a mouse left button down event.
-   *
-   * @type {number}
-   * @constant
-   */
-  RIGHT_DOWN: 5,
-  /**
-   * Represents a mouse right button up event.
-   *
-   * @type {number}
-   * @constant
-   */
-  RIGHT_UP: 6,
-  /**
-   * Represents a mouse right click event.
-   *
-   * @type {number}
-   * @constant
-   */
-  RIGHT_CLICK: 7,
-  /**
-   * Represents a mouse middle button down event.
-   *
-   * @type {number}
-   * @constant
-   */
-  MIDDLE_DOWN: 10,
-  /**
-   * Represents a mouse middle button up event.
-   *
-   * @type {number}
-   * @constant
-   */
-  MIDDLE_UP: 11,
-  /**
-   * Represents a mouse middle click event.
-   *
-   * @type {number}
-   * @constant
-   */
-  MIDDLE_CLICK: 12,
-  /**
-   * Represents a mouse move event.
-   *
-   * @type {number}
-   * @constant
-   */
-  MOUSE_MOVE: 15,
-  /**
-   * Represents a mouse wheel event.
-   *
-   * @type {number}
-   * @constant
-   */
-  WHEEL: 16,
-  /**
-   * Represents the start of a two-finger event on a touch surface.
-   *
-   * @type {number}
-   * @constant
-   */
-  PINCH_START: 17,
-  /**
-   * Represents the end of a two-finger event on a touch surface.
-   *
-   * @type {number}
-   * @constant
-   */
-  PINCH_END: 18,
-  /**
-   * Represents a change of a two-finger event on a touch surface.
-   *
-   * @type {number}
-   * @constant
-   */
-  PINCH_MOVE: 19
-};
-Object.freeze(ScreenSpaceEventType);
-var ScreenSpaceEventType_default = ScreenSpaceEventType;
-
-// packages/engine/Source/Core/ScreenSpaceEventHandler.js
-function getPosition(screenSpaceEventHandler, event, result) {
-  const element = screenSpaceEventHandler._element;
-  if (element === document) {
-    result.x = event.clientX;
-    result.y = event.clientY;
-    return result;
-  }
-  const rect = element.getBoundingClientRect();
-  result.x = event.clientX - rect.left;
-  result.y = event.clientY - rect.top;
-  return result;
-}
-function getInputEventKey(type, modifiers) {
-  if (!defined_default(modifiers)) {
-    return `${type}`;
-  }
-  const modifierList = Array.isArray(modifiers) ? modifiers.toSorted() : [modifiers];
-  return `${type}+${modifierList.join("+")}`;
-}
-function getModifiers(event) {
-  const modifiers = [];
-  if (event.shiftKey) {
-    modifiers.push(KeyboardEventModifier_default.SHIFT);
-  }
-  if (event.ctrlKey) {
-    modifiers.push(KeyboardEventModifier_default.CTRL);
-  }
-  if (event.altKey) {
-    modifiers.push(KeyboardEventModifier_default.ALT);
-  }
-  if (modifiers.length) {
-    return modifiers;
-  }
-  return void 0;
-}
-var MouseButton = {
-  LEFT: 0,
-  MIDDLE: 1,
-  RIGHT: 2
-};
-function registerListener(screenSpaceEventHandler, domType, element, callback) {
-  function listener(e) {
-    callback(screenSpaceEventHandler, e);
-  }
-  element.addEventListener(domType, listener, {
-    capture: false,
-    passive: false
-  });
-  screenSpaceEventHandler._removalFunctions.push(function() {
-    element.removeEventListener(domType, listener, false);
-  });
-}
-function registerListeners(screenSpaceEventHandler) {
-  const element = screenSpaceEventHandler._element;
-  const alternateElement = !defined_default(element.disableRootEvents) ? document : element;
-  if (FeatureDetection_default.supportsPointerEvents()) {
-    registerListener(
-      screenSpaceEventHandler,
-      "pointerdown",
-      element,
-      handlePointerDown
-    );
-    registerListener(
-      screenSpaceEventHandler,
-      "pointerup",
-      element,
-      handlePointerUp
-    );
-    registerListener(
-      screenSpaceEventHandler,
-      "pointermove",
-      element,
-      handlePointerMove
-    );
-    registerListener(
-      screenSpaceEventHandler,
-      "pointercancel",
-      element,
-      handlePointerUp
-    );
-  } else {
-    registerListener(
-      screenSpaceEventHandler,
-      "mousedown",
-      element,
-      handleMouseDown
-    );
-    registerListener(
-      screenSpaceEventHandler,
-      "mouseup",
-      alternateElement,
-      handleMouseUp
-    );
-    registerListener(
-      screenSpaceEventHandler,
-      "mousemove",
-      alternateElement,
-      handleMouseMove
-    );
-    registerListener(
-      screenSpaceEventHandler,
-      "touchstart",
-      element,
-      handleTouchStart
-    );
-    registerListener(
-      screenSpaceEventHandler,
-      "touchend",
-      alternateElement,
-      handleTouchEnd
-    );
-    registerListener(
-      screenSpaceEventHandler,
-      "touchmove",
-      alternateElement,
-      handleTouchMove
-    );
-    registerListener(
-      screenSpaceEventHandler,
-      "touchcancel",
-      alternateElement,
-      handleTouchEnd
-    );
-  }
-  registerListener(
-    screenSpaceEventHandler,
-    "dblclick",
-    element,
-    handleDblClick
-  );
-  let wheelEvent;
-  if ("onwheel" in element) {
-    wheelEvent = "wheel";
-  } else if (document.onmousewheel !== void 0) {
-    wheelEvent = "mousewheel";
-  } else {
-    wheelEvent = "DOMMouseScroll";
-  }
-  registerListener(screenSpaceEventHandler, wheelEvent, element, handleWheel);
-}
-function unregisterListeners(screenSpaceEventHandler) {
-  const removalFunctions = screenSpaceEventHandler._removalFunctions;
-  for (let i = 0; i < removalFunctions.length; ++i) {
-    removalFunctions[i]();
-  }
-}
-var mouseDownEvent = {
-  position: new Cartesian2_default()
-};
-function gotTouchEvent(screenSpaceEventHandler) {
-  screenSpaceEventHandler._lastSeenTouchEvent = getTimestamp_default();
-}
-function canProcessMouseEvent(screenSpaceEventHandler) {
-  return getTimestamp_default() - screenSpaceEventHandler._lastSeenTouchEvent > ScreenSpaceEventHandler.mouseEmulationIgnoreMilliseconds;
-}
-function checkPixelTolerance(startPosition, endPosition, pixelTolerance) {
-  const xDiff = startPosition.x - endPosition.x;
-  const yDiff = startPosition.y - endPosition.y;
-  const totalPixels = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
-  return totalPixels < pixelTolerance;
-}
-function handleMouseDown(screenSpaceEventHandler, event) {
-  if (!canProcessMouseEvent(screenSpaceEventHandler)) {
-    return;
-  }
-  const button = event.button;
-  screenSpaceEventHandler._buttonDown[button] = true;
-  let screenSpaceEventType;
-  if (button === MouseButton.LEFT) {
-    screenSpaceEventType = ScreenSpaceEventType_default.LEFT_DOWN;
-  } else if (button === MouseButton.MIDDLE) {
-    screenSpaceEventType = ScreenSpaceEventType_default.MIDDLE_DOWN;
-  } else if (button === MouseButton.RIGHT) {
-    screenSpaceEventType = ScreenSpaceEventType_default.RIGHT_DOWN;
-  } else {
-    return;
-  }
-  const position = getPosition(
-    screenSpaceEventHandler,
-    event,
-    screenSpaceEventHandler._primaryPosition
-  );
-  Cartesian2_default.clone(position, screenSpaceEventHandler._primaryStartPosition);
-  Cartesian2_default.clone(position, screenSpaceEventHandler._primaryPreviousPosition);
-  const modifiers = getModifiers(event);
-  const action = screenSpaceEventHandler.getInputAction(
-    screenSpaceEventType,
-    modifiers
-  );
-  if (defined_default(action)) {
-    Cartesian2_default.clone(position, mouseDownEvent.position);
-    action(mouseDownEvent);
-    event.preventDefault();
-  }
-}
-var mouseUpEvent = {
-  position: new Cartesian2_default()
-};
-var mouseClickEvent = {
-  position: new Cartesian2_default()
-};
-function cancelMouseEvent(screenSpaceEventHandler, screenSpaceEventType, clickScreenSpaceEventType, event) {
-  const modifiers = getModifiers(event);
-  const action = screenSpaceEventHandler.getInputAction(
-    screenSpaceEventType,
-    modifiers
-  );
-  const clickAction = screenSpaceEventHandler.getInputAction(
-    clickScreenSpaceEventType,
-    modifiers
-  );
-  if (defined_default(action) || defined_default(clickAction)) {
-    const position = getPosition(
-      screenSpaceEventHandler,
-      event,
-      screenSpaceEventHandler._primaryPosition
-    );
-    if (defined_default(action)) {
-      Cartesian2_default.clone(position, mouseUpEvent.position);
-      action(mouseUpEvent);
-    }
-    if (defined_default(clickAction)) {
-      const startPosition = screenSpaceEventHandler._primaryStartPosition;
-      if (checkPixelTolerance(
-        startPosition,
-        position,
-        screenSpaceEventHandler._clickPixelTolerance
-      )) {
-        Cartesian2_default.clone(position, mouseClickEvent.position);
-        clickAction(mouseClickEvent);
-      }
-    }
-  }
-}
-function handleMouseUp(screenSpaceEventHandler, event) {
-  if (!canProcessMouseEvent(screenSpaceEventHandler)) {
-    return;
-  }
-  const button = event.button;
-  if (button !== MouseButton.LEFT && button !== MouseButton.MIDDLE && button !== MouseButton.RIGHT) {
-    return;
-  }
-  if (screenSpaceEventHandler._buttonDown[MouseButton.LEFT]) {
-    cancelMouseEvent(
-      screenSpaceEventHandler,
-      ScreenSpaceEventType_default.LEFT_UP,
-      ScreenSpaceEventType_default.LEFT_CLICK,
-      event
-    );
-    screenSpaceEventHandler._buttonDown[MouseButton.LEFT] = false;
-  }
-  if (screenSpaceEventHandler._buttonDown[MouseButton.MIDDLE]) {
-    cancelMouseEvent(
-      screenSpaceEventHandler,
-      ScreenSpaceEventType_default.MIDDLE_UP,
-      ScreenSpaceEventType_default.MIDDLE_CLICK,
-      event
-    );
-    screenSpaceEventHandler._buttonDown[MouseButton.MIDDLE] = false;
-  }
-  if (screenSpaceEventHandler._buttonDown[MouseButton.RIGHT]) {
-    cancelMouseEvent(
-      screenSpaceEventHandler,
-      ScreenSpaceEventType_default.RIGHT_UP,
-      ScreenSpaceEventType_default.RIGHT_CLICK,
-      event
-    );
-    screenSpaceEventHandler._buttonDown[MouseButton.RIGHT] = false;
-  }
-}
-var mouseMoveEvent = {
-  startPosition: new Cartesian2_default(),
-  endPosition: new Cartesian2_default()
-};
-function handleMouseMove(screenSpaceEventHandler, event) {
-  if (!canProcessMouseEvent(screenSpaceEventHandler)) {
-    return;
-  }
-  const modifiers = getModifiers(event);
-  const position = getPosition(
-    screenSpaceEventHandler,
-    event,
-    screenSpaceEventHandler._primaryPosition
-  );
-  const previousPosition = screenSpaceEventHandler._primaryPreviousPosition;
-  const action = screenSpaceEventHandler.getInputAction(
-    ScreenSpaceEventType_default.MOUSE_MOVE,
-    modifiers
-  );
-  if (defined_default(action)) {
-    Cartesian2_default.clone(previousPosition, mouseMoveEvent.startPosition);
-    Cartesian2_default.clone(position, mouseMoveEvent.endPosition);
-    action(mouseMoveEvent);
-  }
-  Cartesian2_default.clone(position, previousPosition);
-  if (screenSpaceEventHandler._buttonDown[MouseButton.LEFT] || screenSpaceEventHandler._buttonDown[MouseButton.MIDDLE] || screenSpaceEventHandler._buttonDown[MouseButton.RIGHT]) {
-    event.preventDefault();
-  }
-}
-var mouseDblClickEvent = {
-  position: new Cartesian2_default()
-};
-function handleDblClick(screenSpaceEventHandler, event) {
-  const button = event.button;
-  let screenSpaceEventType;
-  if (button === MouseButton.LEFT) {
-    screenSpaceEventType = ScreenSpaceEventType_default.LEFT_DOUBLE_CLICK;
-  } else {
-    return;
-  }
-  const modifiers = getModifiers(event);
-  const action = screenSpaceEventHandler.getInputAction(
-    screenSpaceEventType,
-    modifiers
-  );
-  if (defined_default(action)) {
-    getPosition(screenSpaceEventHandler, event, mouseDblClickEvent.position);
-    action(mouseDblClickEvent);
-  }
-}
-function handleWheel(screenSpaceEventHandler, event) {
-  let delta;
-  if (defined_default(event.deltaY)) {
-    const deltaMode = event.deltaMode;
-    if (deltaMode === event.DOM_DELTA_PIXEL) {
-      delta = -event.deltaY;
-    } else if (deltaMode === event.DOM_DELTA_LINE) {
-      delta = -event.deltaY * 40;
-    } else {
-      delta = -event.deltaY * 120;
-    }
-  } else if (event.detail > 0) {
-    delta = event.detail * -120;
-  } else {
-    delta = event.wheelDelta;
-  }
-  if (!defined_default(delta)) {
-    return;
-  }
-  const modifiers = getModifiers(event);
-  const action = screenSpaceEventHandler.getInputAction(
-    ScreenSpaceEventType_default.WHEEL,
-    modifiers
-  );
-  if (defined_default(action)) {
-    action(delta);
-    event.preventDefault();
-  }
-}
-function handleTouchStart(screenSpaceEventHandler, event) {
-  gotTouchEvent(screenSpaceEventHandler);
-  const changedTouches = event.changedTouches;
-  let i;
-  const length = changedTouches.length;
-  let touch;
-  let identifier;
-  const positions = screenSpaceEventHandler._positions;
-  for (i = 0; i < length; ++i) {
-    touch = changedTouches[i];
-    identifier = touch.identifier;
-    positions.set(
-      identifier,
-      getPosition(screenSpaceEventHandler, touch, new Cartesian2_default())
-    );
-  }
-  fireTouchEvents(screenSpaceEventHandler, event);
-  const previousPositions = screenSpaceEventHandler._previousPositions;
-  for (i = 0; i < length; ++i) {
-    touch = changedTouches[i];
-    identifier = touch.identifier;
-    previousPositions.set(
-      identifier,
-      Cartesian2_default.clone(positions.get(identifier))
-    );
-  }
-}
-function handleTouchEnd(screenSpaceEventHandler, event) {
-  gotTouchEvent(screenSpaceEventHandler);
-  const changedTouches = event.changedTouches;
-  let i;
-  const length = changedTouches.length;
-  let touch;
-  let identifier;
-  const positions = screenSpaceEventHandler._positions;
-  for (i = 0; i < length; ++i) {
-    touch = changedTouches[i];
-    identifier = touch.identifier;
-    positions.remove(identifier);
-  }
-  fireTouchEvents(screenSpaceEventHandler, event);
-  const previousPositions = screenSpaceEventHandler._previousPositions;
-  for (i = 0; i < length; ++i) {
-    touch = changedTouches[i];
-    identifier = touch.identifier;
-    previousPositions.remove(identifier);
-  }
-}
-var touchStartEvent = {
-  position: new Cartesian2_default()
-};
-var touch2StartEvent = {
-  position1: new Cartesian2_default(),
-  position2: new Cartesian2_default()
-};
-var touchEndEvent = {
-  position: new Cartesian2_default()
-};
-var touchClickEvent = {
-  position: new Cartesian2_default()
-};
-var touchHoldEvent = {
-  position: new Cartesian2_default()
-};
-function fireTouchEvents(screenSpaceEventHandler, event) {
-  const modifiers = getModifiers(event);
-  const positions = screenSpaceEventHandler._positions;
-  const numberOfTouches = positions.length;
-  let action;
-  let clickAction;
-  const pinching = screenSpaceEventHandler._isPinching;
-  if (numberOfTouches !== 1 && screenSpaceEventHandler._buttonDown[MouseButton.LEFT]) {
-    screenSpaceEventHandler._buttonDown[MouseButton.LEFT] = false;
-    if (defined_default(screenSpaceEventHandler._touchHoldTimer)) {
-      clearTimeout(screenSpaceEventHandler._touchHoldTimer);
-      screenSpaceEventHandler._touchHoldTimer = void 0;
-    }
-    action = screenSpaceEventHandler.getInputAction(
-      ScreenSpaceEventType_default.LEFT_UP,
-      modifiers
-    );
-    if (defined_default(action)) {
-      Cartesian2_default.clone(
-        screenSpaceEventHandler._primaryPosition,
-        touchEndEvent.position
-      );
-      action(touchEndEvent);
-    }
-    if (numberOfTouches === 0 && !screenSpaceEventHandler._isTouchHolding) {
-      clickAction = screenSpaceEventHandler.getInputAction(
-        ScreenSpaceEventType_default.LEFT_CLICK,
-        modifiers
-      );
-      if (defined_default(clickAction)) {
-        const startPosition = screenSpaceEventHandler._primaryStartPosition;
-        const endPosition = screenSpaceEventHandler._previousPositions.values[0];
-        if (checkPixelTolerance(
-          startPosition,
-          endPosition,
-          screenSpaceEventHandler._clickPixelTolerance
-        )) {
-          Cartesian2_default.clone(
-            screenSpaceEventHandler._primaryPosition,
-            touchClickEvent.position
-          );
-          clickAction(touchClickEvent);
-        }
-      }
-    }
-    screenSpaceEventHandler._isTouchHolding = false;
-  }
-  if (numberOfTouches === 0 && pinching) {
-    screenSpaceEventHandler._isPinching = false;
-    action = screenSpaceEventHandler.getInputAction(
-      ScreenSpaceEventType_default.PINCH_END,
-      modifiers
-    );
-    if (defined_default(action)) {
-      action();
-    }
-  }
-  if (numberOfTouches === 1 && !pinching) {
-    const position = positions.values[0];
-    Cartesian2_default.clone(position, screenSpaceEventHandler._primaryPosition);
-    Cartesian2_default.clone(position, screenSpaceEventHandler._primaryStartPosition);
-    Cartesian2_default.clone(
-      position,
-      screenSpaceEventHandler._primaryPreviousPosition
-    );
-    screenSpaceEventHandler._buttonDown[MouseButton.LEFT] = true;
-    action = screenSpaceEventHandler.getInputAction(
-      ScreenSpaceEventType_default.LEFT_DOWN,
-      modifiers
-    );
-    if (defined_default(action)) {
-      Cartesian2_default.clone(position, touchStartEvent.position);
-      action(touchStartEvent);
-    }
-    screenSpaceEventHandler._touchHoldTimer = setTimeout(function() {
-      if (!screenSpaceEventHandler.isDestroyed()) {
-        screenSpaceEventHandler._touchHoldTimer = void 0;
-        screenSpaceEventHandler._isTouchHolding = true;
-        clickAction = screenSpaceEventHandler.getInputAction(
-          ScreenSpaceEventType_default.RIGHT_CLICK,
-          modifiers
-        );
-        if (defined_default(clickAction)) {
-          const startPosition = screenSpaceEventHandler._primaryStartPosition;
-          const endPosition = screenSpaceEventHandler._previousPositions.values[0];
-          if (checkPixelTolerance(
-            startPosition,
-            endPosition,
-            screenSpaceEventHandler._holdPixelTolerance
-          )) {
-            Cartesian2_default.clone(
-              screenSpaceEventHandler._primaryPosition,
-              touchHoldEvent.position
-            );
-            clickAction(touchHoldEvent);
-          }
-        }
-      }
-    }, ScreenSpaceEventHandler.touchHoldDelayMilliseconds);
-    event.preventDefault();
-  }
-  if (numberOfTouches === 2 && !pinching) {
-    screenSpaceEventHandler._isPinching = true;
-    action = screenSpaceEventHandler.getInputAction(
-      ScreenSpaceEventType_default.PINCH_START,
-      modifiers
-    );
-    if (defined_default(action)) {
-      Cartesian2_default.clone(positions.values[0], touch2StartEvent.position1);
-      Cartesian2_default.clone(positions.values[1], touch2StartEvent.position2);
-      action(touch2StartEvent);
-      event.preventDefault();
-    }
-  }
-}
-function handleTouchMove(screenSpaceEventHandler, event) {
-  gotTouchEvent(screenSpaceEventHandler);
-  const changedTouches = event.changedTouches;
-  let i;
-  const length = changedTouches.length;
-  let touch;
-  let identifier;
-  const positions = screenSpaceEventHandler._positions;
-  for (i = 0; i < length; ++i) {
-    touch = changedTouches[i];
-    identifier = touch.identifier;
-    const position = positions.get(identifier);
-    if (defined_default(position)) {
-      getPosition(screenSpaceEventHandler, touch, position);
-    }
-  }
-  fireTouchMoveEvents(screenSpaceEventHandler, event);
-  const previousPositions = screenSpaceEventHandler._previousPositions;
-  for (i = 0; i < length; ++i) {
-    touch = changedTouches[i];
-    identifier = touch.identifier;
-    Cartesian2_default.clone(
-      positions.get(identifier),
-      previousPositions.get(identifier)
-    );
-  }
-}
-var touchMoveEvent = {
-  startPosition: new Cartesian2_default(),
-  endPosition: new Cartesian2_default()
-};
-var touchPinchMovementEvent = {
-  distance: {
-    startPosition: new Cartesian2_default(),
-    endPosition: new Cartesian2_default()
-  },
-  angleAndHeight: {
-    startPosition: new Cartesian2_default(),
-    endPosition: new Cartesian2_default()
-  }
-};
-function fireTouchMoveEvents(screenSpaceEventHandler, event) {
-  const modifiers = getModifiers(event);
-  const positions = screenSpaceEventHandler._positions;
-  const previousPositions = screenSpaceEventHandler._previousPositions;
-  const numberOfTouches = positions.length;
-  let action;
-  if (numberOfTouches === 1 && screenSpaceEventHandler._buttonDown[MouseButton.LEFT]) {
-    const position = positions.values[0];
-    Cartesian2_default.clone(position, screenSpaceEventHandler._primaryPosition);
-    const previousPosition = screenSpaceEventHandler._primaryPreviousPosition;
-    action = screenSpaceEventHandler.getInputAction(
-      ScreenSpaceEventType_default.MOUSE_MOVE,
-      modifiers
-    );
-    if (defined_default(action)) {
-      Cartesian2_default.clone(previousPosition, touchMoveEvent.startPosition);
-      Cartesian2_default.clone(position, touchMoveEvent.endPosition);
-      action(touchMoveEvent);
-    }
-    Cartesian2_default.clone(position, previousPosition);
-    event.preventDefault();
-  } else if (numberOfTouches === 2 && screenSpaceEventHandler._isPinching) {
-    action = screenSpaceEventHandler.getInputAction(
-      ScreenSpaceEventType_default.PINCH_MOVE,
-      modifiers
-    );
-    if (defined_default(action)) {
-      const position1 = positions.values[0];
-      const position2 = positions.values[1];
-      const previousPosition1 = previousPositions.values[0];
-      const previousPosition2 = previousPositions.values[1];
-      const dX = position2.x - position1.x;
-      const dY = position2.y - position1.y;
-      const dist = Math.sqrt(dX * dX + dY * dY) * 0.25;
-      const prevDX = previousPosition2.x - previousPosition1.x;
-      const prevDY = previousPosition2.y - previousPosition1.y;
-      const prevDist = Math.sqrt(prevDX * prevDX + prevDY * prevDY) * 0.25;
-      const cY = (position2.y + position1.y) * 0.125;
-      const prevCY = (previousPosition2.y + previousPosition1.y) * 0.125;
-      const angle = Math.atan2(dY, dX);
-      const prevAngle = Math.atan2(prevDY, prevDX);
-      Cartesian2_default.fromElements(
-        0,
-        prevDist,
-        touchPinchMovementEvent.distance.startPosition
-      );
-      Cartesian2_default.fromElements(
-        0,
-        dist,
-        touchPinchMovementEvent.distance.endPosition
-      );
-      Cartesian2_default.fromElements(
-        prevAngle,
-        prevCY,
-        touchPinchMovementEvent.angleAndHeight.startPosition
-      );
-      Cartesian2_default.fromElements(
-        angle,
-        cY,
-        touchPinchMovementEvent.angleAndHeight.endPosition
-      );
-      action(touchPinchMovementEvent);
-    }
-  }
-}
-function handlePointerDown(screenSpaceEventHandler, event) {
-  event.target.setPointerCapture(event.pointerId);
-  if (event.pointerType === "touch") {
-    const positions = screenSpaceEventHandler._positions;
-    const identifier = event.pointerId;
-    positions.set(
-      identifier,
-      getPosition(screenSpaceEventHandler, event, new Cartesian2_default())
-    );
-    fireTouchEvents(screenSpaceEventHandler, event);
-    const previousPositions = screenSpaceEventHandler._previousPositions;
-    previousPositions.set(
-      identifier,
-      Cartesian2_default.clone(positions.get(identifier))
-    );
-  } else {
-    handleMouseDown(screenSpaceEventHandler, event);
-  }
-}
-function handlePointerUp(screenSpaceEventHandler, event) {
-  if (event.pointerType === "touch") {
-    const positions = screenSpaceEventHandler._positions;
-    const identifier = event.pointerId;
-    positions.remove(identifier);
-    fireTouchEvents(screenSpaceEventHandler, event);
-    const previousPositions = screenSpaceEventHandler._previousPositions;
-    previousPositions.remove(identifier);
-  } else {
-    handleMouseUp(screenSpaceEventHandler, event);
-  }
-}
-function handlePointerMove(screenSpaceEventHandler, event) {
-  if (event.pointerType === "touch") {
-    const positions = screenSpaceEventHandler._positions;
-    const identifier = event.pointerId;
-    const position = positions.get(identifier);
-    if (!defined_default(position)) {
-      return;
-    }
-    getPosition(screenSpaceEventHandler, event, position);
-    fireTouchMoveEvents(screenSpaceEventHandler, event);
-    const previousPositions = screenSpaceEventHandler._previousPositions;
-    Cartesian2_default.clone(
-      positions.get(identifier),
-      previousPositions.get(identifier)
-    );
-  } else {
-    handleMouseMove(screenSpaceEventHandler, event);
-  }
-}
-function ScreenSpaceEventHandler(element) {
-  this._inputEvents = {};
-  this._buttonDown = {
-    [MouseButton.LEFT]: false,
-    [MouseButton.MIDDLE]: false,
-    [MouseButton.RIGHT]: false
-  };
-  this._isPinching = false;
-  this._isTouchHolding = false;
-  this._lastSeenTouchEvent = -ScreenSpaceEventHandler.mouseEmulationIgnoreMilliseconds;
-  this._primaryStartPosition = new Cartesian2_default();
-  this._primaryPosition = new Cartesian2_default();
-  this._primaryPreviousPosition = new Cartesian2_default();
-  this._positions = new AssociativeArray_default();
-  this._previousPositions = new AssociativeArray_default();
-  this._removalFunctions = [];
-  this._touchHoldTimer = void 0;
-  this._clickPixelTolerance = 5;
-  this._holdPixelTolerance = 25;
-  this._element = element ?? document;
-  registerListeners(this);
-}
-ScreenSpaceEventHandler.prototype.setInputAction = function(action, type, modifiers) {
-  if (!defined_default(action)) {
-    throw new DeveloperError_default("action is required.");
-  }
-  if (!defined_default(type)) {
-    throw new DeveloperError_default("type is required.");
-  }
-  const key = getInputEventKey(type, modifiers);
-  this._inputEvents[key] = action;
-};
-ScreenSpaceEventHandler.prototype.getInputAction = function(type, modifiers) {
-  if (!defined_default(type)) {
-    throw new DeveloperError_default("type is required.");
-  }
-  const key = getInputEventKey(type, modifiers);
-  return this._inputEvents[key];
-};
-ScreenSpaceEventHandler.prototype.removeInputAction = function(type, modifiers) {
-  if (!defined_default(type)) {
-    throw new DeveloperError_default("type is required.");
-  }
-  const key = getInputEventKey(type, modifiers);
-  delete this._inputEvents[key];
-};
-ScreenSpaceEventHandler.prototype.isDestroyed = function() {
-  return false;
-};
-ScreenSpaceEventHandler.prototype.destroy = function() {
-  unregisterListeners(this);
-  return destroyObject_default(this);
-};
-ScreenSpaceEventHandler.mouseEmulationIgnoreMilliseconds = 800;
-ScreenSpaceEventHandler.touchHoldDelayMilliseconds = 1500;
-var ScreenSpaceEventHandler_default = ScreenSpaceEventHandler;
-
-// packages/engine/Source/Core/createColorRamp.js
-function createColorRamp(colors, rampLength) {
-  const ramp = document.createElement("canvas");
-  ramp.width = rampLength;
-  ramp.height = 1;
-  const ctx = ramp.getContext("2d");
-  const grd = ctx.createLinearGradient(0, 0, ramp.width, 0);
-  const stepSize = 1 / (colors.length - 1);
-  for (let i = 0; i < colors.length; i++) {
-    const color = colors[i];
-    const stop = i * stepSize;
-    const cssColor = color.toCssColorString();
-    grd.addColorStop(stop, cssColor);
-  }
-  ctx.fillStyle = grd;
-  ctx.fillRect(0, 0, ramp.width, ramp.height);
-  const imageData = ctx.getImageData(0, 0, ramp.width, ramp.height);
-  const array = new Uint8Array(imageData.data.buffer);
-  return array;
-}
-var createColorRamp_default = createColorRamp;
-
-// packages/engine/Source/Core/createWorldBathymetryAsync.js
-function createWorldBathymetryAsync(options) {
-  options = options ?? Frozen_default.EMPTY_OBJECT;
-  return CesiumTerrainProvider_default.fromIonAssetId(2426648, {
-    requestVertexNormals: options.requestVertexNormals ?? false
-  });
-}
-var createWorldBathymetryAsync_default = createWorldBathymetryAsync;
-
-// packages/engine/Source/Core/createWorldTerrainAsync.js
-function createWorldTerrainAsync(options) {
-  options = options ?? Frozen_default.EMPTY_OBJECT;
-  return CesiumTerrainProvider_default.fromIonAssetId(1, {
-    requestVertexNormals: options.requestVertexNormals ?? false,
-    requestWaterMask: options.requestWaterMask ?? false,
-    ellipsoid: Ellipsoid_default.WGS84
-  });
-}
-var createWorldTerrainAsync_default = createWorldTerrainAsync;
-
-// packages/engine/Source/Core/getImageFromTypedArray.js
-function getImageFromTypedArray(typedArray, width, height) {
-  const dataArray = new Uint8ClampedArray(typedArray.buffer);
-  const imageData = new ImageData(dataArray, width, height);
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  canvas.getContext("2d").putImageData(imageData, 0, 0);
-  return canvas;
-}
-var getImageFromTypedArray_default = getImageFromTypedArray;
 
 // packages/engine/Source/Scene/AutoExposure.js
 function AutoExposure() {
@@ -122443,7 +122443,7 @@ function handleCameraDrag(data) {
   }
   const camera = scene.camera;
   const sensitivity = 5e-3;
-  camera.rotateRight(data.deltaX * sensitivity);
+  camera.rotateRight(-data.deltaX * sensitivity);
   camera.rotateUp(-data.deltaY * sensitivity);
 }
 function handleCameraZoom(data) {

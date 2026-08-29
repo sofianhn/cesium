@@ -3832,7 +3832,7 @@ export {
   TaskProcessor_default,
   SceneMode_default,
   TerrainMesh_default,
-  Axis_default,
   MeshoptDecoder,
+  Axis_default,
   Cesium3DTilesTerrainGeometryProcessor_default
 };
