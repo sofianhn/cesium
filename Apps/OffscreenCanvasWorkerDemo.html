@@ -159,6 +159,12 @@
             statusText.textContent = `Worker init failed: ${error.message || error}`;
           });
 
+        window.addEventListener("error", function (event) {
+          if (event.message && statusText.textContent.startsWith("Starting")) {
+            statusText.textContent = `Error: ${event.message}`;
+          }
+        });
+
         pickButton.addEventListener("click", async function () {
           const canvas = widget.canvas;
           const picked = await widget.pick(
