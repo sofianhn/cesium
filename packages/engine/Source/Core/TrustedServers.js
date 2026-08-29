@@ -85,8 +85,12 @@ function getAuthority(url) {
   if (authority.indexOf(":") === -1) {
     let scheme = uri.scheme();
     if (scheme.length === 0) {
-      scheme = window.location.protocol;
-      scheme = scheme.substring(0, scheme.length - 1);
+      if (typeof window !== "undefined" && defined(window.location)) {
+        scheme = window.location.protocol;
+        scheme = scheme.substring(0, scheme.length - 1);
+      } else {
+        scheme = "https";
+      }
     }
     if (scheme === "http") {
       authority += ":80";

@@ -1,0 +1,7 @@
+legacyId: Offscreen Canvas Worker.html
+title: Offscreen Canvas Worker
+description: Render Cesium in a Web Worker using OffscreenCanvas and transferControlToOffscreen.
+labels:
+  - Getting Started
+  - Performance
+thumbnail: thumbnail.jpg

@@ -1,6 +1,31 @@
 import defined from "./defined.js";
 
+/*global CESIUM_BASE_URL*/
+
 let a;
+
+function isCrossOriginUrlInWorker(url) {
+  let baseHref;
+  if (typeof CESIUM_BASE_URL !== "undefined") {
+    baseHref = CESIUM_BASE_URL;
+  } else if (
+    typeof self !== "undefined" &&
+    defined(self.location) &&
+    defined(self.location.href)
+  ) {
+    baseHref = self.location.href;
+  } else {
+    return false;
+  }
+
+  try {
+    const target = new URL(url, baseHref);
+    const base = new URL(baseHref);
+    return target.origin !== base.origin;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Given a URL, determine whether that URL is considered cross-origin to the current page.
@@ -8,6 +33,10 @@ let a;
  * @private
  */
 function isCrossOriginUrl(url) {
+  if (typeof document === "undefined") {
+    return isCrossOriginUrlInWorker(url);
+  }
+
   if (!defined(a)) {
     a = document.createElement("a");
   }

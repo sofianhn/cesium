@@ -25,6 +25,16 @@ import RequestState from "./RequestState.js";
 import RuntimeError from "./RuntimeError.js";
 import TrustedServers from "./TrustedServers.js";
 
+function getUrlApi() {
+  if (typeof window !== "undefined" && defined(window.URL)) {
+    return window.URL;
+  }
+  if (typeof self !== "undefined" && defined(self.URL)) {
+    return self.URL;
+  }
+  return undefined;
+}
+
 const xhrBlobSupported = (function () {
   try {
     const xhr = new XMLHttpRequest();
@@ -220,6 +230,12 @@ Resource.supportsImageBitmapOptions = function () {
 
   if (typeof createImageBitmap !== "function") {
     supportsImageBitmapOptionsPromise = Promise.resolve(false);
+    return supportsImageBitmapOptionsPromise;
+  }
+
+  // Workers can decode ImageBitmaps but cannot use getImagePixels (no document).
+  if (typeof document === "undefined") {
+    supportsImageBitmapOptionsPromise = Promise.resolve(true);
     return supportsImageBitmapOptionsPromise;
   }
 
@@ -952,7 +968,15 @@ Resource.prototype.fetchImage = function (options) {
           skipColorSpaceConversion: skipColorSpaceConversion,
         });
       }
-      const blobUrl = window.URL.createObjectURL(blob);
+      const urlApi = getUrlApi();
+      if (!defined(urlApi)) {
+        return Promise.reject(
+          new RuntimeError(
+            "Unable to decode imagery blob without URL.createObjectURL support.",
+          ),
+        );
+      }
+      const blobUrl = urlApi.createObjectURL(blob);
       generatedBlobResource = new Resource({
         url: blobUrl,
       });
@@ -976,12 +1000,16 @@ Resource.prototype.fetchImage = function (options) {
         return image;
       }
 
-      window.URL.revokeObjectURL(generatedBlobResource.url);
+      const urlApi = getUrlApi();
+      if (defined(urlApi) && defined(generatedBlobResource)) {
+        urlApi.revokeObjectURL(generatedBlobResource.url);
+      }
       return image;
     })
     .catch(function (error) {
-      if (defined(generatedBlobResource)) {
-        window.URL.revokeObjectURL(generatedBlobResource.url);
+      const urlApi = getUrlApi();
+      if (defined(urlApi) && defined(generatedBlobResource)) {
+        urlApi.revokeObjectURL(generatedBlobResource.url);
       }
 
       // If the blob load succeeded but the image decode failed, attach the blob
@@ -1962,11 +1990,61 @@ Resource._Implementations.createImage = function (
   headers,
 ) {
   const url = request.url;
+  const loadImageWithBlob = function () {
+    const responseType = "blob";
+    const method = "GET";
+    const xhrDeferred = defer();
+    const xhr = Resource._Implementations.loadWithXhr(
+      url,
+      responseType,
+      method,
+      undefined,
+      headers,
+      xhrDeferred,
+      undefined,
+      undefined,
+      undefined,
+    );
+
+    if (defined(xhr) && defined(xhr.abort)) {
+      request.cancelFunction = function () {
+        xhr.abort();
+      };
+    }
+    return xhrDeferred.promise
+      .then(function (blob) {
+        if (!defined(blob)) {
+          deferred.reject(
+            new RuntimeError(
+              `Successfully retrieved ${url} but it contained no content.`,
+            ),
+          );
+          return;
+        }
+
+        return Resource.createImageBitmapFromBlob(blob, {
+          flipY: flipY,
+          premultiplyAlpha: false,
+          skipColorSpaceConversion: skipColorSpaceConversion,
+        });
+      })
+      .then(function (image) {
+        deferred.resolve(image);
+      });
+  };
+
   // Passing an Image to createImageBitmap will force it to run on the main thread
   // since DOM elements don't exist on workers. We convert it to a blob so it's non-blocking.
   // See:
   //    https://bugzilla.mozilla.org/show_bug.cgi?id=1044102#c38
   //    https://bugs.chromium.org/p/chromium/issues/detail?id=580202#c10
+  if (typeof document === "undefined") {
+    loadImageWithBlob().catch(function (e) {
+      deferred.reject(e);
+    });
+    return;
+  }
+
   Resource.supportsImageBitmapOptions()
     .then(function (supportsImageBitmap) {
       // We can only use ImageBitmap if we can flip on decode.
@@ -1975,46 +2053,9 @@ Resource._Implementations.createImage = function (
         Resource._Implementations.loadImageElement(url, crossOrigin, deferred);
         return;
       }
-      const responseType = "blob";
-      const method = "GET";
-      const xhrDeferred = defer();
-      const xhr = Resource._Implementations.loadWithXhr(
-        url,
-        responseType,
-        method,
-        undefined,
-        headers,
-        xhrDeferred,
-        undefined,
-        undefined,
-        undefined,
-      );
-
-      if (defined(xhr) && defined(xhr.abort)) {
-        request.cancelFunction = function () {
-          xhr.abort();
-        };
-      }
-      return xhrDeferred.promise
-        .then(function (blob) {
-          if (!defined(blob)) {
-            deferred.reject(
-              new RuntimeError(
-                `Successfully retrieved ${url} but it contained no content.`,
-              ),
-            );
-            return;
-          }
-
-          return Resource.createImageBitmapFromBlob(blob, {
-            flipY: flipY,
-            premultiplyAlpha: false,
-            skipColorSpaceConversion: skipColorSpaceConversion,
-          });
-        })
-        .then(function (image) {
-          deferred.resolve(image);
-        });
+      loadImageWithBlob().catch(function (e) {
+        deferred.reject(e);
+      });
     })
     .catch(function (e) {
       deferred.reject(e);

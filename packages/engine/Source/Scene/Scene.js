@@ -56,6 +56,7 @@ import DynamicAtmosphereLightingType from "./DynamicAtmosphereLightingType.js";
 import Fog from "./Fog.js";
 import FrameState from "./FrameState.js";
 import GlobeTranslucencyState from "./GlobeTranslucencyState.js";
+import HeadlessCreditDisplay from "./HeadlessCreditDisplay.js";
 import InvertClassification from "./InvertClassification.js";
 import JobScheduler from "./JobScheduler.js";
 import MapMode2D from "./MapMode2D.js";
@@ -156,34 +157,40 @@ function Scene(options) {
   }
   const context = this._context;
 
-  const hasCreditContainer = defined(creditContainer);
-  const canvasParent = canvas.parentNode;
-  if (!hasCreditContainer) {
-    creditContainer = document.createElement("div");
-    creditContainer.style.position = "absolute";
-    creditContainer.style.bottom = "0";
-    creditContainer.style["text-shadow"] = "0 0 2px #000000";
-    creditContainer.style.color = "#ffffff";
-    creditContainer.style["font-size"] = "10px";
-    creditContainer.style["padding-right"] = "5px";
-    if (defined(canvasParent)) {
-      canvasParent.appendChild(creditContainer);
+  const isHeadless = typeof document === "undefined";
+  let creditDisplay;
+  if (isHeadless) {
+    creditDisplay = new HeadlessCreditDisplay();
+    this._removeCreditContainer = false;
+    this._creditContainer = undefined;
+  } else {
+    const hasCreditContainer = defined(creditContainer);
+    const canvasParent = canvas.parentNode;
+    if (!hasCreditContainer) {
+      creditContainer = document.createElement("div");
+      creditContainer.style.position = "absolute";
+      creditContainer.style.bottom = "0";
+      creditContainer.style["text-shadow"] = "0 0 2px #000000";
+      creditContainer.style.color = "#ffffff";
+      creditContainer.style["font-size"] = "10px";
+      creditContainer.style["padding-right"] = "5px";
+      if (defined(canvasParent)) {
+        canvasParent.appendChild(creditContainer);
+      }
     }
-  }
-  if (!defined(creditViewport)) {
-    creditViewport = defined(canvasParent) ? canvasParent : creditContainer;
+    if (!defined(creditViewport)) {
+      creditViewport = defined(canvasParent) ? canvasParent : creditContainer;
+    }
+
+    creditDisplay = new CreditDisplay(creditContainer, "•", creditViewport);
+    this._removeCreditContainer = !hasCreditContainer && defined(canvasParent);
+    this._creditContainer = creditContainer;
   }
 
   this._id = createGuid();
   this._jobScheduler = new JobScheduler();
-  this._frameState = new FrameState(
-    context,
-    new CreditDisplay(creditContainer, "•", creditViewport),
-    this._jobScheduler,
-  );
+  this._frameState = new FrameState(context, creditDisplay, this._jobScheduler);
   this._frameState.scene3DOnly = options.scene3DOnly ?? false;
-  this._removeCreditContainer = !hasCreditContainer && defined(canvasParent);
-  this._creditContainer = creditContainer;
 
   this._canvas = canvas;
   this._computeEngine = new ComputeEngine(context);

@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
+    />
+    <title>Cesium Main-Thread Globe Baseline</title>
+    <script>
+      window.CESIUM_BASE_URL = new URL(
+        "../Build/Cesium/",
+        window.location.href,
+      ).href;
+    </script>
+    <script src="../Build/Cesium/Cesium.js"></script>
+    <link rel="stylesheet" href="../Build/Cesium/Widgets/widgets.css" />
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #000;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
+      #cesiumContainer {
+        position: absolute;
+        inset: 0;
+      }
+      .cesium-viewer-bottom,
+      .cesium-viewer-toolbar,
+      .cesium-viewer-animationContainer,
+      .cesium-viewer-timelineContainer,
+      .cesium-viewer-fullscreenContainer {
+        display: none;
+      }
+      #statusBar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+        background: rgba(0, 0, 0, 0.72);
+        color: #fff;
+        font-size: 13px;
+        box-sizing: border-box;
+        pointer-events: none;
+      }
+      #statusText {
+        flex: 1;
+        line-height: 1.3;
+      }
+      button {
+        border: 0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        background: #48b;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        pointer-events: auto;
+      }
+      button:disabled {
+        opacity: 0.45;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="cesiumContainer"></div>
+    <div id="statusBar">
+      <div id="statusText">Starting main-thread globe…</div>
+      <button id="pickButton" disabled>Pick center</button>
+    </div>
+    <script>
+      const statusText = document.getElementById("statusText");
+      const pickButton = document.getElementById("pickButton");
+
+      const isIOS =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+      function sampleCenterPixel(viewer) {
+        const scene = viewer.scene;
+        const canvas = scene.canvas;
+        const x = Math.max(0, Math.floor(canvas.clientWidth / 2) - 1);
+        const y = Math.max(0, Math.floor(canvas.clientHeight / 2) - 1);
+        const pixelRatio = scene.pixelRatio;
+        const pixelX = Math.floor(x * pixelRatio);
+        const pixelY = Math.floor(
+          scene.drawingBufferHeight - y * pixelRatio - 1,
+        );
+
+        const pixels = scene.context.readPixels({
+          x: pixelX,
+          y: pixelY,
+          width: 1,
+          height: 1,
+        });
+
+        return [pixels[0], pixels[1], pixels[2], pixels[3]];
+      }
+
+      function updatePixelStatus(viewer) {
+        try {
+          const pixel = sampleCenterPixel(viewer);
+          const sum = pixel[0] + pixel[1] + pixel[2];
+          statusText.textContent =
+            sum > 10
+              ? `Main thread · center rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]}) · drag/pinch to move`
+              : `Main thread but frame is dark rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+        } catch (error) {
+          statusText.textContent = `Main thread · could not sample pixel`;
+        }
+      }
+
+      try {
+        const viewer = new window.Cesium.Viewer("cesiumContainer", {
+          animation: false,
+          timeline: false,
+          geocoder: false,
+          homeButton: false,
+          sceneModePicker: false,
+          baseLayerPicker: false,
+          navigationHelpButton: false,
+          fullscreenButton: false,
+          infoBox: false,
+          selectionIndicator: false,
+          vrButton: false,
+          creditContainer: document.createElement("div"),
+          contextOptions: {
+            webgl: {
+              alpha: false,
+              antialias: !isIOS,
+              preserveDrawingBuffer: true,
+              powerPreference: "high-performance",
+            },
+          },
+        });
+
+        viewer.resolutionScale = isIOS
+          ? 1
+          : Math.min(window.devicePixelRatio || 1, 2);
+
+        viewer.scene.backgroundColor = window.Cesium.Color.fromBytes(
+          25,
+          45,
+          85,
+          255,
+        );
+        viewer.scene.camera.setView({
+          destination: window.Cesium.Cartesian3.fromDegrees(
+            -98.0,
+            40.0,
+            20000000.0,
+          ),
+        });
+
+        if (isIOS) {
+          viewer.scene.globe.showGroundAtmosphere = false;
+          viewer.scene.globe.showWaterEffect = false;
+          viewer.scene.skyBox = undefined;
+          viewer.scene.skyAtmosphere = undefined;
+          viewer.scene.sun = undefined;
+          viewer.scene.moon = undefined;
+        }
+
+        statusText.textContent =
+          "Loading globe · drag to orbit · pinch to zoom";
+        pickButton.disabled = false;
+
+        let hasUpdatedPixelStatus = false;
+        viewer.scene.postRender.addEventListener(function () {
+          if (hasUpdatedPixelStatus) {
+            return;
+          }
+          hasUpdatedPixelStatus = true;
+          updatePixelStatus(viewer);
+        });
+
+        setTimeout(function () {
+          updatePixelStatus(viewer);
+        }, 6000);
+
+        pickButton.addEventListener("click", function () {
+          const canvas = viewer.scene.canvas;
+          const picked = viewer.scene.pick(
+            new window.Cesium.Cartesian2(
+              canvas.clientWidth / 2,
+              canvas.clientHeight / 2,
+            ),
+          );
+          statusText.textContent = picked
+            ? `Picked: ${picked.id ?? picked.primitive?.constructor?.name ?? "object"}`
+            : "Nothing picked at center";
+        });
+
+        window.addEventListener("resize", function () {
+          viewer.resize();
+        });
+      } catch (error) {
+        statusText.textContent = `Viewer failed: ${error.message || error}`;
+      }
+    </script>
+  </body>
+</html>

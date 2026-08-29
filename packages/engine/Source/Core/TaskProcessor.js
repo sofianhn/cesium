@@ -53,7 +53,18 @@ function canTransferArrayBuffer() {
 
 const taskCompletedEvent = new Event();
 
+function getGlobalObject() {
+  if (typeof globalThis !== "undefined") {
+    return globalThis;
+  }
+  if (typeof self !== "undefined") {
+    return self;
+  }
+  return window;
+}
+
 function urlFromScript(script) {
+  const globalObject = getGlobalObject();
   let blob;
   try {
     blob = new Blob([script], {
@@ -61,16 +72,16 @@ function urlFromScript(script) {
     });
   } catch (e) {
     const BlobBuilder =
-      window.BlobBuilder ||
-      window.WebKitBlobBuilder ||
-      window.MozBlobBuilder ||
-      window.MSBlobBuilder;
+      globalObject.BlobBuilder ||
+      globalObject.WebKitBlobBuilder ||
+      globalObject.MozBlobBuilder ||
+      globalObject.MSBlobBuilder;
     const blobBuilder = new BlobBuilder();
     blobBuilder.append(script);
     blob = blobBuilder.getBlob("application/javascript");
   }
 
-  const URL = window.URL || window.webkitURL;
+  const URL = globalObject.URL || globalObject.webkitURL;
   return URL.createObjectURL(blob);
 }
 

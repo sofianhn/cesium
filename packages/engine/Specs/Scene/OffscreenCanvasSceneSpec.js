@@ -4,6 +4,18 @@ import {
   Scene,
 } from "../../index.js";
 
+import getWebGLStub from "../../../../Specs/getWebGLStub.js";
+
+function createOffscreenScene(canvas, options) {
+  options = options ?? {};
+  options.canvas = canvas;
+  options.contextOptions = options.contextOptions ?? {};
+  if (window.webglStub) {
+    options.contextOptions.getWebGLStub = getWebGLStub;
+  }
+  return new Scene(options);
+}
+
 describe(
   "Scene/OffscreenCanvas",
   function () {
@@ -13,9 +25,7 @@ describe(
       }
 
       const canvas = new OffscreenCanvas(64, 64);
-      const scene = new Scene({
-        canvas: canvas,
-      });
+      const scene = createOffscreenScene(canvas);
 
       scene.resize(64, 64, 1.0);
       scene.render();
@@ -34,9 +44,7 @@ describe(
       }
 
       const canvas = new OffscreenCanvas(1, 1);
-      const scene = new Scene({
-        canvas: canvas,
-      });
+      const scene = createOffscreenScene(canvas);
 
       scene.resize(100, 50, 2.0);
 
@@ -50,7 +58,7 @@ describe(
     });
 
     it("accepts an injected WebGL context", function () {
-      if (typeof OffscreenCanvas === "undefined") {
+      if (typeof OffscreenCanvas === "undefined" || window.webglStub) {
         return;
       }
 

@@ -10,6 +10,10 @@ const OffscreenEngineMessageType = {
   RESIZE: "resize",
   PICK: "pick",
   PICK_RESULT: "pickResult",
+  SAMPLE_PIXEL: "samplePixel",
+  SAMPLE_PIXEL_RESULT: "samplePixelResult",
+  CAMERA_DRAG: "cameraDrag",
+  CAMERA_ZOOM: "cameraZoom",
   DESTROY: "destroy",
   DESTROYED: "destroyed",
   START_RENDER_LOOP: "startRenderLoop",
@@ -17,4 +21,6 @@ const OffscreenEngineMessageType = {
   ERROR: "error",
 };
 
-export default Object.freeze(OffscreenEngineMessageType);
+Object.freeze(OffscreenEngineMessageType);
+
+export default OffscreenEngineMessageType;

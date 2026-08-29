@@ -3,6 +3,11 @@ import clone from "../Core/clone.js";
 import Color from "../Core/Color.js";
 import combine from "../Core/combine.js";
 import createGuid from "../Core/createGuid.js";
+import {
+  isHtmlCanvasElement,
+  isHtmlImageElement,
+  isHtmlVideoElement,
+} from "../Core/domElementTypes.js";
 import Frozen from "../Core/Frozen.js";
 import defined from "../Core/defined.js";
 import destroyObject from "../Core/destroyObject.js";
@@ -909,7 +914,7 @@ function createTexture2DUpdateFunction(uniformId) {
     let uniformDimensionsName;
     let uniformDimensions;
 
-    if (uniformValue instanceof HTMLVideoElement) {
+    if (isHtmlVideoElement(uniformValue)) {
       // HTMLVideoElement.readyState >=2 means we have enough data for the current frame.
       // See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/readyState
       if (uniformValue.readyState >= 2) {
@@ -988,10 +993,11 @@ function createTexture2DUpdateFunction(uniformId) {
     }
 
     if (
-      (uniformValue instanceof HTMLCanvasElement ||
-        uniformValue instanceof HTMLImageElement ||
+      (isHtmlCanvasElement(uniformValue) ||
+        isHtmlImageElement(uniformValue) ||
         uniformValue instanceof ImageBitmap ||
-        uniformValue instanceof OffscreenCanvas) &&
+        (typeof OffscreenCanvas !== "undefined" &&
+          uniformValue instanceof OffscreenCanvas)) &&
       uniformValue !== material._texturePaths[uniformId]
     ) {
       material._loadedImages.push({
@@ -1263,10 +1269,11 @@ function getUniformType(uniformValue) {
     } else if (
       type === "string" ||
       uniformValue instanceof Resource ||
-      uniformValue instanceof HTMLCanvasElement ||
-      uniformValue instanceof HTMLImageElement ||
+      isHtmlCanvasElement(uniformValue) ||
+      isHtmlImageElement(uniformValue) ||
       uniformValue instanceof ImageBitmap ||
-      uniformValue instanceof OffscreenCanvas
+      (typeof OffscreenCanvas !== "undefined" &&
+        uniformValue instanceof OffscreenCanvas)
     ) {
       if (/^([rgba]){1,4}$/i.test(uniformValue)) {
         uniformType = "channels";

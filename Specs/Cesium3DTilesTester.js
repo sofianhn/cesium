@@ -94,13 +94,14 @@ Cesium3DTilesTester.expectRenderTileset = function (scene, tileset) {
   });
 };
 
-Cesium3DTilesTester.waitForTilesLoaded = function (scene, tileset) {
+Cesium3DTilesTester.waitForTilesLoaded = function (scene, tileset, options) {
+  options = options ?? Frozen.EMPTY_OBJECT;
   return pollToPromise(
     function () {
       scene.renderForSpecs();
       return tileset.tilesLoaded;
     },
-    { timeout: 10000 },
+    { timeout: options.timeout ?? 10000 },
   ).then(function () {
     scene.renderForSpecs();
     return tileset;

@@ -433,7 +433,13 @@ function getWebGLContext(canvas, webglOptions, requestWebgl1) {
   }
 
   const contextType = requestWebgl1 ? "webgl" : "webgl2";
-  const glContext = canvas.getContext(contextType, webglOptions);
+  let glContext = canvas.getContext(contextType, webglOptions);
+
+  // Some mobile browsers expose WebGL2 on the main thread but not on worker
+  // OffscreenCanvas contexts. Fall back to WebGL1 before failing.
+  if (!defined(glContext) && !requestWebgl1 && webgl2Supported) {
+    glContext = canvas.getContext("webgl", webglOptions);
+  }
 
   if (!defined(glContext)) {
     throw new RuntimeError(

@@ -1,4 +1,8 @@
 import Color from "../Core/Color.js";
+import {
+  isHtmlCanvasElement,
+  isHtmlVideoElement,
+} from "../Core/domElementTypes.js";
 import DeveloperError from "../Core/DeveloperError.js";
 import Resource from "../Core/Resource.js";
 import ColorMaterialProperty from "./ColorMaterialProperty.js";
@@ -13,9 +17,10 @@ function createMaterialProperty(value) {
   if (
     typeof value === "string" ||
     value instanceof Resource ||
-    value instanceof HTMLCanvasElement ||
-    value instanceof OffscreenCanvas ||
-    value instanceof HTMLVideoElement ||
+    isHtmlCanvasElement(value) ||
+    (typeof OffscreenCanvas !== "undefined" &&
+      value instanceof OffscreenCanvas) ||
+    isHtmlVideoElement(value) ||
     value instanceof ImageBitmap
   ) {
     const result = new ImageMaterialProperty();

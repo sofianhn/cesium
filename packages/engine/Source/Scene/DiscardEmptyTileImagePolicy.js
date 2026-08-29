@@ -1,5 +1,9 @@
 import defined from "../Core/defined.js";
 
+const EMPTY_IMAGE_SENTINEL = Object.freeze({
+  __cesiumEmptyImageryTile: true,
+});
+
 /**
  * A policy for discarding tile images that contain no data (and so aren't actually images).
  * This policy discards {@link DiscardEmptyTileImagePolicy.EMPTY_IMAGE}, which is
@@ -35,19 +39,22 @@ let emptyImage;
 Object.defineProperties(DiscardEmptyTileImagePolicy, {
   /**
    * Default value for representing an empty image.
-   * @type {HTMLImageElement}
+   * @type {object|HTMLImageElement}
    * @readonly
    * @memberof DiscardEmptyTileImagePolicy
    */
   EMPTY_IMAGE: {
     get: function () {
-      if (!defined(emptyImage)) {
-        emptyImage = new Image();
-        // load a blank data URI with a 1x1 transparent pixel.
-        emptyImage.src =
-          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+      if (typeof Image !== "undefined") {
+        if (!defined(emptyImage)) {
+          emptyImage = new Image();
+          // load a blank data URI with a 1x1 transparent pixel.
+          emptyImage.src =
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+        }
+        return emptyImage;
       }
-      return emptyImage;
+      return EMPTY_IMAGE_SENTINEL;
     },
   },
 });
