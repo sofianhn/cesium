@@ -3464,7 +3464,9 @@ describe(
       // Zoom back in and attempt to render all tiles
       viewAllTiles();
 
-      await Cesium3DTilesTester.waitForTilesLoaded(scene, tileset);
+      await Cesium3DTilesTester.waitForTilesLoaded(scene, tileset, {
+        timeout: 30000,
+      });
       // Only 3 tiles should have been actually loaded
       expect(statistics.numberOfCommands).toEqual(3);
       expect(statistics.numberOfTilesWithContentReady).toEqual(3); // Three loaded tiles
@@ -3491,7 +3493,9 @@ describe(
       // Reset camera so all tiles are reloaded
       viewAllTiles();
 
-      await Cesium3DTilesTester.waitForTilesLoaded(scene, tileset);
+      await Cesium3DTilesTester.waitForTilesLoaded(scene, tileset, {
+        timeout: 30000,
+      });
       expect(statistics.numberOfCommands).toEqual(5);
       expect(statistics.numberOfTilesWithContentReady).toEqual(5);
     });

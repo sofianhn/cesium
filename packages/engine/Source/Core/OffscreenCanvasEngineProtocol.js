@@ -21,4 +21,6 @@ const OffscreenEngineMessageType = {
   ERROR: "error",
 };
 
-export default Object.freeze(OffscreenEngineMessageType);
+Object.freeze(OffscreenEngineMessageType);
+
+export default OffscreenEngineMessageType;

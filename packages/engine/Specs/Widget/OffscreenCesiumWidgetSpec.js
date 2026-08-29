@@ -23,6 +23,11 @@ describe("Widget/OffscreenCesiumWidget", function () {
       return;
     }
 
+    // Worker WebGL contexts cannot use the main-thread WebGL stub.
+    if (window.webglStub) {
+      return;
+    }
+
     const widget = new OffscreenCesiumWidget(container, {
       useWorldImagery: false,
       useWorldTerrain: false,
