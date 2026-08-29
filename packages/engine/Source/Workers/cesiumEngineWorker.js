@@ -149,9 +149,14 @@ function handleInit(data) {
   canvas.width = Math.max(1, Math.floor(data.width * pixelRatio));
   canvas.height = Math.max(1, Math.floor(data.height * pixelRatio));
 
+  const simpleGlobe = data.simpleGlobe === true;
+
   scene = new Scene({
     canvas: data.canvas,
     contextOptions: data.contextOptions,
+    orderIndependentTranslucency: !simpleGlobe,
+    msaaSamples: simpleGlobe ? 1 : 4,
+    scene3DOnly: simpleGlobe,
   });
 
   scene.resize(data.width, data.height, data.pixelRatio);

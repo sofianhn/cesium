@@ -244,15 +244,15 @@ function OffscreenCesiumWidget(container, options) {
   this._destroyed = false;
 
   const dimensions = getWidgetCanvasDimensions(this);
-  const offscreen = canvas.transferControlToOffscreen();
 
+  // Set the canvas buffer before transfer; this is the only safe time to
+  // resize the display canvas on the main thread.
   const bufferWidth = Math.max(1, Math.floor(dimensions.width * pixelRatio));
   const bufferHeight = Math.max(1, Math.floor(dimensions.height * pixelRatio));
-
-  // Size the display canvas immediately after transfer. Safari on iOS uses these
-  // attributes when compositing transferred OffscreenCanvas frames.
   canvas.width = bufferWidth;
   canvas.height = bufferHeight;
+
+  const offscreen = canvas.transferControlToOffscreen();
 
   let resolveReady;
   let rejectReady;
@@ -405,19 +405,6 @@ OffscreenCesiumWidget.prototype.resize = function () {
   }
 
   const dimensions = getWidgetCanvasDimensions(this);
-  const bufferWidth = Math.max(
-    1,
-    Math.floor(dimensions.width * this._pixelRatio),
-  );
-  const bufferHeight = Math.max(
-    1,
-    Math.floor(dimensions.height * this._pixelRatio),
-  );
-
-  // Keep the display canvas buffer size in sync for browsers (notably Safari on iOS)
-  // that use it when compositing transferred OffscreenCanvas frames.
-  this._canvas.width = bufferWidth;
-  this._canvas.height = bufferHeight;
 
   this._worker.postMessage({
     type: OffscreenEngineMessageType.RESIZE,
