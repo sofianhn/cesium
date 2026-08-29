@@ -242,6 +242,7 @@ function OffscreenCesiumWidget(container, options) {
   this._pickRequestId = 0;
   this._pickRequests = {};
   this._destroyed = false;
+  this._lastWorkerError = undefined;
 
   const dimensions = getWidgetCanvasDimensions(this);
 
@@ -385,6 +386,7 @@ OffscreenCesiumWidget.prototype._handleWorkerMessage = function (data) {
       break;
     }
     case OffscreenEngineMessageType.ERROR:
+      this._lastWorkerError = data.message;
       if (defined(this._rejectReady)) {
         this._rejectReady(new RuntimeError(data.message));
         this._resolveReady = undefined;

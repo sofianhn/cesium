@@ -181,11 +181,26 @@ function handleInit(data) {
     scene.backgroundColor = Color.fromBytes(25, 45, 85, 255);
   }
 
+  attachRenderErrorHandler();
+
   startRenderLoop();
   self.postMessage({
     type: OffscreenEngineMessageType.READY,
     drawingBufferWidth: scene.drawingBufferWidth,
     drawingBufferHeight: scene.drawingBufferHeight,
+  });
+}
+
+function attachRenderErrorHandler() {
+  if (!defined(scene)) {
+    return;
+  }
+  scene.renderError.addEventListener(function (_scene, error) {
+    self.postMessage({
+      type: OffscreenEngineMessageType.ERROR,
+      message: error.message,
+      stack: error.stack,
+    });
   });
 }
 

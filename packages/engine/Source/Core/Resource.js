@@ -1962,11 +1962,61 @@ Resource._Implementations.createImage = function (
   headers,
 ) {
   const url = request.url;
+  const loadImageWithBlob = function () {
+    const responseType = "blob";
+    const method = "GET";
+    const xhrDeferred = defer();
+    const xhr = Resource._Implementations.loadWithXhr(
+      url,
+      responseType,
+      method,
+      undefined,
+      headers,
+      xhrDeferred,
+      undefined,
+      undefined,
+      undefined,
+    );
+
+    if (defined(xhr) && defined(xhr.abort)) {
+      request.cancelFunction = function () {
+        xhr.abort();
+      };
+    }
+    return xhrDeferred.promise
+      .then(function (blob) {
+        if (!defined(blob)) {
+          deferred.reject(
+            new RuntimeError(
+              `Successfully retrieved ${url} but it contained no content.`,
+            ),
+          );
+          return;
+        }
+
+        return Resource.createImageBitmapFromBlob(blob, {
+          flipY: flipY,
+          premultiplyAlpha: false,
+          skipColorSpaceConversion: skipColorSpaceConversion,
+        });
+      })
+      .then(function (image) {
+        deferred.resolve(image);
+      });
+  };
+
   // Passing an Image to createImageBitmap will force it to run on the main thread
   // since DOM elements don't exist on workers. We convert it to a blob so it's non-blocking.
   // See:
   //    https://bugzilla.mozilla.org/show_bug.cgi?id=1044102#c38
   //    https://bugs.chromium.org/p/chromium/issues/detail?id=580202#c10
+  if (typeof document === "undefined") {
+    loadImageWithBlob().catch(function (e) {
+      deferred.reject(e);
+    });
+    return;
+  }
+
   Resource.supportsImageBitmapOptions()
     .then(function (supportsImageBitmap) {
       // We can only use ImageBitmap if we can flip on decode.
@@ -1975,46 +2025,9 @@ Resource._Implementations.createImage = function (
         Resource._Implementations.loadImageElement(url, crossOrigin, deferred);
         return;
       }
-      const responseType = "blob";
-      const method = "GET";
-      const xhrDeferred = defer();
-      const xhr = Resource._Implementations.loadWithXhr(
-        url,
-        responseType,
-        method,
-        undefined,
-        headers,
-        xhrDeferred,
-        undefined,
-        undefined,
-        undefined,
-      );
-
-      if (defined(xhr) && defined(xhr.abort)) {
-        request.cancelFunction = function () {
-          xhr.abort();
-        };
-      }
-      return xhrDeferred.promise
-        .then(function (blob) {
-          if (!defined(blob)) {
-            deferred.reject(
-              new RuntimeError(
-                `Successfully retrieved ${url} but it contained no content.`,
-              ),
-            );
-            return;
-          }
-
-          return Resource.createImageBitmapFromBlob(blob, {
-            flipY: flipY,
-            premultiplyAlpha: false,
-            skipColorSpaceConversion: skipColorSpaceConversion,
-          });
-        })
-        .then(function (image) {
-          deferred.resolve(image);
-        });
+      loadImageWithBlob().catch(function (e) {
+        deferred.reject(e);
+      });
     })
     .catch(function (e) {
       deferred.reject(e);

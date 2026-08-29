@@ -489,10 +489,10 @@ BingMapsImageryProvider.fromUrl = async function (url, options) {
     ) {
       tileProtocol = tileProtocol.substr(0, tileProtocol.length - 1);
     }
+  } else if (typeof document !== "undefined") {
+    tileProtocol = document.location.protocol === "http:" ? "http" : "https";
   } else {
-    // use http if the document's protocol is http, otherwise use https
-    const documentProtocol = document.location.protocol;
-    tileProtocol = documentProtocol === "http:" ? "http" : "https";
+    tileProtocol = "https";
   }
 
   const mapStyle = options.mapStyle ?? BingMapsStyle.AERIAL;
