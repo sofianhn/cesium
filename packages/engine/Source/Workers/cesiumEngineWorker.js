@@ -30,8 +30,16 @@ function startRenderLoop() {
       return;
     }
 
-    scene.initializeFrame();
-    scene.render();
+    try {
+      scene.initializeFrame();
+      scene.render();
+    } catch (error) {
+      self.postMessage({
+        type: OffscreenEngineMessageType.ERROR,
+        message: error.message,
+        stack: error.stack,
+      });
+    }
     animationFrameId = requestAnimationFrame(frame);
   }
 
@@ -64,17 +72,35 @@ function serializePick(picked) {
   };
 }
 
-function configureSceneEnvironment() {
+function configureSceneEnvironment(data) {
   const ellipsoid = Ellipsoid.WGS84;
+  const simpleGlobe = data.simpleGlobe === true;
 
   scene.globe = new Globe(ellipsoid);
   scene.globe.enableLighting = false;
-  scene.skyBox = SkyBox.createEarthSkyBox();
-  scene.sun = new Sun();
-  scene.moon = new Moon();
-  scene.moon.show = false;
-  scene.skyAtmosphere = new SkyAtmosphere(ellipsoid);
+  scene.globe.showGroundAtmosphere = !simpleGlobe;
+  scene.globe.showWaterEffect = !simpleGlobe;
+  scene.globe.dynamicAtmosphereLighting = false;
+  scene.globe.dynamicAtmosphereLightingFromSun = false;
+
+  if (!simpleGlobe) {
+    scene.skyBox = SkyBox.createEarthSkyBox();
+    scene.sun = new Sun();
+    scene.moon = new Moon();
+    scene.moon.show = false;
+    scene.skyAtmosphere = new SkyAtmosphere(ellipsoid);
+  } else {
+    scene.sun = undefined;
+    scene.moon = undefined;
+    scene.skyBox = undefined;
+    scene.skyAtmosphere = undefined;
+  }
+
   scene.camera.constrainedAxis = Cartesian3.UNIT_Z;
+  resetCameraView();
+}
+
+function resetCameraView() {
   scene.camera.setView({
     destination: Cartesian3.fromDegrees(-98.0, 40.0, 20000000.0),
   });
@@ -131,7 +157,7 @@ function handleInit(data) {
   scene.resize(data.width, data.height, data.pixelRatio);
 
   if (shouldUseGlobe(data)) {
-    configureSceneEnvironment();
+    configureSceneEnvironment(data);
     addImagery(data);
 
     if (data.useWorldTerrain === true) {
@@ -146,11 +172,15 @@ function handleInit(data) {
       data.backgroundColor[2],
       data.backgroundColor[3] ?? 255,
     );
+  } else if (shouldUseGlobe(data)) {
+    scene.backgroundColor = Color.fromBytes(25, 45, 85, 255);
   }
 
   startRenderLoop();
   self.postMessage({
     type: OffscreenEngineMessageType.READY,
+    drawingBufferWidth: scene.drawingBufferWidth,
+    drawingBufferHeight: scene.drawingBufferHeight,
   });
 }
 
@@ -160,6 +190,7 @@ function handleResize(data) {
   }
 
   scene.resize(data.width, data.height, data.pixelRatio);
+  resetCameraView();
 }
 
 function handleCameraDrag(data) {

@@ -76,12 +76,23 @@
       const statusText = document.getElementById("statusText");
       const pickButton = document.getElementById("pickButton");
 
+      const isIOS =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
       async function updatePixelStatus(widget) {
         const canvas = widget.canvas;
-        const pixel = await widget.samplePixel(
-          Math.floor(canvas.clientWidth / 2),
-          Math.floor(canvas.clientHeight / 2),
+        const width = Math.max(
+          1,
+          Math.floor(canvas.clientWidth / 2) ||
+            Math.floor(window.innerWidth / 2),
         );
+        const height = Math.max(
+          1,
+          Math.floor(canvas.clientHeight / 2) ||
+            Math.floor(window.innerHeight / 2),
+        );
+        const pixel = await widget.samplePixel(width, height);
         if (Array.isArray(pixel)) {
           const sum = pixel[0] + pixel[1] + pixel[2];
           statusText.textContent =
@@ -105,13 +116,17 @@
         const widget = new window.Cesium.OffscreenCesiumWidget(
           "cesiumContainer",
           {
-            useWorldImagery: false,
-            useOpenStreetMapImagery: true,
+            useWorldImagery: true,
+            useOpenStreetMapImagery: false,
+            simpleGlobe: isIOS,
             useWorldTerrain: false,
             enableInputs: true,
-            pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+            pixelRatio: isIOS ? 1 : Math.min(window.devicePixelRatio || 1, 2),
+            backgroundColor: [25, 45, 85, 255],
             contextOptions: {
               webgl: {
+                alpha: false,
+                antialias: false,
                 preserveDrawingBuffer: true,
                 powerPreference: "high-performance",
               },
@@ -120,12 +135,17 @@
         );
 
         widget.readyPromise
-          .then(async function () {
-            requestAnimationFrame(function () {
+          .then(function () {
+            const resizeNow = function () {
               widget.resize();
-            });
+            };
+            resizeNow();
+            requestAnimationFrame(resizeNow);
+            setTimeout(resizeNow, 250);
+            setTimeout(resizeNow, 1000);
+
             statusText.textContent =
-              "Loading map tiles · drag to orbit · pinch to zoom";
+              "Loading globe · drag to orbit · pinch to zoom";
             pickButton.disabled = false;
 
             setTimeout(function () {
@@ -133,7 +153,7 @@
             }, 2000);
             setTimeout(function () {
               updatePixelStatus(widget);
-            }, 5000);
+            }, 6000);
           })
           .catch(function (error) {
             statusText.textContent = `Worker init failed: ${error.message || error}`;

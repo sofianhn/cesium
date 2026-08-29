@@ -189,6 +189,7 @@ function installInputHandler(widget) {
  * @param {number} [options.pixelRatio] The pixel ratio to use when sizing the canvas buffer. Defaults to <code>window.devicePixelRatio</code>.
  * @param {boolean} [options.useWorldImagery=true] If true, add Cesium ion world imagery to the scene.
  * @param {boolean} [options.useOpenStreetMapImagery=false] If true, add OpenStreetMap imagery instead of ion world imagery.
+ * @param {boolean} [options.simpleGlobe=false] If true, use a reduced globe scene without sky box or atmosphere for mobile WebGL compatibility.
  * @param {boolean} [options.useWorldTerrain=false] If true, add Cesium ion world terrain to the scene.
  * @param {number[]} [options.backgroundColor] An RGBA color in bytes, e.g. <code>[100, 149, 237, 255]</code>, applied to {@link Scene#backgroundColor} in the worker.
  * @param {string} [options.ionAccessToken=Ion.defaultAccessToken] The Cesium ion access token used in the worker.
@@ -232,7 +233,6 @@ function OffscreenCesiumWidget(container, options) {
   canvas.style.width = "100%";
   canvas.style.height = "100%";
 
-  const offscreen = canvas.transferControlToOffscreen();
   const pixelRatio = options.pixelRatio ?? window.devicePixelRatio;
 
   this._element = element;
@@ -244,6 +244,15 @@ function OffscreenCesiumWidget(container, options) {
   this._destroyed = false;
 
   const dimensions = getWidgetCanvasDimensions(this);
+  const offscreen = canvas.transferControlToOffscreen();
+
+  const bufferWidth = Math.max(1, Math.floor(dimensions.width * pixelRatio));
+  const bufferHeight = Math.max(1, Math.floor(dimensions.height * pixelRatio));
+
+  // Size the display canvas immediately after transfer. Safari on iOS uses these
+  // attributes when compositing transferred OffscreenCanvas frames.
+  canvas.width = bufferWidth;
+  canvas.height = bufferHeight;
 
   let resolveReady;
   let rejectReady;
@@ -286,6 +295,7 @@ function OffscreenCesiumWidget(container, options) {
       contextOptions: options.contextOptions,
       useWorldImagery: options.useWorldImagery ?? true,
       useOpenStreetMapImagery: options.useOpenStreetMapImagery ?? false,
+      simpleGlobe: options.simpleGlobe ?? false,
       useWorldTerrain: options.useWorldTerrain ?? false,
       backgroundColor: options.backgroundColor,
       ionAccessToken: options.ionAccessToken ?? Ion.defaultAccessToken,
