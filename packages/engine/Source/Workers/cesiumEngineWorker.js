@@ -220,7 +220,7 @@ function handleCameraDrag(data) {
 
   const camera = scene.camera;
   const sensitivity = 0.005;
-  camera.rotateRight(data.deltaX * sensitivity);
+  camera.rotateRight(-data.deltaX * sensitivity);
   camera.rotateUp(-data.deltaY * sensitivity);
 }
 

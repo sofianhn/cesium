@@ -122,7 +122,7 @@ function installInputHandler(widget) {
       const points = [...activePointers.values()];
       const distance = getTouchDistance(points[0], points[1]);
       if (defined(lastPinchDistance)) {
-        postCameraZoom(lastPinchDistance - distance);
+        postCameraZoom(distance - lastPinchDistance);
       }
       lastPinchDistance = distance;
       return;
@@ -157,7 +157,7 @@ function installInputHandler(widget) {
 
   function onWheel(event) {
     event.preventDefault();
-    postCameraZoom(event.deltaY);
+    postCameraZoom(-event.deltaY);
   }
 
   canvas.addEventListener("pointerdown", onPointerDown);
