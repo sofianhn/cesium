@@ -96,6 +96,10 @@
             Math.floor(window.innerHeight / 2),
         );
         const pixel = await widget.samplePixel(width, height);
+        if (widget._lastWorkerError) {
+          statusText.textContent = `Worker error: ${widget._lastWorkerError}`;
+          return;
+        }
         if (Array.isArray(pixel)) {
           const sum = pixel[0] + pixel[1] + pixel[2];
           statusText.textContent =
